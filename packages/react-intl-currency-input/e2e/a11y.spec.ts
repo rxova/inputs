@@ -15,20 +15,20 @@ async function scan(page: Page) {
 }
 
 test('the whole playground is free of WCAG A/AA violations', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Currency input' })).toBeVisible()
   expect(await scan(page)).toEqual([])
 })
 
 test('stays clean while showing a validation error', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   await page.locator('[data-testid="form"]').getByRole('button', { name: 'Submit' }).click()
   await expect(page.getByTestId('form-error')).toBeVisible()
   expect(await scan(page)).toEqual([])
 })
 
 test('the invalid field is marked for assistive tech', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   await page.locator('[data-testid="form"]').getByRole('button', { name: 'Submit' }).click()
   await expect(page.getByTestId('form-price')).toHaveAttribute('aria-invalid', 'true')
 })

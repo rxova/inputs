@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
 // covers the default formatMode="live", where the field stays formatted while
 // focused.)
 test.beforeEach(async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   await page.getByTestId('format-mode').selectOption('blur')
 })
 

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared playground for all rxova input components.",
+  "description": "Manual-QA aggregator that imports each package's own demo.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,16 +11,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@rxova/demo-kit": "workspace:*",
     "@rxova/react-intl-currency-input": "workspace:*",
-    "@rxova/react-rating-input": "workspace:*",
     "@rxova/react-otp-input": "workspace:*",
+    "@rxova/react-rating-input": "workspace:*",
     "@tanstack/react-form": "^1.33.2",
-    "react-hook-form": "^7.82.0",
-    "formik": "^2.4.9",
     "final-form": "^5.0.1",
-    "react-final-form": "^7.0.1",
+    "formik": "^2.4.9",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-final-form": "^7.0.1",
+    "react-hook-form": "^7.82.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

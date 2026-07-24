@@ -15,19 +15,19 @@ async function scan(page: Page) {
 }
 
 test('the whole playground is free of WCAG A/AA violations', async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   await expect(page.getByRole('heading', { name: 'OTP input' })).toBeVisible()
   expect(await scan(page)).toEqual([])
 })
 
 test('stays clean in RTL', async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   await page.getByTestId('rtl-toggle').check()
   expect(await scan(page)).toEqual([])
 })
 
 test('stays clean while showing a validation error', async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   const section = page.locator('[data-testid="hook-form"]')
   await section.getByRole('textbox').click()
   await page.keyboard.type('12')
@@ -37,7 +37,7 @@ test('stays clean while showing a validation error', async ({ page }) => {
 })
 
 test('every field has a unique accessible name', async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   const names = await page
     .locator('[data-otp-input]')
     .evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')))
@@ -46,7 +46,7 @@ test('every field has a unique accessible name', async ({ page }) => {
 })
 
 test('input ids are unique across the page', async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   const ids = await page.locator('[data-otp-input]').evaluateAll((els) => els.map((e) => e.id))
   expect(new Set(ids).size).toBe(ids.length)
 })

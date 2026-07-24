@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useForm as useTanstackForm } from '@tanstack/react-form'
 import { Rating } from '@rxova/react-rating-input'
-import { Section } from './Section'
+import { Section } from '@rxova/demo-kit'
 
 /**
  * Every scenario the E2E suite drives, and the manual QA surface.

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { CurrencyInput, currencyForCountry } from '@rxova/react-intl-currency-input'
 import type { CurrencyDisplay, CurrencyInputChange } from '@rxova/react-intl-currency-input'
-import { Section } from './Section'
+import { Section } from '@rxova/demo-kit'
 
 /**
  * The manual QA surface and the page the E2E suite drives. Each block carries a

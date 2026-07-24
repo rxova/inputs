@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { CurrencyDemos } from './demos/CurrencyDemos'
-import { RatingDemos } from './demos/RatingDemos'
-import { OtpDemos } from './demos/OtpDemos'
+import { CurrencyDemos } from '../../packages/react-intl-currency-input/demo/Demos'
+import { RatingDemos } from '../../packages/react-rating-input/demo/Demos'
+import { OtpDemos } from '../../packages/react-otp-input/demo/Demos'
 
 /**
- * A dependency-free path router. `vite preview` serves index.html for every
- * path, so reading `window.location.pathname` is enough to pick a page.
+ * The manual-QA aggregator: it imports each package's own demo (the same one
+ * that package's E2E suite drives standalone) and stitches them behind a tiny
+ * path router. `vite preview` serves index.html for every path, so reading
+ * `window.location.pathname` is enough to pick a page.
  */
 
 function Landing() {

@@ -33,7 +33,6 @@
       "outputs": []
     },
     "e2e": {
-      "dependsOn": ["@rxova/playground#build"],
       "cache": false
     },
     "dev": {

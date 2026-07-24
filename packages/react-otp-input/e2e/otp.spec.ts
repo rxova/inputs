@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/otp')
+  await page.goto('/')
   await expect(page.getByRole('heading', { name: 'OTP input' })).toBeVisible()
 })
 

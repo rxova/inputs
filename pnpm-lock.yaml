@@ -130,6 +130,9 @@ importers:
 
   apps/playground:
     dependencies:
+      '@rxova/demo-kit':
+        specifier: workspace:*
+        version: link:../../packages/demo-kit
       '@rxova/react-intl-currency-input':
         specifier: workspace:*
         version: link:../../packages/react-intl-currency-input
@@ -199,6 +202,15 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.49.0)(yaml@2.9.0))
 
+  packages/demo-kit:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.0
+        version: 19.2.17
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+
   packages/react-inputs:
     dependencies:
       '@rxova/react-intl-currency-input':
@@ -250,6 +262,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@rxova/demo-kit':
+        specifier: workspace:*
+        version: link:../demo-kit
       '@size-limit/preset-small-lib':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.6.1))
@@ -325,6 +340,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@rxova/demo-kit':
+        specifier: workspace:*
+        version: link:../demo-kit
       '@size-limit/preset-small-lib':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.6.1))
@@ -400,6 +418,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@rxova/demo-kit':
+        specifier: workspace:*
+        version: link:../demo-kit
       '@size-limit/preset-small-lib':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.6.1))

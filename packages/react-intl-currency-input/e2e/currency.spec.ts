@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
  */
 
 test('formats live while typing and stays formatted on focus', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   const amount = page.getByTestId('amount')
 
   // Default is bg-BG / EUR / 50000 → grouped with a (non-breaking) space.
@@ -24,7 +24,7 @@ test('formats live while typing and stays formatted on focus', async ({ page }) 
 })
 
 test('re-formats a freshly typed amount on blur', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   const amount = page.getByTestId('amount')
   await amount.focus()
   await amount.fill('1234.5')
@@ -36,7 +36,7 @@ test('re-formats a freshly typed amount on blur', async ({ page }) => {
 })
 
 test('switching locale and currency changes the formatting', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   await page.getByTestId('locale').selectOption('ja-JP')
   await page.getByTestId('currency').selectOption('JPY')
   const amount = page.getByTestId('amount')
@@ -45,14 +45,14 @@ test('switching locale and currency changes the formatting', async ({ page }) =>
 })
 
 test('the tricky-locale grid renders each field formatted', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   // hi-IN uses lakh grouping: 12,34,567.89
   const hiIn = page.getByTestId('tricky-hi-IN').getByRole('textbox')
   await expect(hiIn).toHaveValue(/12,34,567/)
 })
 
 test('React Hook Form: validation error, then a submitted number', async ({ page }) => {
-  await page.goto('/currency')
+  await page.goto('/')
   const form = page.locator('[data-testid="form"]')
 
   await form.getByRole('button', { name: 'Submit' }).click()

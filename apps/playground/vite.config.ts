@@ -2,26 +2,35 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 
-// A private workspace app. It aliases each library to source so it runs — dev,
-// `vite build` for the E2E preview, and typecheck — without a prior library
-// build. The `@rxova/*` workspace dependencies make pnpm link the packages;
-// these aliases (and the matching tsconfig paths) point resolution at the
-// source rather than the unbuilt `dist`.
+// The manual-QA aggregator. It imports each package's own demo and aliases the
+// libraries (and demo-kit) to source, so it runs — dev, build, typecheck —
+// without a prior library build. Each demo is also driven standalone by its own
+// package's E2E suite; this app only stitches them together for browsing.
+const src = (rel: string) => fileURLToPath(new URL(rel, import.meta.url))
+
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   plugins: [react()],
   resolve: {
-    alias: {
-      '@rxova/react-intl-currency-input': fileURLToPath(
-        new URL('../../packages/react-intl-currency-input/src/index.ts', import.meta.url),
-      ),
-      '@rxova/react-rating-input': fileURLToPath(
-        new URL('../../packages/react-rating-input/src/index.ts', import.meta.url),
-      ),
-      '@rxova/react-otp-input': fileURLToPath(
-        new URL('../../packages/react-otp-input/src/index.ts', import.meta.url),
-      ),
-    },
+    alias: [
+      {
+        find: '@rxova/react-intl-currency-input',
+        replacement: src('../../packages/react-intl-currency-input/src/index.ts'),
+      },
+      {
+        find: '@rxova/react-rating-input',
+        replacement: src('../../packages/react-rating-input/src/index.ts'),
+      },
+      {
+        find: '@rxova/react-otp-input',
+        replacement: src('../../packages/react-otp-input/src/index.ts'),
+      },
+      {
+        find: '@rxova/demo-kit/styles.css',
+        replacement: src('../../packages/demo-kit/src/styles.css'),
+      },
+      { find: /^@rxova\/demo-kit$/, replacement: src('../../packages/demo-kit/src/index.ts') },
+    ],
   },
   build: { outDir: 'dist', emptyOutDir: true },
   server: { port: 5173 },

@@ -4,7 +4,7 @@ import { Formik, Form as FormikForm, useField } from 'formik'
 import { Field as FinalField, Form as FinalForm } from 'react-final-form'
 import { useForm as useTanstackForm } from '@tanstack/react-form'
 import { OtpInput, OtpGroup, OtpSlot, OtpSeparator } from '@rxova/react-otp-input'
-import { Section } from './Section'
+import { Section } from '@rxova/demo-kit'
 
 /**
  * Every scenario the E2E suite drives, and the manual QA surface.

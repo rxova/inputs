@@ -36,7 +36,11 @@ export default defineConfig(
     },
   },
   {
-    files: ['packages/*/src/**/*.{ts,tsx}', 'apps/playground/**/*.{ts,tsx}'],
+    files: [
+      'packages/*/src/**/*.{ts,tsx}',
+      'packages/*/demo/**/*.{ts,tsx}',
+      'apps/playground/**/*.{ts,tsx}',
+    ],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
@@ -63,7 +67,13 @@ export default defineConfig(
     },
   },
   {
-    files: ['**/__tests__/**', '**/e2e/**', 'apps/playground/**'],
+    files: [
+      '**/__tests__/**',
+      '**/e2e/**',
+      'apps/playground/**',
+      'packages/*/demo/**',
+      'packages/demo-kit/**',
+    ],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

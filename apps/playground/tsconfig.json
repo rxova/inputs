@@ -5,16 +5,9 @@
     "paths": {
       "@rxova/react-intl-currency-input": ["../../packages/react-intl-currency-input/src/index.ts"],
       "@rxova/react-rating-input": ["../../packages/react-rating-input/src/index.ts"],
-      "@rxova/react-otp-input": ["../../packages/react-otp-input/src/index.ts"]
+      "@rxova/react-otp-input": ["../../packages/react-otp-input/src/index.ts"],
+      "@rxova/demo-kit": ["../../packages/demo-kit/src/index.ts"]
     }
   },
-  "include": [
-    "App.tsx",
-    "main.tsx",
-    "demos/Section.tsx",
-    "demos/CurrencyDemos.tsx",
-    "demos/RatingDemos.tsx",
-    "demos/OtpDemos.tsx",
-    "vite.config.ts"
-  ]
+  "include": ["App.tsx", "main.tsx", "vite.config.ts"]
 }

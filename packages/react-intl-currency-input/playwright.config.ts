@@ -1,10 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * E2E runs against the *built* shared playground (@rxova/playground), served on
- * this package's own preview port at its component route. `turbo run e2e` builds
- * the playground once (dependsOn) before these previews start, so the specs
- * exercise the same bundling a consumer's app would.
+ * E2E runs against this package's own `demo/` — built and previewed on its own
+ * port, with no dependency on any shared/global playground. The demo aliases the
+ * library to source, so the specs exercise the same component the browser suite
+ * does, composed into a full page.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -24,8 +24,8 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
-    command: 'pnpm --filter @rxova/playground preview --port 4173 --strictPort',
-    url: 'http://localhost:4173/currency',
+    command: 'pnpm run demo:build && pnpm run demo:preview',
+    url: 'http://localhost:4173/',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
