@@ -43,11 +43,17 @@
       "outputs": ["coverage/**"],
       "outputLogs": "new-only"
     },
+    // These three all inspect a package's build artifacts, so they must never
+    // run against a stale or absent dist. Declaring the dependency here rather
+    // than per-package means a package added later inherits the guarantee — a
+    // missing local turbo.json would otherwise pass silently against old output.
     "check:exports": {
+      "dependsOn": ["build"],
       "outputs": [],
       "outputLogs": "new-only"
     },
     "pack:smoke": {
+      "dependsOn": ["build"],
       "outputs": [],
       // Smoke-test logic lives in shared scripts outside each package — include
       // both so editing either invalidates the cache instead of replaying an old pass.
@@ -59,6 +65,7 @@
       "outputLogs": "new-only"
     },
     "size": {
+      "dependsOn": ["build"],
       "outputs": [],
       "outputLogs": "new-only"
     },
