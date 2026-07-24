@@ -25,8 +25,10 @@ const config: Config = {
   tagline: 'The tricky React inputs, done right.',
   favicon: 'img/logo.png',
 
-  url: 'https://rxova.github.io',
-  baseUrl: '/inputs/',
+  // Defaults keep the standalone build working; the rxova.org aggregator sets
+  // DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/inputs/.
+  url: process.env.DOCS_URL ?? 'https://rxova.github.io',
+  baseUrl: process.env.DOCS_BASE_URL ?? '/inputs/',
   organizationName: 'rxova',
   projectName: 'inputs',
   trailingSlash: false,

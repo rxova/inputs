@@ -5,7 +5,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**", ".docusaurus/**"]
+      "outputs": ["dist/**", "build/**", ".docusaurus/**"],
+      "env": ["DOCS_URL", "DOCS_BASE_URL"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
