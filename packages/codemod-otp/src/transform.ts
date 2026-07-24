@@ -98,7 +98,10 @@ export default function transform(file: FileInfo, api: API): string | undefined 
         ) {
           const original = spec.imported.name
           const target = SPECIFIER_MAP[original]!
-          const localName = spec.local?.name ?? original
+          // @types/jscodeshift@17 widens an identifier's `name` to
+          // `string | IdentifierKind`; for an import specifier's local it is
+          // always a string at runtime, so narrow it back.
+          const localName = typeof spec.local?.name === 'string' ? spec.local.name : original
           const aliased = localName !== original
 
           spec.imported = j.identifier(target)
