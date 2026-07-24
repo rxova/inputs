@@ -1,22 +1,14 @@
 import { expect, test } from '@playwright/test'
 
-// SKIPPED — pre-existing contract mismatch carried over from the source repo.
-//
-// Most tests here assert the *focused* editable text is a plain number
-// (e.g. "1.23"), i.e. they assume the playground "amount" field runs in
-// formatMode="blur". But that field — and currency.spec.ts, which passes —
-// use the component default formatMode="live", where the field STAYS FORMATTED
-// while focused (e.g. "$1.23"). The two suites contradict each other on the same
-// field. This predates the monorepo migration (the currency repo was frozen
-// mid-refactor from a blur default to a live default; these assertions were
-// never updated).
-//
-// Re-enable once the product decision is made — either give the adversarial
-// tests their own formatMode="blur" field, or update these assertions to the
-// live-mode formatted values. See the monorepo migration notes.
+// These tests assert the *focused* editable text is a plain, sanitized number
+// (e.g. "1.23") — the point being to verify parsing/sanitization without the
+// symbol and grouping in the way. That is formatMode="blur" behaviour, so the
+// suite switches the playground field into blur mode first. (currency.spec.ts
+// covers the default formatMode="live", where the field stays formatted while
+// focused.)
 test.beforeEach(async ({ page }) => {
-  test.skip(true, 'Pre-existing formatMode live/blur contract mismatch — see note above')
   await page.goto('/currency')
+  await page.getByTestId('format-mode').selectOption('blur')
 })
 
 test.describe('locale and parsing boundaries', () => {

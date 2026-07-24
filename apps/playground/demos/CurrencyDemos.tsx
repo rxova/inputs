@@ -18,6 +18,7 @@ function Playground() {
   const [display, setDisplay] = useState<CurrencyDisplay>('symbol')
   const [allowNegative, setAllowNegative] = useState(false)
   const [minFraction, setMinFraction] = useState(0)
+  const [formatMode, setFormatMode] = useState<'live' | 'blur'>('live')
   const [value, setValue] = useState<number | null>(50000)
 
   return (
@@ -78,6 +79,22 @@ function Playground() {
           </select>
         </label>
         <label>
+          Format mode
+          <select
+            data-testid="format-mode"
+            value={formatMode}
+            onChange={(e) => {
+              setFormatMode(e.target.value as 'live' | 'blur')
+            }}
+          >
+            {(['live', 'blur'] as const).map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           Min fraction digits
           <input
             type="number"
@@ -109,6 +126,7 @@ function Playground() {
           locale={locale}
           currency={currency}
           currencyDisplay={display}
+          formatMode={formatMode}
           minimumFractionDigits={minFraction}
           allowNegative={allowNegative}
           value={value}
@@ -256,6 +274,7 @@ function StressLab() {
           <CurrencyInput
             id="stress-controlled"
             data-testid="stress-controlled"
+            formatMode="blur"
             locale={stressLocale}
             currency={stressLocale === 'en-US' ? 'USD' : 'EUR'}
             value={controlled}
@@ -305,6 +324,7 @@ function StressLab() {
           <CurrencyInput
             id="stress-step"
             data-testid="stress-step"
+            formatMode="blur"
             locale="en-US"
             currency="USD"
             step={0.25}
@@ -319,6 +339,7 @@ function StressLab() {
           <CurrencyInput
             id="stress-negative-step"
             data-testid="stress-negative-step"
+            formatMode="blur"
             locale="en-US"
             currency="USD"
             step={0.25}
@@ -334,6 +355,7 @@ function StressLab() {
           <CurrencyInput
             id="stress-transform"
             data-testid="stress-transform"
+            formatMode="blur"
             locale="en-US"
             currency="USD"
             value={transformed}
@@ -348,6 +370,7 @@ function StressLab() {
           <CurrencyInput
             id="stress-uncontrolled"
             data-testid="stress-uncontrolled"
+            formatMode="blur"
             locale="en-US"
             currency="USD"
             defaultValue={7.5}
