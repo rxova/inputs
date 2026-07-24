@@ -2,13 +2,13 @@
 
 The published packages (all `@rxova/*`, public):
 
-| Package                            | Replaces (old npm name)     |
-| ---------------------------------- | --------------------------- |
-| `@rxova/react-intl-currency-input` | `react-intl-currency-input` |
-| `@rxova/react-rating-input`        | `react-feedback-stars`      |
-| `@rxova/react-otp-input`           | `react-otp-slots`           |
-| `@rxova/react-inputs` (meta)       | —                           |
-| `@rxova/codemod`                   | `@react-otp-slots/codemod`  |
+| Package                            | Replaces (old npm name)                                                |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `@rxova/react-intl-currency-input` | — (new name; `react-intl-currency-input` is a third party's, not ours) |
+| `@rxova/react-rating-input`        | `react-feedback-stars`                                                 |
+| `@rxova/react-otp-input`           | -                                                                      |
+| `@rxova/react-inputs` (meta)       | —                                                                      |
+| `@rxova/codemod`                   | -                                                                      |
 
 `@rxova/utils`, `@rxova/playground`, and `@rxova/docs` are `private` and never publish.
 
@@ -47,14 +47,8 @@ pnpm -r --filter='./packages/*' --filter='!@rxova/utils' exec npm publish --acce
 ## Deprecating the old packages
 
 **After** the `@rxova/*` packages are live, point the old names at them. Run as the owner of the
-old packages (`npm login`):
+old package (`npm login`):
 
 ```bash
-npm deprecate react-intl-currency-input "Moved to @rxova/react-intl-currency-input"
-npm deprecate react-feedback-stars      "Moved to @rxova/react-rating-input"
-npm deprecate react-otp-slots           "Moved to @rxova/react-otp-input"
-npm deprecate @react-otp-slots/codemod  "Moved to @rxova/codemod"
+npm deprecate react-feedback-stars "Moved to @rxova/react-rating-input"
 ```
-
-Each message shows on `npm install` of the old package. Scope to specific versions with
-`npm deprecate 'pkg@<range>' "..."` if you ever want to un-deprecate a line later.
