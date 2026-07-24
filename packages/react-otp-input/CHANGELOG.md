@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- [`f5dd58c`](https://github.com/rxova/react-inputs/commit/f5dd58c91d6aeef8cb7aa83d51e21a55f91326f9) Thanks [@jonatankruszewski](https://github.com/jonatankruszewski)! - Correct the published README and package metadata after the move into the rxova monorepo.
+- [`f5dd58c`](https://github.com/rxova/react-inputs/commit/f5dd58c91d6aeef8cb7aa83d51e21a55f91326f9) - Correct the published README and package metadata after the move into the rxova monorepo.
 
   The README shown on npm is served from the published tarball, so these fixes required a release:
 
