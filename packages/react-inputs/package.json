@@ -1,6 +1,6 @@
 {
   "name": "@rxova/react-inputs",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "The complete rxova suite: currency, rating, and OTP inputs for React from a single install.",
   "keywords": [
