@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -12,13 +12,14 @@ import process from 'node:process'
  * the only check that would catch a `files` entry that silently dropped `dist`,
  * or an `exports` map that resolves for a bundler but not for plain Node.
  *
- * Package-agnostic: it reads the name and entry from the package's own
- * package.json, so every leaf component in the monorepo shares this one script.
- * Per-component render behaviour is covered by each package's browser tests.
+ * Package-agnostic: it reads the package's own manifest and packs any direct
+ * workspace dependencies alongside it. This covers both leaf components and
+ * the aggregate package without reaching the public registry.
  */
 
 const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
 const name = pkg.name
+const packagesDir = new URL('../', import.meta.url)
 
 const REQUIRED = [
   'package/dist/index.mjs',
@@ -42,6 +43,44 @@ const fail = (message) => {
 }
 
 try {
+  const workspacePackages = new Map(
+    readdirSync(packagesDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(packagesDir.pathname, entry.name))
+      .filter((directory) => {
+        try {
+          return Boolean(JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')).name)
+        } catch {
+          return false
+        }
+      })
+      .map((directory) => {
+        const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
+        return [manifest.name, directory]
+      }),
+  )
+  const internalDependencies = Object.keys(pkg.dependencies ?? {}).filter((dependency) =>
+    workspacePackages.has(dependency),
+  )
+  const dependencyTarballs = {}
+
+  for (const dependency of internalDependencies) {
+    console.log(`Packing workspace dependency ${dependency}…`)
+    const output = execFileSync('pnpm', ['pack', '--pack-destination', workdir], {
+      cwd: workspacePackages.get(dependency),
+      encoding: 'utf8',
+    })
+    const filename = output
+      .trim()
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.endsWith('.tgz'))
+      .pop()
+    if (!filename) throw new Error(`could not determine the tarball path for ${dependency}`)
+    dependencyTarballs[dependency] =
+      `file:${filename.startsWith('/') ? filename : join(workdir, filename)}`
+  }
+
   console.log(`Packing ${name}…`)
   const packOutput = execFileSync('pnpm', ['pack', '--pack-destination', workdir], {
     encoding: 'utf8',
@@ -89,6 +128,7 @@ try {
         type: 'module',
         dependencies: {
           [name]: `file:${tarballPath}`,
+          ...dependencyTarballs,
           react: '^19.0.0',
           'react-dom': '^19.0.0',
         },

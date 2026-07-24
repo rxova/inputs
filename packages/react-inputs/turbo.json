@@ -1,0 +1,15 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "check:exports": {
+      "dependsOn": ["build"]
+    },
+    "pack:smoke": {
+      "dependsOn": ["build"]
+    },
+    "size": {
+      "dependsOn": ["build"]
+    }
+  }
+}
