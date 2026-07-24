@@ -1,27 +1,28 @@
 <p align="center">
-  <img src="./assets/logo.svg" width="112" alt="react-otp-slots logo" />
+  <img src="./assets/logo.svg" width="112" alt="@rxova/react-otp-input logo" />
 </p>
 
-<h1 align="center">react-otp-slots</h1>
+<h1 align="center">@rxova/react-otp-input</h1>
 
 <p align="center">
-  <a href="https://github.com/rxova/react-otp-slots/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-otp-slots/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
+  <a href="https://www.npmjs.com/package/@rxova/react-otp-input"><img src="https://img.shields.io/npm/v/@rxova/react-otp-input?color=cb3837&logo=npm&logoColor=white" alt="npm version" /></a>
+  <a href="https://github.com/rxova/react-inputs/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-inputs/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <img src="https://img.shields.io/badge/brotli-%E2%89%A4%204.5%20kB-6c5ce7" alt="Brotli size at most 4.5 kB" />
   <img src="https://img.shields.io/badge/coverage-95%25%2B-brightgreen" alt="Coverage 95% or more" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white" alt="TypeScript strict mode" />
   <img src="https://img.shields.io/badge/dependencies-0-44cc11" alt="Zero runtime dependencies" />
   <img src="https://img.shields.io/badge/React-%E2%89%A518-61dafb?logo=react&logoColor=white" alt="React 18 or newer" />
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
+  <a href="https://github.com/rxova/react-inputs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
 </p>
 
 **A headless, accessible one-time-code input for React.** One real input underneath, real slots on
 top — including the **tap-to-edit any slot** that the incumbent can't do.
 
 ```bash
-pnpm add react-otp-slots
+npm install @rxova/react-otp-input
 ```
 
-📖 **[Documentation & live examples →](https://rxova.github.io/react-otp-slots/)** — guides, form
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/otp)** — guides, form
 recipes, theming, WebOTP, and migration guides from other OTP libraries.
 
 - **One real `<input>`** — paste, SMS autofill, IME, undo, native `<form>` submission and screen-reader
@@ -37,16 +38,28 @@ recipes, theming, WebOTP, and migration guides from other OTP libraries.
 ## Basic usage
 
 ```tsx
-import { OtpInput } from 'react-otp-slots'
+import { useState } from 'react'
+import { OtpInput } from '@rxova/react-otp-input'
 
-const [code, setCode] = useState('')
-
-<OtpInput length={6} value={code} onChange={setCode} onComplete={submit} label="One-time code" />
+function Verify() {
+  const [code, setCode] = useState('')
+  return (
+    <OtpInput
+      length={6}
+      value={code}
+      onChange={setCode}
+      onComplete={submit}
+      label="One-time code"
+    />
+  )
+}
 ```
 
-| default                                                                              | grouped `123–456`                                                            | alphanumeric                                                                            | masked                                                                     | invalid                                                                       | render prop                                                                            |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <img src="./assets/examples/default.png" width="150" alt="a filled six-slot code" /> | <img src="./assets/examples/grouped.png" width="150" alt="a grouped code" /> | <img src="./assets/examples/alphanumeric.png" width="150" alt="an alphanumeric code" /> | <img src="./assets/examples/masked.png" width="150" alt="a masked code" /> | <img src="./assets/examples/invalid.png" width="150" alt="an invalid code" /> | <img src="./assets/examples/render-fn.png" width="150" alt="a custom-rendered code" /> |
+|                                       default                                        |                               grouped `123–456`                               |                                      alphanumeric                                       |
+| :----------------------------------------------------------------------------------: | :---------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: |
+| <img src="./assets/examples/default.png" width="230" alt="a filled six-slot code" /> | <img src="./assets/examples/grouped.png" width="230" alt="a grouped code" />  | <img src="./assets/examples/alphanumeric.png" width="230" alt="an alphanumeric code" /> |
+|                                      **masked**                                      |                                  **invalid**                                  |                                     **render prop**                                     |
+|      <img src="./assets/examples/masked.png" width="230" alt="a masked code" />      | <img src="./assets/examples/invalid.png" width="230" alt="an invalid code" /> | <img src="./assets/examples/render-fn.png" width="230" alt="a custom-rendered code" />  |
 
 <img src="./assets/examples/interactive-typing.gif" width="260" alt="Typing a six-digit code" />
 &nbsp;
@@ -56,45 +69,80 @@ const [code, setCode] = useState('')
 
 One primitive, four levels of control. Simple stays a one-liner; complex stays possible without forking.
 
+**Tier 1** — the declarative default:
+
 ```tsx
-// Tier 1 — declarative default
 <OtpInput length={6} value={code} onChange={setCode} label="One-time code" />
+```
 
-// Tier 2 — compound composition (grouping, separators)
+**Tier 2** — compound composition, for grouping and separators:
+
+```tsx
 <OtpInput length={6} value={code} onChange={setCode} label="One-time code">
-  <OtpGroup><OtpSlot index={0} /><OtpSlot index={1} /><OtpSlot index={2} /></OtpGroup>
+  <OtpGroup>
+    <OtpSlot index={0} />
+    <OtpSlot index={1} />
+    <OtpSlot index={2} />
+  </OtpGroup>
   <OtpSeparator>–</OtpSeparator>
-  <OtpGroup><OtpSlot index={3} /><OtpSlot index={4} /><OtpSlot index={5} /></OtpGroup>
+  <OtpGroup>
+    <OtpSlot index={3} />
+    <OtpSlot index={4} />
+    <OtpSlot index={5} />
+  </OtpGroup>
 </OtpInput>
+```
 
-// Tier 3 — render prop
-<OtpInput length={6} value={code} onChange={setCode}
-  render={({ slots }) => slots.map((s) => <MySlot key={s.index} {...s} />)} />
+**Tier 3** — a render prop, when you want your own slot component:
 
-// Tier 4 — headless hook (own the markup entirely)
+```tsx
+<OtpInput
+  length={6}
+  value={code}
+  onChange={setCode}
+  render={({ slots }) => slots.map((s) => <MySlot key={s.index} {...s} />)}
+/>
+```
+
+**Tier 4** — the headless hook, to own the markup entirely:
+
+```tsx
 const otp = useOtpInput({ length: 6, value: code, onChange: setCode })
 ```
 
 ## Forms
 
-`onChange` emits the sanitized **string**, and the underlying input posts natively under `name`:
+`onChange` emits the sanitized **string**, and the underlying input posts natively under `name`.
+
+With a plain `<form>`, the single input _is_ the field — just pass `name`:
 
 ```tsx
-// Native — the single input IS the field
 <OtpInput name="code" length={6} label="Code" />
-
-// React Hook Form (Controller) / Formik / React Final Form — bind value + onChange
-<Controller name="code" control={control} render={({ field }) => (
-  <OtpInput length={6} label="Code" value={field.value} onChange={field.onChange}
-            onBlur={field.onBlur} name={field.name} inputRef={field.ref} />
-)} />
 ```
 
-Recipes for [React Hook Form](https://rxova.github.io/react-otp-slots/recipes/react-hook-form),
-[Formik](https://rxova.github.io/react-otp-slots/recipes/formik),
-[React Final Form](https://rxova.github.io/react-otp-slots/recipes/react-final-form),
-[TanStack Form](https://rxova.github.io/react-otp-slots/recipes/tanstack-form), and
-[native forms](https://rxova.github.io/react-otp-slots/recipes/native-forms).
+With React Hook Form, Formik or React Final Form, bind `value` and `onChange` through a controlled
+adapter:
+
+```tsx
+<Controller
+  name="code"
+  control={control}
+  render={({ field }) => (
+    <OtpInput
+      length={6}
+      label="Code"
+      value={field.value}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      name={field.name}
+      inputRef={field.ref}
+    />
+  )}
+/>
+```
+
+Full recipes for React Hook Form, Formik, React Final Form, TanStack Form and native forms are in
+the [form-library guide](https://rxova.org/packages/react-inputs/guides/form-libraries).
 
 ## Styling
 
@@ -125,6 +173,20 @@ repeated. Slots are `aria-hidden` decoration. `label` / `aria-label` name the fi
 > fully hide the native `::selection`. Tap-to-edit stays keyboard-plus-caret there; it is full spatial
 > everywhere else. Force either mode explicitly with the `slotInteraction` prop.
 
+## Part of rxova
+
+One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
+[currency](https://rxova.org/packages/react-inputs/currency),
+[rating](https://rxova.org/packages/react-inputs/rating) and
+[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
+[`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or read the full
+generated [API reference](https://rxova.org/packages/react-inputs/components/otp/api) for this
+package.
+
+Migrating? `npx @rxova/codemod input-otp-to-otp --dry ./src` handles most of the move from
+[`input-otp`](https://rxova.org/packages/react-inputs/migrating/from-input-otp); there is also a
+guide for [`react-otp-input`](https://rxova.org/packages/react-inputs/migrating/from-react-otp-input).
+
 ## License
 
-MIT
+[MIT](https://github.com/rxova/react-inputs/blob/main/LICENSE) © rxova

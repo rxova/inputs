@@ -1,29 +1,29 @@
-# react-intl-currency-input
+<h1 align="center">@rxova/react-intl-currency-input</h1>
 
 <p align="center">
-  <a href="https://github.com/rxova/react-intl-currency-input/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-intl-currency-input/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
+  <a href="https://www.npmjs.com/package/@rxova/react-intl-currency-input"><img src="https://img.shields.io/npm/v/@rxova/react-intl-currency-input?color=cb3837&logo=npm&logoColor=white" alt="npm version" /></a>
+  <a href="https://github.com/rxova/react-inputs/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-inputs/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <img src="https://img.shields.io/badge/brotli-%E2%89%A4%203.25%20kB-blue" alt="Brotli size at most 3.25 kB" />
   <img src="https://img.shields.io/badge/coverage%20threshold-95%25-brightgreen" alt="Coverage threshold: 95% per file" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white" alt="TypeScript strict mode" />
   <img src="https://img.shields.io/badge/dependencies-0-44cc11" alt="Zero runtime dependencies" />
   <img src="https://img.shields.io/badge/React-%E2%89%A518-61dafb?logo=react&logoColor=white" alt="React 18 or newer" />
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
+  <a href="https://github.com/rxova/react-inputs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
 </p>
 
 **Localized currency input for React.** Zero dependencies, no cursor bugs, and correct in every
 `Intl` locale — including the ones other libraries get wrong.
 
 ```bash
-pnpm add react-intl-currency-input
+npm install @rxova/react-intl-currency-input
 ```
 
 Requires React and React DOM 18 or newer. Both are peer dependencies; there are no bundled runtime
 dependencies and no stylesheet to import.
 
-📖 **[Documentation & live examples →](https://rxova.github.io/react-intl-currency-input/)** — the
-locale matrix, formatting options, form recipes, and migration. Or go straight to the
-**[interactive playground](https://rxova.github.io/react-intl-currency-input/playground)** to change
-locales, currencies, precision, digits, negatives, and keyboard stepping in the browser.
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/currency)** — the
+locale matrix, formatting options, form recipes, and migration, with live editable examples you can
+change in the browser: locales, currencies, precision, digits, negatives and keyboard stepping.
 
 - **`Intl` owns the formatting** — group separator, decimal separator, symbol placement, fraction
   digits, and grouping rules are all read from `Intl.NumberFormat`, never reconstructed
@@ -67,7 +67,7 @@ One US-dollar amount, rendered for nine locales — watch the symbol jump sides 
 
 ```tsx
 import { useState } from 'react'
-import { CurrencyInput } from 'react-intl-currency-input'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
 
 function Price() {
   const [value, setValue] = useState<number | null>(50000)
@@ -151,7 +151,7 @@ CSS Modules, CSS-in-JS, or utility classes. The `invalid` prop supplies both the
 }
 ```
 
-See the **[complete styling guide](https://rxova.github.io/react-intl-currency-input/guides/styling)**
+See the **[complete styling guide](https://rxova.org/packages/react-inputs/guides/styling)**
 for labeled fields, CSS Modules, Tailwind, wrapper adornments, design-system variants, and RTL-safe
 layout.
 
@@ -163,7 +163,7 @@ spread `inputProps` onto your own `<input>`.
 ```tsx
 import { useState } from 'react'
 import { TextField } from '@mui/material'
-import { useCurrencyInput } from 'react-intl-currency-input'
+import { useCurrencyInput } from '@rxova/react-intl-currency-input'
 
 function MuiPrice() {
   const [value, setValue] = useState<number | null>(null)
@@ -179,8 +179,8 @@ function MuiPrice() {
 }
 ```
 
-See the **[UI-library recipes](https://rxova.github.io/react-intl-currency-input/recipes/ui-libraries)**
-for shadcn/ui, Radix Themes, MUI, Chakra UI, Mantine, and Ant Design.
+See the **[styling guide](https://rxova.org/packages/react-inputs/guides/styling)** for shadcn/ui,
+Radix Themes, MUI, Chakra UI, Mantine and Ant Design.
 
 ### `currencyForCountry(code)`
 
@@ -189,8 +189,18 @@ Best-effort ISO-3166 → ISO-4217 lookup for convenience. Prefer passing `curren
 ## Forms
 
 `onValueChange` emits a `number`, so use a controlled adapter (RHF `Controller`, Formik `useField`,
-etc.). See the [form recipes](https://rxova.github.io/react-intl-currency-input/recipes/react-hook-form).
+etc.). See the [form-library guide](https://rxova.org/packages/react-inputs/guides/form-libraries)
+for React Hook Form, Formik, React Final Form and TanStack Form.
+
+## Part of rxova
+
+One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
+[currency](https://rxova.org/packages/react-inputs/currency),
+[rating](https://rxova.org/packages/react-inputs/rating) and
+[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
+[`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or the full generated
+[API reference](https://rxova.org/packages/react-inputs/components/currency/api) for this package.
 
 ## License
 
-MIT
+[MIT](https://github.com/rxova/react-inputs/blob/main/LICENSE) © rxova

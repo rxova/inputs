@@ -62,6 +62,18 @@
       "outputs": [],
       "outputLogs": "new-only"
     },
+    // A root task (`//#`), not a per-package one: the checker reads the root
+    // README plus every packages/*/README.md in a single pass from the repo
+    // root, so there is nothing to fan out. `inputs` is listed explicitly
+    // rather than via $TURBO_DEFAULT$ so the cache is keyed on exactly what the
+    // check reads — the authored READMEs and the checker itself. Touching
+    // source, tests or the docs site cannot invalidate it, and editing any
+    // README (or the script) invalidates it instead of replaying a stale pass.
+    "//#check:docs": {
+      "outputs": [],
+      "inputs": ["README.md", "packages/*/README.md", "packages/utils/check-doc-snippets.mjs"],
+      "outputLogs": "new-only"
+    },
     "e2e": {
       "cache": false
     },

@@ -1,4 +1,21 @@
-# @rxova/codemod
+<p align="center">
+  <img src="./assets/logo.svg" width="112" alt="@rxova/codemod logo" />
+</p>
+
+<h1 align="center">@rxova/codemod</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@rxova/codemod"><img src="https://img.shields.io/npm/v/@rxova/codemod?color=cb3837&logo=npm&logoColor=white" alt="npm version" /></a>
+  <a href="https://github.com/rxova/react-inputs/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-inputs/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white" alt="TypeScript strict mode" />
+  <img src="https://img.shields.io/badge/Node-%E2%89%A520.19-5fa04e?logo=node.js&logoColor=white" alt="Node 20.19 or newer" />
+  <a href="https://github.com/rxova/react-inputs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
+</p>
+
+<p align="center">
+  <a href="https://rxova.org/packages/react-inputs/"><strong>Documentation</strong></a> ·
+  <a href="https://rxova.org/packages/react-inputs/migrating/from-input-otp">Migration guides</a>
+</p>
 
 [jscodeshift](https://github.com/facebook/jscodeshift) codemods for migrating onto the
 [rxova](https://github.com/rxova/react-inputs) input suite. One CLI, one transform per migration.
@@ -42,7 +59,7 @@ Migrates [`input-otp`](https://github.com/guilhermerodz/input-otp) usage to
   render-prop tier and the per-slot shape is compatible, so your render function keeps working.
   Converting it into the compound `<OtpGroup>` / `<OtpSlot>` API can't be done reliably by an AST
   transform, so it stays a manual step — the codemod adds a one-line banner pointing at the
-  [migration guide](https://rxova.github.io/react-inputs/migrating/from-input-otp).
+  [migration guide](https://rxova.org/packages/react-inputs/migrating/from-input-otp).
 
 Always review the diff (`--dry` first) and re-run your formatter afterwards.
 
@@ -61,4 +78,4 @@ The CLI and the build pick it up automatically.
 
 ## License
 
-MIT
+[MIT](https://github.com/rxova/react-inputs/blob/main/LICENSE) © rxova

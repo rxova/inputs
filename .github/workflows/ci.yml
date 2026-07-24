@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   static:
-    name: lint · types · format
+    name: lint · types · format · docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,6 +28,11 @@ jobs:
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
       - run: pnpm run format:check
+      # Type-checks every fenced snippet in the root README and each package
+      # README, so a copy-pasteable example cannot rot into something that does
+      # not parse. Invoked through Turbo (a `//#check:docs` root task) so it
+      # replays from cache when no README changed.
+      - run: pnpm exec turbo run check:docs
       - run: pnpm run lint
       - run: pnpm run typecheck
 

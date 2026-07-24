@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="#0f9f82" role="img" aria-labelledby="title">
+  <title id="title">@rxova/codemod logo</title>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 10h-3a6 6 0 0 0-6 6v9c0 4-2 7-6 7 4 0 6 3 6 7v9a6 6 0 0 0 6 6h3" stroke-width="4" />
+    <path d="M42 10h3a6 6 0 0 1 6 6v9c0 4 2 7 6 7-4 0-6 3-6 7v9a6 6 0 0 1-6 6h-3" stroke-width="4" />
+    <path d="M23 25h15a7 7 0 0 1 0 14H27" stroke-width="3.5" />
+    <path d="m31 34-5 5 5 5" stroke-width="3.5" />
+  </g>
+</svg>

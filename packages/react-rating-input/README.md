@@ -1,26 +1,27 @@
-# react-feedback-stars
-
 <p align="center">
-  <img src="./assets/react-feedback-stars.png" alt="react-feedback-stars logo" width="180" />
+  <img src="./assets/logo.svg" alt="@rxova/react-rating-input logo" width="180" />
 </p>
 
+<h1 align="center">@rxova/react-rating-input</h1>
+
 <p align="center">
-  <a href="https://github.com/rxova/react-feedback-stars/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-feedback-stars/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
+  <a href="https://www.npmjs.com/package/@rxova/react-rating-input"><img src="https://img.shields.io/npm/v/@rxova/react-rating-input?color=cb3837&logo=npm&logoColor=white" alt="npm version" /></a>
+  <a href="https://github.com/rxova/react-inputs/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-inputs/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <img src="https://img.shields.io/badge/brotli-%E2%89%A4%203%20kB-f5a623" alt="Brotli size at most 3 kB" />
   <img src="https://img.shields.io/badge/coverage%20threshold-95%25-brightgreen" alt="Coverage threshold: 95% per file" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white" alt="TypeScript strict mode" />
   <img src="https://img.shields.io/badge/dependencies-0-44cc11" alt="Zero runtime dependencies" />
   <img src="https://img.shields.io/badge/React-%E2%89%A518-61dafb?logo=react&logoColor=white" alt="React 18 or newer" />
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
+  <a href="https://github.com/rxova/react-inputs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
 </p>
 
 **Any icon, any precision, accessible.** A headless, zero-dependency React rating component.
 
 ```bash
-pnpm add react-feedback-stars
+npm install @rxova/react-rating-input
 ```
 
-📖 **[Documentation & live examples →](https://rxova.github.io/react-feedback-stars/)** — guides,
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/rating)** — guides,
 form recipes, theming, and migration from `react-rating` / `react-stars`.
 
 - **Bring your own icon** — SVG, emoji, image, arbitrary JSX
@@ -33,13 +34,19 @@ form recipes, theming, and migration from `react-rating` / `react-stars`.
 ## Display
 
 ```tsx
-import { Rating } from 'react-feedback-stars'
+import { Rating } from '@rxova/react-rating-input'
 
-<Rating value={4.3} />                       // continuous — a 30%-filled fifth star
-<Rating value={4.3} precision={1} />         // 4 stars
-<Rating value={4.3} precision={0.5} />       // 4.5 stars
-<Rating value={4.3} icon="⭐" />              // emoji
-<Rating value={3} max={10} icon={<Heart />} emptyIcon={<HeartOutline />} />
+function Scores() {
+  return (
+    <>
+      <Rating value={4.3} /> {/* continuous — a 30%-filled fifth star */}
+      <Rating value={4.3} precision={1} /> {/* 4 stars */}
+      <Rating value={4.3} precision={0.5} /> {/* 4.5 stars */}
+      <Rating value={4.3} icon="⭐" /> {/* emoji */}
+      <Rating value={3} max={10} icon={<Heart />} emptyIcon={<HeartOutline />} />
+    </>
+  )
+}
 ```
 
 | `value={4.3}`                                                              | `precision={1}`                                                     | `precision={0.5}`                                                    | `icon="⭐"`                                                       | custom `<Heart/>`                                                   |
@@ -69,9 +76,13 @@ throwing — a display component must never crash a page over a data value.
 Providing `onChange` makes it an input. Nothing else changes.
 
 ```tsx
-const [score, setScore] = useState(0)
+import { useState } from 'react'
+import { Rating } from '@rxova/react-rating-input'
 
-<Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+function RateYourMeal() {
+  const [score, setScore] = useState(0)
+  return <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+}
 ```
 
 Renders a `radiogroup` of visually-hidden native radios, so arrow keys, form participation,
@@ -118,15 +129,19 @@ library below has a controlled adapter — that is the supported path, and it is
 <summary><b>Formik</b></summary>
 
 ```tsx
-const [field, meta, helpers] = useField('rating')
+function RatingField() {
+  const [field, meta, helpers] = useField('rating')
 
-<Rating
-  name="rating"
-  value={field.value}
-  onChange={helpers.setValue}
-  onBlur={field.onBlur}
-  invalid={meta.touched && !!meta.error}
-/>
+  return (
+    <Rating
+      name="rating"
+      value={field.value}
+      onChange={helpers.setValue}
+      onBlur={field.onBlur}
+      invalid={meta.touched && !!meta.error}
+    />
+  )
+}
 ```
 
 </details>
@@ -263,6 +278,20 @@ Also handled: visible focus ring that the fill layer's `overflow: hidden` cannot
 §2.5.8 24×24 px minimum. That is inherent to half-star input. Use `precision={1}` or a larger
 `--rfs-size` where that matters.
 
+## Part of rxova
+
+One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
+[currency](https://rxova.org/packages/react-inputs/currency),
+[rating](https://rxova.org/packages/react-inputs/rating) and
+[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
+[`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or read the full
+generated [API reference](https://rxova.org/packages/react-inputs/components/rating/api) for this
+package.
+
+Migrating from [`react-rating`](https://rxova.org/packages/react-inputs/migrating/from-react-rating),
+[`react-stars`](https://rxova.org/packages/react-inputs/migrating/from-react-stars) or
+[plain radio buttons](https://rxova.org/packages/react-inputs/migrating/from-radio-buttons)?
+
 ## License
 
-MIT
+[MIT](https://github.com/rxova/react-inputs/blob/main/LICENSE) © rxova

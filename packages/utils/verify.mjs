@@ -17,11 +17,11 @@ export const steps = [
   { name: 'Audit dependencies', script: 'audit:check' },
   { name: 'Check dependency dedupe', script: 'dedupe:check' },
   { name: 'Check formatting', script: 'format:check' },
-  // `check:docs` is available (pnpm run check:docs) but not in the gate: it
-  // enforces that every fenced snippet is a standalone module, an idiom only the
-  // currency docs were authored for. The rating/otp docs deliberately elide
-  // (a `useState` line + a bare `<Component/>`), so gating on it would mean
-  // rewriting authored documentation.
+  // Runs the checker directly rather than through Turbo: unlike the CI job,
+  // which replays a warm remote cache, the pre-push gate should re-verify the
+  // snippets from scratch. It is a sub-second parse pass, so there is nothing
+  // to save by caching it here.
+  { name: 'Check doc snippets', script: 'check:docs' },
   { name: 'Check e2e browser list', script: 'check:browsers' },
   { name: 'Lint', script: 'lint' },
   { name: 'Typecheck', script: 'typecheck' },

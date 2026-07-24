@@ -101,7 +101,7 @@
   "bugs": {
     "url": "https://github.com/rxova/react-inputs/issues"
   },
-  "homepage": "https://rxova.github.io/react-inputs/otp",
+  "homepage": "https://rxova.org/packages/react-inputs/otp",
   "engines": {
     "node": ">=20.19.0"
   }
