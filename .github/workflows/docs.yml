@@ -1,4 +1,10 @@
-name: Deploy docs to GitHub Pages
+name: Docs
+
+# Docs are published as part of rxova.org (the rxova/rxova-website aggregator),
+# not from this repo. On push to main we build the docs to catch breakage, then
+# notify the aggregator to rebuild rxova.org/packages/inputs.
+# Requires secret AGGREGATOR_DISPATCH_TOKEN (fine-grained PAT with Contents:
+# write on rxova/rxova-website).
 
 on:
   push:
@@ -7,12 +13,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -21,20 +21,21 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm
       - run: pnpm install --frozen-lockfile
-      # `docs:build` is a Turbo task: it builds the three component packages
-      # first (the docs import them for live examples), then runs the Docusaurus
-      # build, which regenerates the TypeDoc API reference from source.
+      # `docs:build` is a Turbo task: it builds the component packages first
+      # (the docs import them for live examples), then runs the Docusaurus build,
+      # which regenerates the TypeDoc API reference from source.
       - run: pnpm run docs:build
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: apps/docs/build
 
-  deploy:
+  notify-website:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
+      - name: Trigger rxova.org rebuild
+        continue-on-error: true
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.AGGREGATOR_DISPATCH_TOKEN }}
+          repository: rxova/rxova-website
+          event-type: docs-inputs
+          client-payload: '{"ref": "${{ github.sha }}"}'
