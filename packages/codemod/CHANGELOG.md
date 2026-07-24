@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- [`f5dd58c`](https://github.com/rxova/react-inputs/commit/f5dd58c91d6aeef8cb7aa83d51e21a55f91326f9) Thanks [@jonatankruszewski](https://github.com/jonatankruszewski)! - Point the `input-otp-to-otp` banner at the live migration guide.
+- [`f5dd58c`](https://github.com/rxova/react-inputs/commit/f5dd58c91d6aeef8cb7aa83d51e21a55f91326f9) Point the `input-otp-to-otp` banner at the live migration guide.
 
   When the transform meets a `render` prop it cannot rewrite, it inserts a comment pointing at the
   migration guide. That URL was `rxova.github.io/react-inputs/migrating/from-input-otp`, which is not
