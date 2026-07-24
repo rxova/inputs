@@ -13,7 +13,7 @@ docs site.
 | `packages/react-rating-input/`        | `@rxova/react-rating-input` — rating input (stars / any icon).                       |
 | `packages/react-otp-input/`           | `@rxova/react-otp-input` — OTP / one-time-code input.                                |
 | `packages/react-inputs/`              | `@rxova/react-inputs` — meta-package that re-exports the whole suite.                |
-| `packages/codemod-otp/`               | `@rxova/codemod-otp` — jscodeshift codemod migrating `input-otp` onto the OTP input. |
+| `packages/codemod/`                   | `@rxova/codemod` — jscodeshift codemods (one transform per migration) for the suite. |
 | `packages/utils/`                     | `@rxova/utils` — private tooling (release gate, doc-snippet checks, capture, etc.).  |
 | `packages/*/src/__tests__/`           | `*.test.ts(x)` run in node, `*.browser.test.tsx` run in Chromium.                    |
 | `packages/*/e2e/`                     | Playwright specs, per package, against the built shared playground.                  |

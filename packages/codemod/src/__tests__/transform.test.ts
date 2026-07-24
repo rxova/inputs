@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyTransform } from 'jscodeshift/dist/testUtils'
-import transform from '../transform'
+import transform from '../transforms/input-otp-to-otp'
 
 function run(source: string): string {
   return applyTransform(transform, {}, { source, path: 'test.tsx' }, { parser: 'tsx' })

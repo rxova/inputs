@@ -51,7 +51,7 @@ export default defineConfig(
     // The codemod runs under jscodeshift and pokes at untyped AST nodes; the
     // ast-types typings are imprecise, so the type-aware "unnecessary" checks and
     // non-null guards are unreliable here. bin.ts is a CLI, so it needs console.
-    files: ['packages/codemod-otp/**/*.{ts,tsx}'],
+    files: ['packages/codemod/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',

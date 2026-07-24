@@ -8,7 +8,7 @@ The published packages (all `@rxova/*`, public):
 | `@rxova/react-rating-input`        | `react-feedback-stars`      |
 | `@rxova/react-otp-input`           | `react-otp-slots`           |
 | `@rxova/react-inputs` (meta)       | —                           |
-| `@rxova/codemod-otp`               | `@react-otp-slots/codemod`  |
+| `@rxova/codemod`                   | `@react-otp-slots/codemod`  |
 
 `@rxova/utils`, `@rxova/playground`, and `@rxova/docs` are `private` and never publish.
 
@@ -53,7 +53,7 @@ old packages (`npm login`):
 npm deprecate react-intl-currency-input "Moved to @rxova/react-intl-currency-input"
 npm deprecate react-feedback-stars      "Moved to @rxova/react-rating-input"
 npm deprecate react-otp-slots           "Moved to @rxova/react-otp-input"
-npm deprecate @react-otp-slots/codemod  "Moved to @rxova/codemod-otp"
+npm deprecate @react-otp-slots/codemod  "Moved to @rxova/codemod"
 ```
 
 Each message shows on `npm install` of the old package. Scope to specific versions with

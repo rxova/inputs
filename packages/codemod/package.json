@@ -1,26 +1,27 @@
 {
-  "name": "@rxova/codemod-otp",
+  "name": "@rxova/codemod",
   "version": "0.1.0",
   "type": "module",
-  "description": "jscodeshift codemod: migrate input-otp to @rxova/react-otp-input.",
+  "description": "jscodeshift codemods for migrating onto the rxova input suite. Run `npx @rxova/codemod <transform> <path>`.",
   "keywords": [
     "codemod",
     "jscodeshift",
+    "migration",
+    "rxova",
     "input-otp",
-    "react-otp-input",
-    "migration"
+    "react-otp-input"
   ],
   "license": "MIT",
   "bin": {
-    "rxova-codemod-otp": "./dist/bin.cjs"
+    "rxova-codemod": "./dist/bin.cjs"
   },
   "files": [
     "dist"
   ],
   "exports": {
-    "./transform": {
-      "types": "./dist/transform.d.cts",
-      "default": "./dist/transform.cjs"
+    "./transforms/*": {
+      "types": "./dist/transforms/*.d.cts",
+      "default": "./dist/transforms/*.cjs"
     }
   },
   "scripts": {
@@ -47,9 +48,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rxova/inputs.git",
-    "directory": "packages/codemod-otp"
+    "directory": "packages/codemod"
   },
-  "homepage": "https://rxova.github.io/inputs/otp/codemod",
+  "homepage": "https://github.com/rxova/inputs/tree/main/packages/codemod#readme",
   "bugs": {
     "url": "https://github.com/rxova/inputs/issues"
   }
