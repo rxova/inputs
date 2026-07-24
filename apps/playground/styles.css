@@ -1,0 +1,176 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+body {
+  margin: 0;
+  padding: 2rem;
+  max-width: 72rem;
+  margin-inline: auto;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+h1 {
+  font-size: 1.25rem;
+  font-family: ui-monospace, monospace;
+}
+h2 {
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.card {
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+.note {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0 0 0.75rem;
+}
+.demo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+.controls label.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: end;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+}
+.field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+/* The OTP field's transparent overlay input ([data-otp-input]) is positioned
+ * to sit exactly over its slots; adding padding/border/font here would shift its
+ * caret-to-glyph mapping and break spatial tap. It styles itself, so exclude it. */
+input:not([data-otp-input]),
+select {
+  padding: 0.45rem 0.6rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+input:not([data-otp-input])[aria-invalid='true'],
+input:not([data-otp-input])[data-invalid] {
+  border-color: #c0392b;
+  outline-color: #c0392b;
+}
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+.cell {
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.cell-head {
+  font-size: 0.85rem;
+}
+code {
+  font-family: ui-monospace, monospace;
+}
+.readout {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.readout dt {
+  opacity: 0.6;
+  font-size: 0.7rem;
+}
+.readout dd {
+  margin: 0;
+  font-size: 1rem;
+}
+.error {
+  color: #c0392b;
+  font-size: 0.8rem;
+  margin: 0;
+}
+button {
+  padding: 0.45rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+output {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+/* Rating (react-rating-input) token additions. */
+:root {
+  --rfs-size: 1.6rem;
+  --rfs-color-filled: #f5a623;
+}
+/* Proves the focus ring is a consumer concern and is not clipped by the fill. */
+[data-rfs-root] {
+  --rfs-focus-ring: 2px solid #0066cc;
+}
+
+/* OTP (react-otp-input) token additions. */
+:root {
+  --otp-slot-size: 2.75rem;
+  --otp-font-size: 1.25rem;
+}
+/* Proves the active ring and focus styling are consumer concerns via tokens. */
+[data-otp-root] {
+  --otp-active-ring: 2px solid #0066cc;
+}
+[data-otp-root]:focus-within {
+  outline: none;
+}
+[data-otp-slot] {
+  transition: box-shadow 120ms;
+}
+[data-otp-root][data-invalid] [data-otp-slot] {
+  border-color: #c0392b;
+}

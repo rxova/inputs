@@ -17,14 +17,14 @@ It parses `.ts` / `.tsx` / `.js` / `.jsx`.
 ## What it does
 
 | Before (`input-otp`)                                              | After (`@rxova/react-otp-input`)                    |
-| ----------------------------------------------------------------- | -------------------------------------------- |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
 | `import { OTPInput } from 'input-otp'`                            | `import { OtpInput } from '@rxova/react-otp-input'` |
-| `OTPInputProps`                                                   | `OtpInputProps`                              |
-| `SlotProps`                                                       | `OtpSlotState`                               |
-| `<OTPInput maxLength={6}>`                                        | `<OtpInput length={6}>`                      |
-| `containerClassName`                                              | `className`                                  |
-| `pushPasswordManagerStrategy`, `textAlign`, `noScriptCSSFallback` | _removed_ (no width hack, so unneeded)       |
-| `slot.placeholderChar`                                            | `slot.placeholder`                           |
+| `OTPInputProps`                                                   | `OtpInputProps`                                     |
+| `SlotProps`                                                       | `OtpSlotState`                                      |
+| `<OTPInput maxLength={6}>`                                        | `<OtpInput length={6}>`                             |
+| `containerClassName`                                              | `className`                                         |
+| `pushPasswordManagerStrategy`, `textAlign`, `noScriptCSSFallback` | _removed_ (no width hack, so unneeded)              |
+| `slot.placeholderChar`                                            | `slot.placeholder`                                  |
 
 - **Aliases are preserved.** `import { OTPInput as OTP }` keeps `OTP` at the call site; only the
   imported name and module change.

@@ -42,7 +42,8 @@ export default defineConfig(
   },
   {
     // Build/verify tooling is plain ESM JavaScript, outside the TS program.
-    files: ['scripts/**/*.mjs'],
+    // Lives in the private @rxova/utils package (and any top-level scripts/).
+    files: ['scripts/**/*.mjs', 'packages/utils/**/*.mjs'],
     languageOptions: { globals: globals.node, sourceType: 'module' },
     rules: { 'no-console': 'off' },
   },
@@ -62,7 +63,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['**/__tests__/**', 'e2e/**', 'apps/playground/**'],
+    files: ['**/__tests__/**', '**/e2e/**', 'apps/playground/**'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

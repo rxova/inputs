@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # `labeled`/`unlabeled` are added on top of the defaults (opened,
+    # synchronize, reopened) so that adding the `skip-changeset` label to an
+    # already-opened PR re-runs the `changeset present` gate instead of leaving
+    # its earlier failure stuck red until the next push.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+# Default to read-only; jobs opt into more where they need it.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: lint · types · format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run format:check
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+
+  unit:
+    name: unit (node ${{ matrix.node }})
+    # The changesets "version package" PR only edits version numbers and
+    # changelogs, so the source-level suites add no signal on it. `static` and
+    # `package` still run as a lightweight gate that the bumped packages still
+    # lint, build and pack.
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor here must match `engines.node` in the packages. Claiming a
+        # version we never run is worse than not claiming it.
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+
+      # Install always runs on a pnpm-compatible Node: pnpm 11 declares
+      # `engines.node >= 22.13` and imports `node:sqlite`, so installing under
+      # Node 20 crashes before a single test executes. That is a constraint of
+      # our package manager, not of the libraries, and it must not silently
+      # shrink the support matrix.
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Then switch to the Node under test and invoke each package's Vitest
+      # binary directly, bypassing pnpm (which would crash on Node 20). Vitest
+      # itself supports ^20 || ^22 || >=24.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Confirm the Node under test
+        run: node --version
+      - name: Unit suites (pure logic, no DOM)
+        run: |
+          set -e
+          for dir in react-intl-currency-input react-rating-input react-otp-input; do
+            echo "::group::$dir (unit)"
+            (cd "packages/$dir" && ./node_modules/.bin/vitest run --project unit)
+            echo "::endgroup::"
+          done
+          echo "::group::codemod-otp"
+          (cd packages/codemod-otp && ./node_modules/.bin/vitest run)
+          echo "::endgroup::"
+
+  browser:
+    name: browser + coverage
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # The browser binary is the slow part and only changes when Playwright
+      # does, so the cache key is the resolved version.
+      - uses: ./.github/actions/setup-playwright
+        with:
+          browsers: chromium
+
+      # Enforces 95% per file. A new file with thin tests fails here even when
+      # a package's average would still pass.
+      - run: pnpm run test:coverage
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: packages/*/coverage
+          if-no-files-found: ignore
+
+  e2e:
+    name: e2e
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-playwright
+
+      # `turbo run e2e` builds the shared playground once, then runs each
+      # package's Playwright suite against its own preview port.
+      - run: pnpm run e2e
+      - name: Upload Playwright reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            packages/*/playwright-report
+            packages/*/test-results
+          if-no-files-found: ignore
+
+  react-minimum:
+    name: react 18 (${{ matrix.pkg }})
+    # The peer range allows React 18, but the lockfile only ever installs 19, so
+    # without this the minimum supported version is an untested claim. Separate
+    # from the matrix because it rewrites the React version, which
+    # --frozen-lockfile forbids. One job per package so the pinned React does
+    # not race across the workspace.
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg: [react-intl-currency-input, react-rating-input, react-otp-input]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-playwright
+        with:
+          browsers: chromium
+      - name: Install the minimum supported React and re-run
+        run: pnpm --filter @rxova/${{ matrix.pkg }} test:react-min
+
+  package:
+    name: package contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run audit:check
+      - run: pnpm run dedupe:check
+      - run: pnpm run check:browsers
+      - run: pnpm run build
+      # publint and attw read the manifest; pack:smoke installs the real
+      # tarballs and imports them through both module systems.
+      - run: pnpm run check:exports
+      - run: pnpm run pack:smoke
+      - run: pnpm run size
+
+  changeset:
+    name: changeset present
+    # Skip the auto-generated version PR: it has already consumed every
+    # changeset, so `changeset status` would find none and fail the gate.
+    if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Require a changeset for user-facing changes
+        # Docs- and CI-only pull requests carry the `skip-changeset` label.
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changeset') }}
+        run: pnpm exec changeset status --since=origin/${{ github.event.pull_request.base.ref }}

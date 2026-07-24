@@ -3,27 +3,51 @@
   "version": "0.0.0",
   "type": "module",
   "description": "The complete rxova suite: currency, rating, and OTP inputs for React from a single install.",
-  "keywords": ["react", "input", "inputs", "currency", "rating", "otp", "headless", "accessible", "a11y", "rxova"],
+  "keywords": [
+    "react",
+    "input",
+    "inputs",
+    "currency",
+    "rating",
+    "otp",
+    "headless",
+    "accessible",
+    "a11y",
+    "rxova"
+  ],
   "license": "MIT",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
-      "import": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" },
-      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
-  "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
   "dependencies": {
     "@rxova/react-intl-currency-input": "workspace:^",
     "@rxova/react-rating-input": "workspace:^",
     "@rxova/react-otp-input": "workspace:^"
   },
-  "engines": { "node": ">=20.19.0" },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
@@ -42,12 +66,17 @@
     "typescript": "6.0.3",
     "vitest": "^4.1.10"
   },
-  "publishConfig": { "access": "public", "provenance": true },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rxova/inputs.git",
     "directory": "packages/react-inputs"
   },
-  "bugs": { "url": "https://github.com/rxova/inputs/issues" },
+  "bugs": {
+    "url": "https://github.com/rxova/inputs/issues"
+  },
   "homepage": "https://rxova.github.io/inputs/"
 }

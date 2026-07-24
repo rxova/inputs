@@ -22,11 +22,13 @@
     "playground:build": "turbo run build --filter=@rxova/playground",
     "docs": "turbo run start --filter=@rxova/docs",
     "docs:build": "turbo run build --filter=@rxova/docs",
-    "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui",
+    "e2e": "turbo run e2e",
     "e2e:install": "playwright install --with-deps chromium firefox webkit",
     "release": "turbo run build && changeset publish",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:docs": "node packages/utils/check-doc-snippets.mjs",
+    "check:browsers": "node packages/utils/check-browsers.mjs",
+    "verify": "node packages/utils/verify.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

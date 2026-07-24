@@ -31,6 +31,10 @@
       "dependsOn": ["build"],
       "outputs": []
     },
+    "e2e": {
+      "dependsOn": ["@rxova/playground#build"],
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true

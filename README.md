@@ -4,19 +4,19 @@ A suite of headless, accessible React input components, unified into one Turbore
 
 ## Packages
 
-| Package | What it is | Migrated from |
-| --- | --- | --- |
+| Package                                                                  | What it is                                    | Migrated from               |
+| ------------------------------------------------------------------------ | --------------------------------------------- | --------------------------- |
 | [`@rxova/react-intl-currency-input`](packages/react-intl-currency-input) | Locale-aware currency input (Intl formatting) | `react-intl-currency-input` |
-| [`@rxova/react-rating-input`](packages/react-rating-input) | Rating input (stars / any icon) | `react-feedback-stars` |
-| [`@rxova/react-otp-input`](packages/react-otp-input) | OTP / one-time-code input | `react-otp-slots` |
-| [`@rxova/react-inputs`](packages/react-inputs) | Meta-package — re-exports the whole suite | — |
+| [`@rxova/react-rating-input`](packages/react-rating-input)               | Rating input (stars / any icon)               | `react-feedback-stars`      |
+| [`@rxova/react-otp-input`](packages/react-otp-input)                     | OTP / one-time-code input                     | `react-otp-slots`           |
+| [`@rxova/react-inputs`](packages/react-inputs)                           | Meta-package — re-exports the whole suite     | —                           |
 
 ```ts
 // Targeted install
 import { CurrencyInput } from '@rxova/react-intl-currency-input'
 
 // Or the whole suite from one package
-import { CurrencyInput, RatingInput, OtpInput } from '@rxova/react-inputs'
+import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
 ```
 
 ## Apps

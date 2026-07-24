@@ -1,0 +1,11 @@
+{
+  "name": "@rxova/utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Private monorepo tooling: the release gate (verify), doc-snippet and Playwright browser-list checks, the tarball smoke test, and docs example capture. Scripts run from the repo root (see root package.json).",
+  "dependencies": {
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0"
+  }
+}

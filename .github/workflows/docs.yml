@@ -1,0 +1,40 @@
+name: Deploy docs to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - run: pnpm install --frozen-lockfile
+      # `docs:build` is a Turbo task: it builds the three component packages
+      # first (the docs import them for live examples), then runs the Docusaurus
+      # build, which regenerates the TypeDoc API reference from source.
+      - run: pnpm run docs:build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/docs/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

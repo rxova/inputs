@@ -5,7 +5,28 @@
   "type": "module",
   "description": "Shared playground for all rxova input components.",
   "scripts": {
-    "dev": "echo 'TODO: wire Vite playground for currency + rating + otp' && exit 0",
-    "build": "echo 'TODO: playground build' && exit 0"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rxova/react-intl-currency-input": "workspace:*",
+    "@rxova/react-rating-input": "workspace:*",
+    "@rxova/react-otp-input": "workspace:*",
+    "@tanstack/react-form": "^1.33.2",
+    "react-hook-form": "^7.82.0",
+    "formik": "^2.4.9",
+    "final-form": "^5.0.1",
+    "react-final-form": "^7.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.4",
+    "typescript": "6.0.3",
+    "vite": "^8.1.5"
   }
 }

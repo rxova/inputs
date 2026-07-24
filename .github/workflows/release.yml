@@ -1,0 +1,67 @@
+name: Release
+
+# Runs only after CI has gone green on main. CI already runs the full ordered
+# gate (lint, types, tests, coverage, e2e, package contract) on the exact commit
+# being released, so re-running the whole suite here would just duplicate it —
+# browsers and all. Gating on CI's success gives the same guarantee ("a push to
+# main cannot publish something a PR would have been blocked on") without
+# running the checks a second time.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: release-${{ github.ref }}
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    # workflow_run fires on both success and failure; only release when CI
+    # passed. Manual dispatch has no upstream run to gate on.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      # Disable Husky for the whole job. The changesets action makes a
+      # `chore: version packages` commit, which would otherwise fire the local
+      # `pre-commit` hook and run `test:coverage` — the browser project plus a
+      # 95% per-file threshold. This job deliberately never installs Playwright
+      # browsers (it trusts CI's already-green run rather than re-verifying), so
+      # the hook cannot launch chromium, coverage collapses below threshold, and
+      # the release dies. Skipping the hook restores the "trust CI" design.
+      HUSKY: '0'
+    permissions:
+      contents: write # version commit and tags
+      pull-requests: write # the version PR
+      # npm trusted publishing (OIDC): lets us publish with provenance and no
+      # long-lived NPM_TOKEN in the repository.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Check out main by name (not the workflow_run's detached SHA) so the
+          # changesets action knows its base branch when opening the version PR.
+          ref: main
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          registry-url: 'https://registry.npmjs.org'
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@^11.5.1
+      - run: pnpm install --frozen-lockfile
+
+      - name: Create version PR or publish
+        uses: changesets/action@v1
+        with:
+          # `pnpm run release` = turbo run build && changeset publish, so every
+          # changed package is built in dependency order before publishing.
+          version: pnpm exec changeset version
+          publish: pnpm run release
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
