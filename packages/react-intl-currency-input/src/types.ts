@@ -4,7 +4,6 @@ import type {
   ChangeEventHandler,
   KeyboardEventHandler,
   InputHTMLAttributes,
-  RefObject,
 } from 'react'
 
 /**
@@ -105,8 +104,13 @@ export interface UseCurrencyInputResult {
   /**
    * Attach to the underlying `<input>`. Required in `'live'` mode so the hook
    * can keep the caret in place while it reformats; harmless otherwise.
+   *
+   * Typed as a plain writable ref object rather than `RefObject`/`MutableRefObject`
+   * so it works across React 18 and 19: React 18's `RefObject.current` is
+   * readonly (breaks the internal bridge assignment) and React 19 deprecates
+   * `MutableRefObject`. A bare `{ current }` is writable and current on both.
    */
-  ref: RefObject<HTMLInputElement | null>
+  ref: { current: HTMLInputElement | null }
   /** The current parsed value. */
   value: number | null
   /** The string the input is currently displaying. */

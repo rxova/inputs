@@ -71,8 +71,8 @@ jobs:
             (cd "packages/$dir" && ./node_modules/.bin/vitest run --project unit)
             echo "::endgroup::"
           done
-          echo "::group::codemod-otp"
-          (cd packages/codemod-otp && ./node_modules/.bin/vitest run)
+          echo "::group::codemod"
+          (cd packages/codemod && ./node_modules/.bin/vitest run)
           echo "::endgroup::"
 
   browser:
