@@ -1,6 +1,6 @@
 # @rxova/react-inputs
 
-The complete [rxova](https://github.com/rxova/inputs) suite of headless, accessible React input components, from a single install.
+The complete [rxova](https://github.com/rxova/react-inputs) suite of headless, accessible React input components, from a single install.
 
 ```bash
 npm i @rxova/react-inputs

@@ -17,9 +17,9 @@ with **provenance** through **OIDC trusted publishing** — no long-lived `NPM_T
 
 ## One-time setup
 
-1. **Enable GitHub Actions** on `rxova/inputs` (Settings → Actions → General → allow actions).
+1. **Enable GitHub Actions** on `rxova/react-inputs` (Settings → Actions → General → allow actions).
 2. **Configure npm trusted publishing** for each `@rxova/*` package. On npmjs.com, per package
-   (Settings → _Trusted Publisher_): provider **GitHub Actions**, repository `rxova/inputs`,
+   (Settings → _Trusted Publisher_): provider **GitHub Actions**, repository `rxova/react-inputs`,
    workflow `release.yml`. The `@rxova` org must exist and you must be an owner/publisher on it.
    - If npm will not let you attach a trusted publisher to a name that has never been published,
      bootstrap that package once (see below), then add the trusted publisher and rely on OIDC

@@ -50,12 +50,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rxova/inputs.git",
+    "url": "git+https://github.com/rxova/react-inputs.git",
     "directory": "packages/codemod"
   },
-  "homepage": "https://github.com/rxova/inputs/tree/main/packages/codemod#readme",
+  "homepage": "https://github.com/rxova/react-inputs/tree/main/packages/codemod#readme",
   "bugs": {
-    "url": "https://github.com/rxova/inputs/issues"
+    "url": "https://github.com/rxova/react-inputs/issues"
   },
   "engines": {
     "node": ">=20.19.0"

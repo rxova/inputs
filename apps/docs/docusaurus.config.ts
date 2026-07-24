@@ -30,11 +30,11 @@ const config: Config = {
   favicon: 'img/logo.png',
 
   // Defaults keep the standalone build working; the rxova.org aggregator sets
-  // DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/inputs/.
+  // DOCS_URL / DOCS_BASE_URL to mount these docs under /packages/react-inputs/.
   url: process.env.DOCS_URL ?? 'https://rxova.github.io',
-  baseUrl: process.env.DOCS_BASE_URL ?? '/inputs/',
+  baseUrl: process.env.DOCS_BASE_URL ?? '/react-inputs/',
   organizationName: 'rxova',
-  projectName: 'inputs',
+  projectName: 'react-inputs',
   trailingSlash: false,
 
   onBrokenLinks: 'warn',
@@ -91,7 +91,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/rxova/inputs/tree/main/apps/docs/',
+          editUrl: 'https://github.com/rxova/react-inputs/tree/main/apps/docs/',
         },
         blog: false,
         theme: { customCss: './src/css/custom.css' },
@@ -102,6 +102,14 @@ const config: Config = {
   themeConfig: {
     navbar: {
       title: 'rxova',
+      // The brand (logo + title) links out to the rxova.org umbrella site rather
+      // than to the docs home.
+      logo: {
+        alt: 'rxova',
+        src: 'img/logo.png',
+        href: 'https://www.rxova.org',
+        target: '_self',
+      },
       // Lean top bar — the persistent left sidebar carries the component list.
       items: [
         {
@@ -117,7 +125,7 @@ const config: Config = {
           label: 'npm',
         },
         {
-          href: 'https://github.com/rxova/inputs',
+          href: 'https://github.com/rxova/react-inputs',
           position: 'right',
           label: 'GitHub',
         },

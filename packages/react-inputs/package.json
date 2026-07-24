@@ -73,11 +73,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rxova/inputs.git",
+    "url": "git+https://github.com/rxova/react-inputs.git",
     "directory": "packages/react-inputs"
   },
   "bugs": {
-    "url": "https://github.com/rxova/inputs/issues"
+    "url": "https://github.com/rxova/react-inputs/issues"
   },
-  "homepage": "https://rxova.github.io/inputs/"
+  "homepage": "https://rxova.github.io/react-inputs/"
 }

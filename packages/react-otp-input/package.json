@@ -95,13 +95,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rxova/inputs.git",
+    "url": "git+https://github.com/rxova/react-inputs.git",
     "directory": "packages/react-otp-input"
   },
   "bugs": {
-    "url": "https://github.com/rxova/inputs/issues"
+    "url": "https://github.com/rxova/react-inputs/issues"
   },
-  "homepage": "https://rxova.github.io/inputs/otp",
+  "homepage": "https://rxova.github.io/react-inputs/otp",
   "engines": {
     "node": ">=20.19.0"
   }

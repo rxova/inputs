@@ -9,7 +9,7 @@ function Harness() {
     <>
       <header>
         <h1>Currency input</h1>
-        <a href="https://github.com/rxova/inputs">GitHub</a>
+        <a href="https://github.com/rxova/react-inputs">GitHub</a>
       </header>
       <CurrencyDemos />
     </>

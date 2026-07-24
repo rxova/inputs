@@ -1,7 +1,7 @@
 # @rxova/codemod
 
 [jscodeshift](https://github.com/facebook/jscodeshift) codemods for migrating onto the
-[rxova](https://github.com/rxova/inputs) input suite. One CLI, one transform per migration.
+[rxova](https://github.com/rxova/react-inputs) input suite. One CLI, one transform per migration.
 
 ```bash
 # list available transforms
@@ -42,7 +42,7 @@ Migrates [`input-otp`](https://github.com/guilhermerodz/input-otp) usage to
   render-prop tier and the per-slot shape is compatible, so your render function keeps working.
   Converting it into the compound `<OtpGroup>` / `<OtpSlot>` API can't be done reliably by an AST
   transform, so it stays a manual step — the codemod adds a one-line banner pointing at the
-  [migration guide](https://rxova.github.io/inputs/otp/migration/from-input-otp).
+  [migration guide](https://rxova.github.io/react-inputs/migrating/from-input-otp).
 
 Always review the diff (`--dry` first) and re-run your formatter afterwards.
 
