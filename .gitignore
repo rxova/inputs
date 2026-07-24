@@ -1,0 +1,21 @@
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.turbo/
+.vitest-attachments/
+# Vitest browser failure screenshots. No visual-regression baselines are
+# committed yet; when toMatchScreenshot lands, un-ignore the baseline dir.
+**/__screenshots__/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+apps/playground/dist/
+apps/docs/.docusaurus/
+apps/docs/docs/api/
+test-results/
+playwright-report/
+.pw-browsers/
+pw-browsers/

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Only `node` — for `process.env.NODE_ENV` in the dev-check guard. The point
+    // is still to keep the test/build globals (vitest, vite/client) out of the
+    // TypeDoc program so they never leak into the generated API reference.
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["src/__tests__"]
+}

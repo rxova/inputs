@@ -1,0 +1,11 @@
+{
+  "name": "@rxova/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared Docusaurus docs site for the rxova input suite.",
+  "scripts": {
+    "start": "echo 'TODO: wire Docusaurus docs for the rxova suite' && exit 0",
+    "build": "echo 'TODO: docs build' && exit 0"
+  }
+}

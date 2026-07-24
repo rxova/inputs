@@ -1,0 +1,11 @@
+{
+  "name": "@rxova/playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared playground for all rxova input components.",
+  "scripts": {
+    "dev": "echo 'TODO: wire Vite playground for currency + rating + otp' && exit 0",
+    "build": "echo 'TODO: playground build' && exit 0"
+  }
+}

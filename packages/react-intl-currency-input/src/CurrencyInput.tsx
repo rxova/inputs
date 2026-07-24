@@ -1,0 +1,105 @@
+import { forwardRef, useCallback } from 'react'
+import type { ChangeEvent, FocusEvent } from 'react'
+import { useCurrencyInput } from './useCurrencyInput'
+import type { CurrencyInputProps } from './types'
+
+/**
+ * A localized currency `<input>`. By default it formats as you type
+ * (`formatMode="live"`) with a stable caret; `formatMode="blur"` shows a plain
+ * number while focused instead. Emits a `number` (or `null`) through
+ * `onValueChange`.
+ *
+ * `ref` forwards to the underlying `<input>`. React 19 passes `ref` as a normal
+ * prop; `forwardRef` keeps the React 18 peer working.
+ */
+export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
+  function CurrencyInput(props, ref) {
+    const {
+      // locale + formatting options (consumed by the hook)
+      locale,
+      language,
+      country,
+      currency,
+      value,
+      defaultValue,
+      onValueChange,
+      maximumFractionDigits,
+      minimumFractionDigits,
+      currencyDisplay,
+      numberingSystem,
+      allowNegative,
+      step,
+      transformRawValue,
+      formatMode,
+      // presentation / passthrough
+      invalid,
+      onFocus,
+      onBlur,
+      onChange,
+      onKeyDown,
+      className,
+      style,
+      ...rest
+    } = props
+
+    const { inputProps, ref: hookRef } = useCurrencyInput({
+      locale,
+      language,
+      country,
+      currency,
+      value,
+      defaultValue,
+      onValueChange,
+      maximumFractionDigits,
+      minimumFractionDigits,
+      currencyDisplay,
+      numberingSystem,
+      allowNegative,
+      step,
+      transformRawValue,
+      formatMode,
+    })
+
+    // Live mode manages the caret through the hook's ref, so point both the
+    // hook's ref and any forwarded ref at the same node.
+    const setRef = useCallback(
+      (node: HTMLInputElement | null) => {
+        hookRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      },
+      [hookRef, ref],
+    )
+
+    return (
+      <input
+        {...rest}
+        ref={setRef}
+        className={className}
+        style={style}
+        type="text"
+        inputMode="decimal"
+        autoComplete={rest.autoComplete ?? 'off'}
+        aria-invalid={invalid ? true : undefined}
+        data-invalid={invalid ? '' : undefined}
+        value={inputProps.value}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          inputProps.onChange(event)
+          onChange?.(event)
+        }}
+        onFocus={(event: FocusEvent<HTMLInputElement>) => {
+          inputProps.onFocus(event)
+          onFocus?.(event)
+        }}
+        onBlur={(event: FocusEvent<HTMLInputElement>) => {
+          inputProps.onBlur(event)
+          onBlur?.(event)
+        }}
+        onKeyDown={(event) => {
+          inputProps.onKeyDown(event)
+          onKeyDown?.(event)
+        }}
+      />
+    )
+  },
+)

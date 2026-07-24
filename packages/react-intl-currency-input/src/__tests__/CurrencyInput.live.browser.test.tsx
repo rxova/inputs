@@ -1,0 +1,224 @@
+import { describe, expect, it, vi } from 'vitest'
+import { useRef, useState } from 'react'
+import { page, userEvent } from 'vitest/browser'
+import { render } from 'vitest-browser-react'
+import { CurrencyInput } from '../CurrencyInput'
+import type { CurrencyInputProps } from '../types'
+
+/**
+ * The default `formatMode="live"` suite: the field formats as you type — grouping
+ * and the symbol stay visible — and the caret is preserved. Caret position is a
+ * real browser concern (jsdom's selection model is fiction), so this runs in a
+ * real Chromium.
+ */
+
+function Controlled(
+  props: Omit<CurrencyInputProps, 'value' | 'onValueChange'> & { initial?: number | null },
+) {
+  const { initial = null, ...rest } = props
+  const [value, setValue] = useState<number | null>(initial)
+  return <CurrencyInput {...rest} value={value} onValueChange={setValue} aria-label="amount" />
+}
+
+const box = () => page.getByRole('textbox', { name: 'amount' })
+const inputEl = () => box().element() as HTMLInputElement
+
+describe('formats as you type', () => {
+  it('inserts group separators and the symbol live', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234567')
+    await expect.poll(() => inputEl().value).toBe('$1,234,567')
+  })
+
+  it('keeps the amount formatted while focused (not a plain number)', async () => {
+    await render(<Controlled locale="en-US" currency="USD" initial={1234.5} />)
+    await userEvent.click(box())
+    await expect.poll(() => inputEl().value).toBe('$1,234.5')
+  })
+
+  it('reveals the Bulgarian space only above 9999, live', async () => {
+    await render(<Controlled locale="bg-BG" currency="BGN" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '5000')
+    await expect.poll(() => inputEl().value).toContain('5000')
+    await userEvent.type(box(), '0')
+    await expect.poll(() => inputEl().value).toMatch(/50\s?000/)
+    await expect.poll(() => inputEl().value).not.toContain('50000')
+  })
+
+  it('uses German grouping and comma decimal live', async () => {
+    await render(<Controlled locale="de-DE" currency="EUR" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234567,8')
+    // The space before € is a non-breaking space in de-DE, so match loosely.
+    await expect.poll(() => inputEl().value).toMatch(/^1\.234\.567,8\s€$/)
+  })
+
+  it('keeps a trailing decimal while typing', async () => {
+    const onValueChange = vi.fn()
+    await render(
+      <CurrencyInput
+        locale="en-US"
+        currency="USD"
+        onValueChange={onValueChange}
+        aria-label="amount"
+      />,
+    )
+    await userEvent.click(box())
+    await userEvent.type(box(), '12.')
+    await expect.poll(() => inputEl().value).toBe('$12.')
+    expect(onValueChange).toHaveBeenLastCalledWith(12, expect.anything())
+  })
+
+  it('emits the parsed number on each keystroke', async () => {
+    const onValueChange = vi.fn()
+    await render(
+      <CurrencyInput
+        locale="en-US"
+        currency="USD"
+        onValueChange={onValueChange}
+        aria-label="amount"
+      />,
+    )
+    await userEvent.click(box())
+    await userEvent.type(box(), '50000')
+    expect(onValueChange).toHaveBeenLastCalledWith(50000, expect.objectContaining({ value: 50000 }))
+  })
+
+  it('drops the decimal key for a zero-fraction currency (JPY)', async () => {
+    await render(<Controlled locale="ja-JP" currency="JPY" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234')
+    await expect.poll(() => inputEl().value).toBe('￥1,234')
+    await userEvent.type(box(), '.')
+    await expect.poll(() => inputEl().value).toBe('￥1,234')
+  })
+
+  it('formats a negative amount live when allowNegative', async () => {
+    await render(<Controlled locale="en-US" currency="USD" allowNegative />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '-1234')
+    await expect.poll(() => inputEl().value).toBe('-$1,234')
+  })
+
+  it('rejects letters mid-stream', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '12ab34')
+    await expect.poll(() => inputEl().value).toBe('$1,234')
+  })
+})
+
+describe('more live behaviours', () => {
+  it('steps with the arrow keys and stays formatted (controlled)', async () => {
+    // Controlled so the increment flows through the parent's value.
+    await render(<Controlled locale="en-US" currency="USD" initial={1234} step={1} />)
+    await userEvent.click(box())
+    await userEvent.keyboard('{ArrowUp}')
+    await expect.poll(() => inputEl().value).toBe('$1,235')
+    await userEvent.keyboard('{ArrowDown}')
+    await expect.poll(() => inputEl().value).toBe('$1,234')
+  })
+
+  it('applies transformRawValue before formatting', async () => {
+    await render(
+      <Controlled locale="en-US" currency="USD" transformRawValue={(r) => r.replace(/_/g, '')} />,
+    )
+    await userEvent.click(box())
+    await userEvent.type(box(), '1_234')
+    await expect.poll(() => inputEl().value).toBe('$1,234')
+  })
+
+  it('clears back to an empty field', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '5')
+    await expect.poll(() => inputEl().value).toBe('$5')
+    await userEvent.keyboard('{Backspace}')
+    await expect.poll(() => inputEl().value).toBe('')
+  })
+})
+
+describe('caret preservation', () => {
+  it('lands the caret after the digit just typed at the end', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234')
+    // "$1,234" — caret should sit at the end (after the 4), index 6.
+    await expect.poll(() => inputEl().value).toBe('$1,234')
+    await expect.poll(() => inputEl().selectionStart).toBe(6)
+  })
+
+  it('keeps the caret next to the digit when inserting in the middle', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234')
+    // Jump to the start and insert a 9: "$91,234", caret right after the 9.
+    await userEvent.keyboard('{Home}9')
+    await expect.poll(() => inputEl().value).toBe('$91,234')
+    // "$9|1,234" → index 2.
+    await expect.poll(() => inputEl().selectionStart).toBe(2)
+  })
+
+  it('Backspace onto a group separator deletes the digit, not the separator', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234') // "$1,234"
+    // Move caret to just after the comma: Home, then Right x3 → index 3 ("$1,|234").
+    await userEvent.keyboard('{Home}{ArrowRight}{ArrowRight}{ArrowRight}{Backspace}')
+    // Deleting across the separator removes the "1": "$234".
+    await expect.poll(() => inputEl().value).toBe('$234')
+  })
+})
+
+describe('ref forwarding', () => {
+  it('populates an object ref while driving the caret', async () => {
+    function WithObjectRef() {
+      const ref = useRef<HTMLInputElement | null>(null)
+      const [value, setValue] = useState<number | null>(null)
+      return (
+        <>
+          <CurrencyInput
+            ref={ref}
+            locale="en-US"
+            currency="USD"
+            value={value}
+            onValueChange={setValue}
+            aria-label="amount"
+          />
+          <button type="button" onClick={() => (ref.current!.value = ref.current?.value ?? '')}>
+            noop
+          </button>
+        </>
+      )
+    }
+    await render(<WithObjectRef />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234')
+    await expect.poll(() => inputEl().value).toBe('$1,234')
+  })
+})
+
+describe('paste', () => {
+  it('reformats a fully formatted amount pasted in', async () => {
+    const onValueChange = vi.fn()
+    await render(
+      <CurrencyInput
+        locale="fr-FR"
+        currency="EUR"
+        onValueChange={onValueChange}
+        aria-label="amount"
+      />,
+    )
+    await userEvent.click(box())
+    const formatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+    }).format(1234567.89)
+    await userEvent.fill(box(), formatted)
+    expect(onValueChange).toHaveBeenLastCalledWith(1234567.89, expect.anything())
+    await expect.poll(() => inputEl().value).toMatch(/1.234.567,89/)
+  })
+})

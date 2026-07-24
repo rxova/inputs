@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -e
+
+# The same ordered gate CI runs, so a green push means a green pipeline.
+# Turbo caches unchanged tasks, so re-runs are cheap.
+pnpm run lint
+pnpm run typecheck
+pnpm run test:coverage
+pnpm run build
+pnpm run size
+pnpm run check:exports

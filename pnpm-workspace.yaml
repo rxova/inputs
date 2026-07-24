@@ -1,0 +1,22 @@
+packages:
+  - packages/*
+  - apps/*
+overrides:
+  # The docs app's build tooling (Docusaurus -> webpack plugins) resolves a
+  # vulnerable serialize-javascript (RCE + DoS advisories). Force the patched
+  # line; the API is unchanged, and this is dev-only build tooling that never
+  # ships in any published package.
+  serialize-javascript: '>=7.0.5'
+  # sockjs has no patched release and still requests uuid 8.x through the docs
+  # dev server, so force the first version containing the bounds-check fix.
+  uuid: 11.1.1
+allowBuilds:
+  core-js: false
+  esbuild: true
+minimumReleaseAgeExclude:
+  - '@vitejs/plugin-react@6.0.4'
+  # Reviewed dependency upgrades requested before the 24-hour quarantine ends.
+  # Exact pins keep the exception from applying to later releases.
+  - lint-staged@17.2.0
+  - tsdown@0.22.14
+  - verkit@0.3.0

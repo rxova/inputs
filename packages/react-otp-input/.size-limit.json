@@ -1,0 +1,16 @@
+[
+  {
+    "name": "OtpInput (full import)",
+    "path": "dist/index.mjs",
+    "import": "{ OtpInput }",
+    "limit": "4.5 kB",
+    "ignore": ["react", "react/jsx-runtime"]
+  },
+  {
+    "name": "useOtpInput (headless only)",
+    "path": "dist/index.mjs",
+    "import": "{ useOtpInput }",
+    "limit": "2.5 kB",
+    "ignore": ["react", "react/jsx-runtime"]
+  }
+]

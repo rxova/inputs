@@ -1,0 +1,358 @@
+import { describe, expect, it, vi } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
+import { render } from 'vitest-browser-react'
+import { useRef, useState } from 'react'
+import { OtpInput } from '../OtpInput'
+import { OtpGroup } from '../OtpGroup'
+import { OtpSlot } from '../OtpSlot'
+import { OtpSeparator } from '../OtpSeparator'
+
+/** The one real field. */
+function input(): HTMLInputElement {
+  return page.getByRole('textbox').element() as HTMLInputElement
+}
+
+/** Visible characters, read from the painted slots — what the user actually sees. */
+function slotChars(container: HTMLElement): string[] {
+  return [...container.querySelectorAll('[data-otp-slot]')].map((el) => el.textContent ?? '')
+}
+
+/** Dispatch a real paste carrying `text`, exercising the onPaste path (not just an input event). */
+function firePaste(el: HTMLInputElement, text: string): void {
+  const data = new DataTransfer()
+  data.setData('text', text)
+  el.dispatchEvent(
+    new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+  )
+}
+
+/** Controlled wrapper so onChange actually round-trips to the value prop. */
+function Controlled(props: Partial<React.ComponentProps<typeof OtpInput>> = {}) {
+  const [value, setValue] = useState('')
+  return <OtpInput label="Code" value={value} onChange={setValue} {...props} />
+}
+
+describe('rendering', () => {
+  it('renders one textbox and `length` decorative slots', async () => {
+    const { container } = await render(<OtpInput length={6} label="Code" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-otp-slot]')).toHaveLength(6)
+    // Exactly one accessible field — never "1 of 6" repeated.
+    expect(page.getByRole('textbox').elements()).toHaveLength(1)
+  })
+
+  it('honours a custom length', async () => {
+    const { container } = await render(<OtpInput length={4} label="Code" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-otp-slot]')).toHaveLength(4)
+  })
+})
+
+describe('typing', () => {
+  it('distributes typed characters across slots', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('123')
+    expect(slotChars(container).slice(0, 3)).toEqual(['1', '2', '3'])
+    expect(input().value).toBe('123')
+  })
+
+  it('rejects characters the mode disallows', async () => {
+    const { container } = await render(<Controlled length={6} mode="numeric" />)
+    await input().focus()
+    await userEvent.keyboard('1a2b3')
+    expect(input().value).toBe('123')
+    expect(slotChars(container).slice(0, 3)).toEqual(['1', '2', '3'])
+  })
+
+  it('stops at the slot count', async () => {
+    await render(<Controlled length={4} />)
+    await input().focus()
+    await userEvent.keyboard('1234567')
+    expect(input().value).toBe('1234')
+  })
+
+  it('uppercases via transform for alphanumeric codes', async () => {
+    await render(<Controlled length={4} mode="alphanumeric" transform={(s) => s.toUpperCase()} />)
+    await input().focus()
+    await userEvent.keyboard('ab12')
+    expect(input().value).toBe('AB12')
+  })
+})
+
+describe('paste', () => {
+  it('strips separators from a formatted code and distributes it', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    firePaste(el, '123-456')
+    await vi.waitFor(() => {
+      expect(input().value).toBe('123456')
+    })
+    expect(slotChars(container)).toEqual(['1', '2', '3', '4', '5', '6'])
+  })
+
+  it('truncates an over-length paste', async () => {
+    await render(<Controlled length={4} />)
+    const el = input()
+    await el.focus()
+    firePaste(el, '123456789')
+    await vi.waitFor(() => {
+      expect(input().value).toBe('1234')
+    })
+  })
+
+  it('replaces the current selection', async () => {
+    await render(<Controlled length={6} defaultValue="" />)
+    const el = input()
+    await el.focus()
+    await userEvent.keyboard('123456')
+    el.setSelectionRange(1, 4)
+    firePaste(el, '9')
+    await vi.waitFor(() => {
+      expect(input().value).toBe('1956')
+    })
+  })
+})
+
+describe('IME composition', () => {
+  it('does not commit mid-composition, and commits the result on compositionend', async () => {
+    const onChange = vi.fn()
+    const { container } = await render(
+      <OtpInput length={6} defaultValue="" onChange={onChange} label="Code" />,
+    )
+    const el = input()
+    await el.focus()
+
+    // Composition begins; the input holds not-yet-converted text.
+    el.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))
+    el.value = '5'
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+    // The intermediate input event is ignored while composing.
+    expect(onChange).not.toHaveBeenCalled()
+    expect(slotChars(container)[0]).toBe('')
+
+    // Composition ends with a committed value.
+    el.value = '5'
+    el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))
+    await vi.waitFor(() => {
+      expect(input().value).toBe('5')
+    })
+    expect(onChange).toHaveBeenCalledWith('5')
+  })
+
+  it('resumes normal per-keystroke commits after composition', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    el.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))
+    el.value = '1'
+    el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))
+    await vi.waitFor(() => {
+      expect(input().value).toBe('1')
+    })
+    // Plain typing after composition works as usual.
+    await userEvent.keyboard('23')
+    expect(slotChars(container).slice(0, 3)).toEqual(['1', '2', '3'])
+  })
+})
+
+describe('backspace', () => {
+  it('deletes the last character', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('123')
+    await userEvent.keyboard('{Backspace}')
+    expect(input().value).toBe('12')
+    expect(slotChars(container).slice(0, 3)).toEqual(['1', '2', ''])
+  })
+})
+
+describe('completion', () => {
+  it('fires onComplete once when the value fills', async () => {
+    const onComplete = vi.fn()
+    await render(<Controlled length={4} onComplete={onComplete} />)
+    await input().focus()
+    await userEvent.keyboard('123')
+    expect(onComplete).not.toHaveBeenCalled()
+    await userEvent.keyboard('4')
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('1234')
+  })
+
+  it('blurs on completion when asked', async () => {
+    await render(<Controlled length={4} blurOnComplete />)
+    const el = input()
+    await el.focus()
+    expect(document.activeElement).toBe(el)
+    await userEvent.keyboard('1234')
+    await vi.waitFor(() => {
+      expect(document.activeElement).not.toBe(el)
+    })
+  })
+})
+
+describe('controlled value', () => {
+  it('sanitizes a garbage controlled value for display', async () => {
+    const { container } = await render(
+      <OtpInput length={6} value={'12ab34' as string} label="Code" />,
+    )
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(input().value).toBe('1234')
+    expect(slotChars(container).slice(0, 4)).toEqual(['1', '2', '3', '4'])
+  })
+})
+
+describe('mask & placeholder', () => {
+  it('masks filled characters', async () => {
+    const { container } = await render(<OtpInput length={4} value="12" mask label="Code" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(slotChars(container).slice(0, 2)).toEqual(['•', '•'])
+  })
+
+  it('shows a placeholder on empty slots only', async () => {
+    const { container } = await render(
+      <OtpInput length={4} value="1" placeholder="·" label="Code" />,
+    )
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(slotChars(container)).toEqual(['1', '·', '·', '·'])
+  })
+})
+
+describe('compound & render-prop tiers', () => {
+  it('renders groups and a separator, and still distributes typing', async () => {
+    const { container } = await render(
+      <Controlled length={6}>
+        <OtpGroup>
+          <OtpSlot index={0} />
+          <OtpSlot index={1} />
+          <OtpSlot index={2} />
+        </OtpGroup>
+        <OtpSeparator>–</OtpSeparator>
+        <OtpGroup>
+          <OtpSlot index={3} />
+          <OtpSlot index={4} />
+          <OtpSlot index={5} />
+        </OtpGroup>
+      </Controlled>,
+    )
+    expect(container.querySelectorAll('[data-otp-group]')).toHaveLength(2)
+    expect(container.querySelector('[data-otp-separator]')?.textContent).toBe('–')
+    await input().focus()
+    await userEvent.keyboard('123456')
+    expect(slotChars(container)).toEqual(['1', '2', '3', '4', '5', '6'])
+  })
+
+  it('lets a slot override its own glyph via children', async () => {
+    const { container } = await render(
+      <OtpInput length={2} value="1" label="Code">
+        <OtpSlot index={0}>X</OtpSlot>
+        <OtpSlot index={1} />
+      </OtpInput>,
+    )
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(container.querySelectorAll('[data-otp-slot]')[0]?.textContent).toBe('X')
+  })
+
+  it('renders an out-of-range slot as empty instead of crashing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { container } = await render(
+      <OtpInput length={2} label="Code">
+        <OtpSlot index={0} />
+        <OtpSlot index={5} />
+      </OtpInput>,
+    )
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    const slots = container.querySelectorAll('[data-otp-slot]')
+    expect(slots[1]?.textContent).toBe('')
+    warn.mockRestore()
+  })
+
+  it('drives a fully custom render prop', async () => {
+    const { container } = await render(
+      <Controlled
+        length={4}
+        render={({ slots }) => (
+          <div data-custom>
+            {slots.map((s) => (
+              <span key={s.index} data-cell>
+                {s.char ?? '.'}
+              </span>
+            ))}
+          </div>
+        )}
+      />,
+    )
+    await input().focus()
+    await userEvent.keyboard('12')
+    const cells = [...container.querySelectorAll('[data-cell]')].map((c) => c.textContent)
+    expect(cells).toEqual(['1', '2', '.', '.'])
+  })
+})
+
+describe('refs', () => {
+  it('forwards the ref and inputRef to the same underlying input (the focusable element)', async () => {
+    const captured: { fromRef: HTMLElement | null; fromInputRef: HTMLInputElement | null } = {
+      fromRef: null,
+      fromInputRef: null,
+    }
+    function Harness() {
+      const inputRef = useRef<HTMLInputElement | null>(null)
+      return (
+        <OtpInput
+          length={4}
+          label="Code"
+          ref={(node) => {
+            captured.fromRef = node
+          }}
+          inputRef={inputRef}
+        />
+      )
+    }
+    await render(<Harness />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    // The forwarded ref targets the input, so focus/select/value work on it.
+    expect(captured.fromRef?.getAttribute('data-otp-input')).toBe('')
+    captured.fromInputRef = captured.fromRef as HTMLInputElement | null
+    captured.fromInputRef?.focus()
+    expect(document.activeElement).toBe(captured.fromInputRef)
+  })
+
+  it('populates an object ref with the input', async () => {
+    const ref = { current: null as HTMLInputElement | null }
+    await render(<OtpInput length={4} label="Code" ref={ref} />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    expect(ref.current?.getAttribute('data-otp-input')).toBe('')
+  })
+})
+
+describe('disabled & readonly', () => {
+  it('disables the input', async () => {
+    await render(<OtpInput length={4} disabled value="12" label="Code" />)
+    await expect.element(page.getByRole('textbox')).toBeDisabled()
+  })
+
+  it('marks the input read-only', async () => {
+    await render(<OtpInput length={4} readOnly value="12" label="Code" />)
+    await expect.element(page.getByRole('textbox')).toHaveAttribute('readonly')
+  })
+})
+
+describe('spatial vs crush layout', () => {
+  it('spreads the glyphs to the slot pitch in spatial mode', async () => {
+    await render(<OtpInput length={6} value="123456" label="Code" slotInteraction="spatial" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    await vi.waitFor(() => {
+      // A positive letter-spacing means the characters were spread to real slot
+      // positions — the precondition for tapping a middle slot.
+      expect(parseFloat(input().style.letterSpacing)).toBeGreaterThan(0)
+    })
+  })
+
+  it('collapses the glyphs in crush mode', async () => {
+    await render(<OtpInput length={6} value="123456" label="Code" slotInteraction="crush" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    await vi.waitFor(() => {
+      expect(input().style.letterSpacing).toBe('-1em')
+    })
+  })
+})
