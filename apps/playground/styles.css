@@ -95,7 +95,10 @@ input:not([data-otp-input])[data-invalid] {
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  /* Six OTP slots need more room than the other demos. Keep cards wide enough
+   * for the grouped 123–456 example while still collapsing to one column when
+   * the viewport cannot support multiple cards. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 23rem), 1fr));
 }
 .cell {
   border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
@@ -173,4 +176,18 @@ output {
 }
 [data-otp-root][data-invalid] [data-otp-slot] {
   border-color: #c0392b;
+}
+
+/* Preserve all six slots on narrow phones instead of letting the fixed-size
+ * row paint outside its card. These are consumer-side design tokens; the OTP
+ * package itself remains headless and keeps its normal defaults. */
+@media (max-width: 25rem) {
+  body {
+    padding: 1rem;
+  }
+
+  :root {
+    --otp-slot-size: clamp(1.75rem, 9vw, 2.25rem);
+    --otp-gap: clamp(0.25rem, 2vw, 0.5rem);
+  }
 }

@@ -27,6 +27,24 @@ test.describe('display', () => {
     await expect(section.locator('[data-otp-separator]')).toHaveText('–')
   })
 
+  test('keeps every OTP row inside its card at desktop and phone widths', async ({ page }) => {
+    for (const width of [1280, 768, 320]) {
+      await page.setViewportSize({ width, height: 900 })
+
+      const overflowingRows = await page
+        .locator('[data-otp-root]')
+        .evaluateAll((roots) =>
+          roots.flatMap((root, index) =>
+            root.scrollWidth > root.clientWidth
+              ? [{ index, width: root.clientWidth, scrollWidth: root.scrollWidth }]
+              : [],
+          ),
+        )
+
+      expect(overflowingRows, `OTP rows overflowing at a ${String(width)}px viewport`).toEqual([])
+    }
+  })
+
   test('masks filled characters', async ({ page }) => {
     expect((await slotChars(page, 'masked')).slice(0, 4)).toEqual(['•', '•', '•', '•'])
   })
