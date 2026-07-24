@@ -11,31 +11,56 @@
       // webpack module resolution (stale @theme/Debug* refs). Only build/** (the
       // static site) and dist/** (library builds) are real, portable outputs.
       "outputs": ["dist/**", "build/**"],
-      "env": ["DOCS_URL", "DOCS_BASE_URL"]
+      // A library build only reads src + build config. Excluding e2e/tests/demo/
+      // docs-adjacent files keeps editing them from busting the build cache
+      // (they can't affect dist). $TURBO_DEFAULT$ keeps the normal file set.
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!e2e/**",
+        "!demo/**",
+        "!**/__tests__/**",
+        "!**/*.test.*",
+        "!**/*.browser.test.*",
+        "!**/__screenshots__/**",
+        "!README.md",
+        "!CHANGELOG.md"
+      ],
+      "env": ["DOCS_URL", "DOCS_BASE_URL"],
+      "outputLogs": "new-only"
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "new-only"
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "new-only"
     },
     "test:coverage": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "outputLogs": "new-only"
     },
     "check:exports": {
       "dependsOn": ["build"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "new-only"
     },
     "pack:smoke": {
       "dependsOn": ["build"],
-      "outputs": []
+      "outputs": [],
+      // The smoke test logic lives in the shared packages/utils/pack-smoke.mjs,
+      // outside each package — include it so editing it invalidates the cache
+      // instead of silently replaying an old pass.
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/utils/pack-smoke.mjs"],
+      "outputLogs": "new-only"
     },
     "size": {
       "dependsOn": ["build"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "new-only"
     },
     "e2e": {
       "cache": false

@@ -11,7 +11,11 @@ const typedocDefaults = {
   readme: 'none',
   indexFormat: 'table',
   parametersFormat: 'table',
-  interfacePropertiesFormat: 'table',
+  // Interface properties render as headings (not a table): TypeDoc's inherited
+  // cross-references link to `#property-<name>`, and only heading anchors are
+  // recognized by Docusaurus's anchor checker (raw HTML `id=` from tables is
+  // not). 'list' makes those anchors real and resolvable.
+  interfacePropertiesFormat: 'list',
   enumMembersFormat: 'table',
   useCodeBlocks: true,
   disableSources: true,
@@ -79,6 +83,11 @@ const config: Config = {
     [
       'classic',
       {
+        // The debug plugin (dev-only inspector, @theme/Debug*) is what intermittently
+        // fails the production build under concurrent `turbo run build` — its theme
+        // modules land in the generated registry but aren't resolvable in a prod
+        // build. We never need it, so disable it outright.
+        debug: false,
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',

@@ -42,8 +42,8 @@ pnpm test             # turbo run test
 pnpm typecheck        # turbo run typecheck
 pnpm lint
 pnpm dev              # shared playground
-pnpm docs             # shared docs site
-pnpm changeset        # stage a release
+pnpm run docs         # shared docs site (pnpm run: `docs` can shadow a pnpm builtin)
+pnpm exec changeset   # stage a release
 ```
 
 ## Status

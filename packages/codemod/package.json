@@ -27,6 +27,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
+    "check:exports": "publint --strict && attw --pack .",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepack": "pnpm build"
@@ -35,8 +36,10 @@
     "jscodeshift": "^17.1.2"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@types/jscodeshift": "^17.3.0",
     "@types/node": "^26.1.1",
+    "publint": "^0.3.22",
     "tsdown": "^0.22.13",
     "typescript": "6.0.3",
     "vitest": "^4.1.10"
@@ -53,5 +56,8 @@
   "homepage": "https://github.com/rxova/inputs/tree/main/packages/codemod#readme",
   "bugs": {
     "url": "https://github.com/rxova/inputs/issues"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

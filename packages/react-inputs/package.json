@@ -52,6 +52,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "check:exports": "publint --strict && attw --pack .",
+    "size": "size-limit",
     "prepack": "pnpm build"
   },
   "devDependencies": {

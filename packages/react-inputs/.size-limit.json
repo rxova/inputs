@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Whole suite ({ CurrencyInput, Rating, OtpInput })",
+    "path": "dist/index.mjs",
+    "import": "{ CurrencyInput, Rating, OtpInput }",
+    "limit": "10 kB",
+    "ignore": ["react", "react-dom", "react/jsx-runtime"]
+  },
+  {
+    "name": "One component, tree-shaken ({ OtpInput })",
+    "path": "dist/index.mjs",
+    "import": "{ OtpInput }",
+    "limit": "5 kB",
+    "ignore": ["react", "react-dom", "react/jsx-runtime"]
+  }
+]

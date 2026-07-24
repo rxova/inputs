@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { run as jscodeshift } from 'jscodeshift/src/Runner'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'

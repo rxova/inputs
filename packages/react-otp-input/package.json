@@ -101,5 +101,8 @@
   "bugs": {
     "url": "https://github.com/rxova/inputs/issues"
   },
-  "homepage": "https://rxova.github.io/inputs/otp"
+  "homepage": "https://rxova.github.io/inputs/otp",
+  "engines": {
+    "node": ">=20.19.0"
+  }
 }
