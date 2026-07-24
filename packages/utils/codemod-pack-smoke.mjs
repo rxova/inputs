@@ -69,12 +69,12 @@ try {
 
   const executable = join(consumer, 'node_modules', '.bin', 'rxova-codemod')
   const help = spawnSync(executable, ['--help'], { cwd: consumer, encoding: 'utf8' })
+  const helpBefore = failures
   if (help.status !== 0) fail(`installed CLI --help exited with ${String(help.status)}`)
   if (!`${help.stdout}${help.stderr}`.includes('input-otp-to-otp')) {
     fail('installed CLI --help does not list input-otp-to-otp')
-  } else {
-    console.log('  ✔ installed CLI is executable')
   }
+  if (failures === helpBefore) console.log('  ✔ installed CLI is executable')
 
   const fixture = join(consumer, 'fixture.tsx')
   writeFileSync(

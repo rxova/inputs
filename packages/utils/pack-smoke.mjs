@@ -3,6 +3,7 @@ import { mkdtempSync, readdirSync, rmSync, writeFileSync, readFileSync } from 'n
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 /**
  * Proves the published artifact, not the source tree.
@@ -19,7 +20,9 @@ import process from 'node:process'
 
 const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
 const name = pkg.name
-const packagesDir = new URL('../', import.meta.url)
+// fileURLToPath, not URL.pathname: pathname stays percent-encoded, so a checkout
+// under a path with a space would yield a `%20` that no fs call can resolve.
+const packagesDir = fileURLToPath(new URL('../', import.meta.url))
 
 const REQUIRED = [
   'package/dist/index.mjs',
@@ -46,7 +49,7 @@ try {
   const workspacePackages = new Map(
     readdirSync(packagesDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
-      .map((entry) => join(packagesDir.pathname, entry.name))
+      .map((entry) => join(packagesDir, entry.name))
       .filter((directory) => {
         try {
           return Boolean(JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')).name)
