@@ -1,0 +1,1104 @@
+---
+sidebar_position: 2
+title: Styling
+---
+
+# Styling
+
+Every input in the suite styles the same way. There is no stylesheet to import: each component
+inlines only the handful of layout-critical declarations that make it work, and exposes everything
+_visual_ — size, spacing, colour, motion, focus — as either a **CSS custom property** you set or a
+**`data-*` hook** you target from your own CSS. No wrapper, no `!important`, no reaching into
+internals, no class-name lottery. Pick the component below to see its styling contract and theming
+recipes.
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+`CurrencyInput` renders one native `<input>` and ships no CSS. There is no theme to reset, no
+generated wrapper to work around, and no stylesheet to put in your bundle. Give it a `className`, an
+inline `style`, or any native `data-*` attribute and style it exactly like the rest of your form.
+
+Already using a component library? The exported `useCurrencyInput` hook drives its input without
+replacing its visuals. See the [shadcn/ui, Radix Themes, MUI, Chakra, Mantine, and Ant Design
+recipes](/components/currency/ui-libraries).
+
+:::tip Every control below is live
+The playground renders the real currency input. Change its locale, spacing, type size, alignment,
+and colors to see the editable and formatted states—not a mock-up.
+:::
+
+### Interactive playground
+
+Use this to sketch the visual contract for your field. Focus the input to see its editable form,
+type a value, and blur it to see the locale apply grouping and place the currency symbol. The panel
+underneath is valid CSS you can paste into your own stylesheet.
+
+```tsx live
+function StylingPlayground() {
+  const [value, setValue] = React.useState(1234567.89)
+  const [locale, setLocale] = React.useState('bg-BG')
+  const [fontSize, setFontSize] = React.useState(1)
+  const [padding, setPadding] = React.useState(0.75)
+  const [radius, setRadius] = React.useState(0.5)
+  const [align, setAlign] = React.useState('end')
+  const [border, setBorder] = React.useState('#94a3b8')
+  const [surface, setSurface] = React.useState('#ffffff')
+  const [text, setText] = React.useState('#0f172a')
+
+  const style = {
+    boxSizing: 'border-box',
+    inlineSize: '100%',
+    maxInlineSize: '24rem',
+    minBlockSize: '2.75rem',
+    border: `1px solid ${border}`,
+    borderRadius: `${radius}rem`,
+    padding: `${padding * 0.75}rem ${padding}rem`,
+    background: surface,
+    color: text,
+    font: 'inherit',
+    fontSize: `${fontSize}rem`,
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: align,
+  }
+
+  const Row = ({ label, children, output }) => (
+    <label
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '5.5rem minmax(8rem, 1fr) 4.5rem',
+        alignItems: 'center',
+        gap: '0.75rem',
+      }}
+    >
+      <span style={{ fontSize: '0.875rem' }}>{label}</span>
+      {children}
+      <code style={{ textAlign: 'end' }}>{output}</code>
+    </label>
+  )
+
+  const css = `.money-input {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 24rem;
+  min-block-size: 2.75rem;
+  border: 1px solid ${border};
+  border-radius: ${radius}rem;
+  padding: ${padding * 0.75}rem ${padding}rem;
+  background: ${surface};
+  color: ${text};
+  font: inherit;
+  font-size: ${fontSize}rem;
+  font-variant-numeric: tabular-nums;
+  text-align: ${align};
+}`
+
+  return (
+    <div style={{ display: 'grid', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gap: '0.5rem' }}>
+        <label htmlFor="styled-amount" style={{ fontWeight: 650 }}>
+          Amount
+        </label>
+        <CurrencyInput
+          id="styled-amount"
+          locale={locale}
+          currency={locale === 'ar-EG' ? 'EGP' : locale === 'hi-IN' ? 'INR' : 'EUR'}
+          value={value}
+          onValueChange={setValue}
+          style={style}
+        />
+        <span style={{ color: '#475569', fontSize: '0.875rem' }}>
+          Focus, edit, then blur to see the two display states.
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gap: '0.625rem', maxWidth: 520 }}>
+        <label style={{ display: 'grid', gridTemplateColumns: '5.5rem 1fr', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.875rem' }}>locale</span>
+          <select value={locale} onChange={(event) => setLocale(event.target.value)}>
+            <option value="bg-BG">bg-BG · Bulgarian</option>
+            <option value="en-US">en-US · English</option>
+            <option value="de-DE">de-DE · German</option>
+            <option value="fr-FR">fr-FR · French</option>
+            <option value="hi-IN">hi-IN · Hindi</option>
+            <option value="ar-EG">ar-EG · Arabic</option>
+          </select>
+        </label>
+        <Row label="type size" output={`${fontSize}rem`}>
+          <input
+            type="range"
+            min={0.75}
+            max={2}
+            step={0.125}
+            value={fontSize}
+            onChange={(event) => setFontSize(+event.target.value)}
+          />
+        </Row>
+        <Row label="spacing" output={`${padding}rem`}>
+          <input
+            type="range"
+            min={0.25}
+            max={1.5}
+            step={0.125}
+            value={padding}
+            onChange={(event) => setPadding(+event.target.value)}
+          />
+        </Row>
+        <Row label="radius" output={`${radius}rem`}>
+          <input
+            type="range"
+            min={0}
+            max={1.5}
+            step={0.125}
+            value={radius}
+            onChange={(event) => setRadius(+event.target.value)}
+          />
+        </Row>
+        <label style={{ display: 'grid', gridTemplateColumns: '5.5rem 1fr', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.875rem' }}>alignment</span>
+          <select value={align} onChange={(event) => setAlign(event.target.value)}>
+            <option value="start">start</option>
+            <option value="center">center</option>
+            <option value="end">end</option>
+          </select>
+        </label>
+        {[
+          ['border', border, setBorder],
+          ['surface', surface, setSurface],
+          ['text', text, setText],
+        ].map(([label, color, setColor]) => (
+          <Row key={label} label={label} output={color}>
+            <input type="color" value={color} onChange={(event) => setColor(event.target.value)} />
+          </Row>
+        ))}
+      </div>
+
+      <pre style={{ margin: 0 }}>{css}</pre>
+    </div>
+  )
+}
+```
+
+### A complete field
+
+The component deliberately owns only currency behavior. Your application owns the label, hint,
+validation message, spacing, colors, and layout:
+
+```tsx
+import { useId, useState } from 'react'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+import './price-field.css'
+
+export function PriceField() {
+  const id = useId()
+  const hintId = `${id}-hint`
+  const errorId = `${id}-error`
+  const [value, setValue] = useState<number | null>(null)
+  const invalid = value !== null && value < 0.5
+
+  return (
+    <div className="price-field">
+      <label className="price-field__label" htmlFor={id}>
+        Price <span className="price-field__optional">Optional</span>
+      </label>
+      <CurrencyInput
+        id={id}
+        name="price"
+        className="price-field__control"
+        locale="bg-BG"
+        currency="EUR"
+        value={value}
+        onValueChange={setValue}
+        placeholder="0,00"
+        invalid={invalid}
+        aria-describedby={`${hintId}${invalid ? ` ${errorId}` : ''}`}
+      />
+      <p id={hintId} className="price-field__hint">
+        Enter the price before tax.
+      </p>
+      {invalid && (
+        <p id={errorId} className="price-field__error" role="alert">
+          Price must be at least 0,50 €.
+        </p>
+      )}
+    </div>
+  )
+}
+```
+
+```css
+.price-field {
+  --field-border: #94a3b8;
+  --field-focus: #2563eb;
+  --field-error: #b42318;
+  display: grid;
+  gap: 0.375rem;
+  inline-size: min(100%, 22rem);
+}
+
+.price-field__label {
+  color: #0f172a;
+  font-weight: 650;
+}
+
+.price-field__optional,
+.price-field__hint {
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.price-field__control {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  border: 1px solid var(--field-border);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  transition:
+    border-color 120ms,
+    box-shadow 120ms;
+}
+
+.price-field__control::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+.price-field__control:hover:not(:disabled) {
+  border-color: #64748b;
+}
+
+.price-field__control:focus-visible {
+  border-color: var(--field-focus);
+  outline: 3px solid color-mix(in srgb, var(--field-focus) 25%, transparent);
+  outline-offset: 1px;
+}
+
+.price-field__control[data-invalid] {
+  border-color: var(--field-error);
+}
+
+.price-field__control[data-invalid]:focus-visible {
+  outline-color: color-mix(in srgb, var(--field-error) 25%, transparent);
+}
+
+.price-field__control:disabled {
+  cursor: not-allowed;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.price-field__hint,
+.price-field__error {
+  margin: 0;
+}
+
+.price-field__error {
+  color: var(--field-error);
+  font-size: 0.875rem;
+}
+```
+
+That CSS covers the states users need to distinguish: rest, hover, keyboard focus, invalid, and
+disabled. `invalid` puts both `aria-invalid="true"` and `data-invalid` on the input, so semantics and
+visual styling stay in sync.
+
+### Styling hooks
+
+Every native input prop except the value-management props is forwarded. The most useful styling
+hooks are:
+
+| Hook                      | Use it for                                                          |
+| ------------------------- | ------------------------------------------------------------------- |
+| `className`               | CSS, CSS Modules, CSS-in-JS, or utility classes                     |
+| `style`                   | Values calculated at runtime                                        |
+| `data-*`                  | Variants owned by your design system, such as `data-size="compact"` |
+| `[data-invalid]`          | The invalid state supplied by the `invalid` prop                    |
+| `:focus-visible`          | A keyboard-visible focus ring                                       |
+| `:disabled`, `:read-only` | Native interaction states                                           |
+| `::placeholder`           | Empty-field guidance                                                |
+
+Because the output is a native input, selectors do not depend on undocumented internal markup.
+
+### CSS Modules
+
+```tsx
+import { useState } from 'react'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+import styles from './PriceField.module.css'
+
+function PriceField() {
+  const [value, setValue] = useState<number | null>(null)
+
+  return (
+    <CurrencyInput
+      className={styles.control}
+      locale="de-DE"
+      currency="EUR"
+      value={value}
+      onValueChange={setValue}
+      aria-label="Price"
+    />
+  )
+}
+```
+
+The same `[data-invalid]`, `:focus-visible`, and native-state selectors work inside the module:
+
+```css
+.control {
+  border: 1px solid var(--border-default);
+}
+
+.control[data-invalid] {
+  border-color: var(--border-danger);
+}
+```
+
+### Utility classes
+
+There is no special adapter for Tailwind or similar libraries—just pass the classes you would use
+on an ordinary text input:
+
+```tsx
+<CurrencyInput
+  className="w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-end tabular-nums text-slate-950 outline-none transition hover:border-slate-600 focus-visible:border-blue-600 focus-visible:ring-4 focus-visible:ring-blue-600/20 disabled:cursor-not-allowed disabled:bg-slate-100 data-[invalid]:border-red-700 data-[invalid]:focus-visible:ring-red-700/20"
+  locale="en-US"
+  currency="USD"
+  invalid={hasError}
+/>
+```
+
+### Prefixes, suffixes, and icons
+
+Do not add a decorative currency symbol beside the input by default: the localized idle value
+already includes one, and its correct side depends on the locale. `$` may lead in one locale while
+`US$` or `$US` trails in another.
+
+If the surrounding interface needs an icon or unit, put it in your own wrapper. Keep decoration out
+of the accessible name, and let the input retain the full width:
+
+```tsx
+<div className="amount-shell">
+  <span className="amount-shell__icon" aria-hidden="true">
+    ↗
+  </span>
+  <CurrencyInput className="amount-shell__input" locale="en-US" currency="USD" />
+</div>
+```
+
+```css
+.amount-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  border: 1px solid #94a3b8;
+  border-radius: 0.5rem;
+}
+
+.amount-shell:focus-within {
+  outline: 3px solid rgb(37 99 235 / 25%);
+}
+
+.amount-shell__icon {
+  padding-inline-start: 0.75rem;
+  color: #475569;
+}
+
+.amount-shell__input {
+  min-inline-size: 0;
+  border: 0;
+  padding: 0.625rem 0.75rem;
+  background: transparent;
+  font: inherit;
+  outline: 0;
+}
+```
+
+### RTL and logical properties
+
+Use logical properties such as `inline-size`, `padding-inline`, and `text-align: end`. They follow
+the document direction automatically, so the same style works for both Latin and Arabic layouts.
+Do not force `direction: ltr`: an Arabic locale may render native Arabic-Indic digits and place the
+currency token according to its own bidirectional rules.
+
+The field intentionally changes presentation across interaction states: idle text is fully
+localized (`1 234,50 €`), while focused text is the plain editable number (`1234,50`). Give the
+control enough width for either representation, and do not position decorations by measuring the
+currency symbol.
+
+### Design-system component
+
+Wrap `CurrencyInput` once when your product needs a fixed visual contract. You can preserve the
+library's complete prop surface while adding your own size and tone variants:
+
+```tsx
+import type { CurrencyInputProps } from '@rxova/react-intl-currency-input'
+
+type MoneyFieldProps = CurrencyInputProps & {
+  size?: 'compact' | 'comfortable'
+}
+
+export function MoneyField({ size = 'comfortable', className = '', ...props }: MoneyFieldProps) {
+  return <CurrencyInput {...props} data-size={size} className={`money-field ${className}`} />
+}
+```
+
+```css
+.money-field[data-size='compact'] {
+  min-block-size: 2rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.money-field[data-size='comfortable'] {
+  min-block-size: 2.75rem;
+  padding: 0.625rem 0.75rem;
+}
+```
+
+### Styling checklist
+
+- Preserve a visible `:focus-visible` indicator; do not remove the outline without replacing it.
+- Keep text and placeholder contrast readable, including invalid and disabled states.
+- Use `font-variant-numeric: tabular-nums` when columns of amounts should align.
+- Prefer `text-align: end` and logical spacing so RTL layouts work naturally.
+- Reserve enough width for a localized value whose currency token may be longer than one symbol.
+- Put labels and validation messages outside the input and connect them with `htmlFor` and
+  `aria-describedby`.
+- Treat `data-invalid` as a state hook, not as the only error signal; keep `invalid` set so
+  assistive technology receives `aria-invalid` too.
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+There is no stylesheet to import. `Rating` inlines only the handful of declarations that make the
+layout work (the flex row, the two stacked layers, the clip that reveals a partial fill). Everything
+_visual_ — size, spacing, colour, motion, focus — is exposed as either a **CSS custom property** you
+set, or a **`data-*` hook** you target from your own CSS.
+
+That means you style it the way you style your own components: no wrapper, no `!important`, no
+reaching into internals, no class-name lottery. Every knob on this page is **live** — edit any demo
+and watch the real component react.
+
+:::tip Everything below is editable
+The blocks marked **Live** render the actual component. Change a number or a colour and it updates
+instantly.
+:::
+
+### The anatomy of one icon
+
+Knowing what the properties _target_ makes the rest of the page obvious. Each icon slot is two
+absolutely-stacked layers inside a sized box:
+
+```
+[data-rfs-root]                     ← the flex row; --rfs-gap separates items
+ └─ [data-rfs-item]                 ← one icon slot; --rfs-size sets its font-size (the box)
+     ├─ [data-rfs-layer="empty"]    ← the track, full width; --rfs-color-empty (+ --rfs-empty-filter)
+     └─ [data-rfs-layer="fill"]     ← the fill, clipped to the value's %; --rfs-color-filled
+```
+
+The fill layer sits on top of the empty layer and is clipped to a percentage width, so a `4.3`
+rating reveals 30% of the fifth icon. Because the box is sized by **`font-size`**, an emoji (which
+scales by font-size, not `width`/`height`) sizes identically to an inline SVG.
+
+### Interactive playground
+
+Drag the sliders and pick colours — the box at the top is a real, interactive `Rating`, and the
+panel underneath is the exact CSS you'd paste into your own stylesheet.
+
+```tsx live
+function StylingPlayground() {
+  const [size, setSize] = useState(2.5)
+  const [gap, setGap] = useState(0.25)
+  const [filled, setFilled] = useState('#f5a623')
+  const [empty, setEmpty] = useState('#d8d8d8')
+  const [hover, setHover] = useState('#f5a623')
+  const [transition, setTransition] = useState(120)
+  const [score, setScore] = useState(3.5)
+
+  const vars = {
+    '--rfs-size': `${size}rem`,
+    '--rfs-gap': `${gap}rem`,
+    '--rfs-color-filled': filled,
+    '--rfs-color-empty': empty,
+    '--rfs-color-hover': hover,
+    '--rfs-transition': `${transition}ms`,
+  }
+
+  const Row = ({ label, children }) => (
+    <label
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '7rem 1fr auto',
+        alignItems: 'center',
+        gap: '0.75rem',
+      }}
+    >
+      <span style={{ fontSize: '0.85rem' }}>{label}</span>
+      {children}
+    </label>
+  )
+
+  return (
+    <div style={{ display: 'grid', gap: '1.25rem' }}>
+      <div style={{ minHeight: `${size * 1.4}rem`, display: 'flex', alignItems: 'center' }}>
+        <Rating value={score} onChange={setScore} precision={0.5} style={vars} label="Playground" />
+      </div>
+
+      <div style={{ display: 'grid', gap: '0.5rem', maxWidth: 460 }}>
+        <Row label="size">
+          <input
+            type="range"
+            min={1}
+            max={6}
+            step={0.25}
+            value={size}
+            onChange={(e) => setSize(+e.target.value)}
+          />
+          <code>{size}rem</code>
+        </Row>
+        <Row label="gap">
+          <input
+            type="range"
+            min={0}
+            max={1.5}
+            step={0.05}
+            value={gap}
+            onChange={(e) => setGap(+e.target.value)}
+          />
+          <code>{gap}rem</code>
+        </Row>
+        <Row label="transition">
+          <input
+            type="range"
+            min={0}
+            max={800}
+            step={20}
+            value={transition}
+            onChange={(e) => setTransition(+e.target.value)}
+          />
+          <code>{transition}ms</code>
+        </Row>
+        <Row label="filled">
+          <input type="color" value={filled} onChange={(e) => setFilled(e.target.value)} />
+          <code>{filled}</code>
+        </Row>
+        <Row label="empty">
+          <input type="color" value={empty} onChange={(e) => setEmpty(e.target.value)} />
+          <code>{empty}</code>
+        </Row>
+        <Row label="hover">
+          <input type="color" value={hover} onChange={(e) => setHover(e.target.value)} />
+          <code>{hover}</code>
+        </Row>
+      </div>
+
+      <pre style={{ margin: 0 }}>
+        {`[data-rfs-root] {\n${Object.entries(vars)
+          .map(([k, v]) => `  ${k}: ${v};`)
+          .join('\n')}\n}`}
+      </pre>
+    </div>
+  )
+}
+```
+
+### Every custom property
+
+The complete set. Every one has a fallback baked in, so you only override what you care about.
+
+| Property                  | Default                      | Controls                                                       |
+| ------------------------- | ---------------------------- | -------------------------------------------------------------- |
+| `--rfs-size`              | `1.25rem`                    | Icon size. Any unit — it's a `font-size`, so `em`/`%` cascade. |
+| `--rfs-gap`               | `0.125rem`                   | Horizontal space between icons.                                |
+| `--rfs-color-filled`      | `#f5a623`                    | Colour of the filled (fill-layer) icon.                        |
+| `--rfs-color-empty`       | `#d8d8d8`                    | Colour of the empty (track) icon.                              |
+| `--rfs-color-hover`       | `var(--rfs-color-filled)`    | Colour of the hover/keyboard preview fill.                     |
+| `--rfs-empty-filter`      | `grayscale(1) opacity(0.35)` | CSS `filter` on the _implicit_ empty layer (see below).        |
+| `--rfs-transition`        | `120ms`                      | Duration of the fill/preview width transition.                 |
+| `--rfs-focus-ring`        | `2px solid Highlight`        | `outline` shorthand drawn on the focused icon.                 |
+| `--rfs-focus-ring-offset` | `2px`                        | `outline-offset` of the focus ring.                            |
+| `--rfs-focus-ring-radius` | `2px`                        | `border-radius` of the focus ring.                             |
+
+Because they're custom properties, they **cascade**. Set them on `[data-rfs-root]`, on the element's
+`style` prop, on a wrapper `class`, or on `:root` for the whole app — whatever scope you want.
+
+#### Size — `--rfs-size`
+
+Size is a single property, in any unit. Set it inline for one instance, or on an ancestor to size a
+whole group. Since it's a `font-size`, relative units (`em`, `%`) inherit naturally.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem' }}>
+  <Rating value={3.5} style={{ '--rfs-size': '1rem' }} />
+  <Rating value={3.5} style={{ '--rfs-size': '1.75rem' }} />
+  <Rating value={3.5} style={{ '--rfs-size': '3rem' }} />
+</div>
+```
+
+#### Gap — `--rfs-gap`
+
+The space between icons. `0` packs them flush; larger values give an airier row.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '1.75rem' }}>
+  <Rating value={3.5} style={{ '--rfs-gap': '0' }} />
+  <Rating value={3.5} style={{ '--rfs-gap': '0.25rem' }} />
+  <Rating value={3.5} style={{ '--rfs-gap': '0.75rem' }} />
+</div>
+```
+
+#### Colours — filled, empty, hover
+
+Three independent colours. `--rfs-color-hover` defaults to `--rfs-color-filled`, so a rating with no
+hover colour set previews in its fill colour; override it for a distinct “I'm about to pick this”
+tint. **Hover over the interactive one** to see the hover colour.
+
+```tsx live
+function Colours() {
+  const [score, setScore] = useState(3)
+  const brand = {
+    '--rfs-color-filled': '#6d28d9',
+    '--rfs-color-empty': '#e5e7eb',
+    '--rfs-color-hover': '#c026d3',
+    '--rfs-size': '2rem',
+  }
+  return (
+    <div style={{ display: 'grid', gap: '0.75rem' }}>
+      <Rating value={3.5} style={brand} />
+      <Rating value={score} onChange={setScore} precision={0.5} style={brand} label="Pick" />
+    </div>
+  )
+}
+```
+
+:::caution Colour is a no-op on emoji
+Emoji render from a **colour font** (COLR/CBDT), so `--rfs-color-filled` and `--rfs-color-empty` have
+no effect on them — you cannot recolour 🌟 with CSS `color`. That's exactly why the empty layer is
+dimmed with a **filter** instead. See the next section.
+:::
+
+#### The empty layer — `--rfs-empty-filter`
+
+When you don't pass an `emptyIcon`, the track is the _same_ glyph as the fill, dimmed by a CSS
+`filter` so it reads as “empty”. A filter — unlike `color` — works on emoji and SVG alike, which is
+why the default is `grayscale(1) opacity(0.35)` rather than a grey colour.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '2rem' }}>
+  <Rating value={2.5} icon="⭐" />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'grayscale(1) opacity(0.2)' }} />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'sepia(1) opacity(0.5)' }} />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'none' }} />
+</div>
+```
+
+If you pass an explicit `emptyIcon`, **no filter is applied** — that artwork is your own empty look,
+so the component leaves it alone.
+
+```tsx live
+<Rating
+  value={2.5}
+  style={{ '--rfs-size': '2rem' }}
+  icon={<span>●</span>}
+  emptyIcon={<span style={{ color: '#cbd5e1' }}>○</span>}
+/>
+```
+
+#### Motion — `--rfs-transition`
+
+The fill width animates when the value or hover preview changes; `--rfs-transition` is its duration.
+Crank it up here and hover slowly to watch the fill glide.
+
+```tsx live
+function Motion() {
+  const [score, setScore] = useState(2)
+  return (
+    <Rating
+      value={score}
+      onChange={setScore}
+      precision={0.5}
+      label="Slow fill"
+      style={{
+        '--rfs-size': '2.5rem',
+        '--rfs-transition': '450ms',
+        '--rfs-color-hover': '#22c55e',
+      }}
+    />
+  )
+}
+```
+
+<img
+  src={useBaseUrl('/img/rating/examples/styling-hover.gif')}
+  alt="Hovering a rating with a slow transition and a distinct green hover colour"
+  width="260"
+/>
+
+:::note Respects `prefers-reduced-motion`
+The transition is dropped automatically when the user has **Reduce motion** turned on — no
+configuration needed. Set `--rfs-transition: 0ms` to disable it for everyone.
+:::
+
+#### Focus ring — `--rfs-focus-ring`
+
+When a rating is operated by keyboard, a focus ring is drawn on the focused icon. It's an `outline`
+(so the fill layer's `overflow: hidden` can't clip it), with a matching offset and corner radius. Tab
+into the rating below and use the arrow keys.
+
+```tsx live
+function Focus() {
+  const [score, setScore] = useState(0)
+  return (
+    <Rating
+      value={score}
+      onChange={setScore}
+      precision={1}
+      label="Focus me with Tab, then arrow keys"
+      style={{
+        '--rfs-size': '2.5rem',
+        '--rfs-focus-ring': '3px solid #2563eb',
+        '--rfs-focus-ring-offset': '4px',
+        '--rfs-focus-ring-radius': '6px',
+      }}
+    />
+  )
+}
+```
+
+| Property                  | Maps to          | Default               |
+| ------------------------- | ---------------- | --------------------- |
+| `--rfs-focus-ring`        | `outline`        | `2px solid Highlight` |
+| `--rfs-focus-ring-offset` | `outline-offset` | `2px`                 |
+| `--rfs-focus-ring-radius` | `border-radius`  | `2px`                 |
+
+`Highlight` is the system focus colour, so the default ring matches the user's OS accent out of the
+box. Override the shorthand for a branded ring.
+
+### Data-attribute hooks
+
+For anything a custom property doesn't cover, target these attributes from your own CSS. They are
+**stable and covered by semver** — safe to build a design system on.
+
+| Selector                                  | Marks                                           |
+| ----------------------------------------- | ----------------------------------------------- |
+| `[data-rfs-root]`                         | The root element.                               |
+| `[data-rfs-item]`                         | One icon slot (its value is the 0-based index). |
+| `[data-rfs-layer="fill"\|"empty"]`        | The fill layer vs. the empty/track layer.       |
+| `[data-state="full"\|"partial"\|"empty"]` | Per-icon fill state.                            |
+| `[data-active]`                           | Icons under the current hover/keyboard preview. |
+| `[data-readonly]`                         | Present in read-only (display) mode.            |
+| `[data-disabled]`                         | Present when `disabled`.                        |
+| `[data-invalid]`                          | Present when `invalid`.                         |
+
+#### Per-state theming
+
+Because the state lives in the DOM, you can restyle a whole state by _setting a variable_ from a
+selector — no per-instance props. A red error look driven only by the `invalid` prop:
+
+```css
+[data-rfs-root][data-invalid] {
+  --rfs-color-filled: #dc2626;
+  --rfs-color-empty: #fecaca;
+}
+
+/* Fade the control while it's unavailable. */
+[data-rfs-root][data-disabled] {
+  opacity: 0.5;
+}
+```
+
+The same states, side by side:
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '1.75rem' }}>
+  <Rating
+    value={3}
+    invalid
+    style={{ '--rfs-color-filled': '#dc2626', '--rfs-color-empty': '#fecaca' }}
+  />
+  <Rating value={3} onChange={() => {}} disabled style={{ opacity: 0.5 }} />
+  <Rating value={3.5} />
+</div>
+```
+
+You can also reach past variables into structure — e.g. a rule that targets only partially-filled
+icons, or only the icons under the pointer:
+
+```css
+/* Nudge the icon currently being previewed. */
+[data-rfs-item][data-active] {
+  transform: scale(1.15);
+}
+
+/* Give the fill layer a subtle glow. */
+[data-rfs-layer='fill'] {
+  filter: drop-shadow(0 0 2px currentColor);
+}
+```
+
+### Where to set the variables
+
+The same three scopes as any custom property — pick per use:
+
+```tsx
+// Per instance — inline style:
+<Rating value={4.3} style={{ '--rfs-size': '2rem', '--rfs-color-filled': '#6d28d9' }} />
+
+// Per theme — a class you control:
+<Rating value={4.3} className="brand-rating" />
+
+// App-wide — on :root, so every rating inherits it:
+```
+
+```css
+:root {
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-empty: #e5e7eb;
+}
+.brand-rating {
+  --rfs-size: 2rem;
+}
+```
+
+Tailwind, CSS Modules, and styled-components all work the same way — they only ever _set variables_.
+Those patterns are in the theming recipes below.
+
+### Theming recipes
+
+Everything visual is a `--rfs-*` custom property (see the property list above for the full set).
+That means you can theme the component with whatever styling tool you already use — no wrapper
+component, no `!important`, no reaching into internals.
+
+#### Plain CSS
+
+```css
+.rating-brand {
+  --rfs-size: 1.5rem;
+  --rfs-gap: 0.25rem;
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-empty: #e5e7eb;
+}
+```
+
+```tsx
+<Rating className="rating-brand" value={4.3} />
+```
+
+#### CSS Modules
+
+```css title="Rating.module.css"
+.brand {
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-hover: #7c3aed;
+}
+```
+
+```tsx
+import styles from './Rating.module.css'
+
+function Stars() {
+  return <Rating className={styles.brand} value={4.3} />
+}
+```
+
+#### Tailwind CSS
+
+Set the custom properties with arbitrary properties, no plugin required:
+
+```tsx
+<Rating value={4.3} className="[--rfs-color-filled:theme(colors.violet.600)] [--rfs-size:1.5rem]" />
+```
+
+Or map them to your design tokens in a component layer:
+
+```css
+@layer components {
+  .rating {
+    --rfs-color-filled: theme(colors.violet.600);
+    --rfs-color-empty: theme(colors.gray.200);
+  }
+}
+```
+
+#### styled-components / Emotion
+
+Because the knobs are custom properties, a styled wrapper only needs to _set variables_ — it never
+has to know the component's internals:
+
+```tsx
+import styled from 'styled-components'
+import { Rating } from '@rxova/react-rating-input'
+
+const BrandRating = styled(Rating)`
+  --rfs-color-filled: ${(p) => p.theme.colors.brand};
+  --rfs-color-empty: ${(p) => p.theme.colors.subtle};
+  --rfs-size: 1.5rem;
+`
+```
+
+None of these add a runtime dependency to `@rxova/react-rating-input` — they are entirely your styling
+layer setting variables the component reads.
+
+#### Per-state theming (recipe)
+
+Target the semver-stable `data-*` hooks to theme states — for example, a red error look driven only
+by the `invalid` prop:
+
+```css
+[data-rfs-root][data-invalid] {
+  --rfs-color-filled: #dc2626;
+  --rfs-color-empty: #fecaca;
+}
+```
+
+### Gallery
+
+Every image below is captured from the real component, never hand-drawn:
+
+<img
+  src={useBaseUrl('/img/rating/examples/styling-gallery.png')}
+  alt="A gallery of ratings styled with different sizes, gaps, colours, and empty-layer filters"
+  width="520"
+/>
+
+### See also
+
+- [Custom icons](/components/rating/custom-icons) — swapping the glyph and the render-function API.
+- [Displaying a score](/components/rating/display) — sizing in context, precision and rounding.
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+No stylesheet to import. Only layout-critical CSS is inlined; everything visual is a `--otp-*` custom
+property or a `data-*` hook — both covered by semver.
+
+### Custom properties
+
+Set them on `[data-otp-root]` or any ancestor:
+
+```css
+[data-otp-root] {
+  --otp-slot-size: 2.5rem;
+  --otp-gap: 0.5rem;
+  --otp-radius: 0.5rem;
+  --otp-border: 1px solid #d4d4d8;
+  --otp-color: inherit;
+  --otp-bg: transparent;
+  --otp-font-size: 1.125rem;
+  --otp-caret-color: currentColor;
+  --otp-active-ring: 2px solid Highlight;
+}
+```
+
+Try it — everything below is just tokens:
+
+```tsx live
+function Themed() {
+  const [code, setCode] = useState('123')
+  return (
+    <div
+      style={{
+        '--otp-slot-size': '3rem',
+        '--otp-radius': '0.9rem',
+        '--otp-gap': '0.4rem',
+        '--otp-border': '2px solid #5a45d6',
+        '--otp-active-ring': '3px solid #f5a623',
+        '--otp-font-size': '1.4rem',
+      }}
+    >
+      <OtpInput length={6} value={code} onChange={setCode} label="Themed code" />
+    </div>
+  )
+}
+```
+
+### Stable `data-*` hooks
+
+All covered by semver:
+
+- Structure: `[data-otp-root]`, `[data-otp-input]`, `[data-otp-slot]`, `[data-otp-group]`,
+  `[data-otp-separator]`, `[data-otp-caret]`
+- Per-slot state: `[data-state="filled" | "active" | "empty"]`, plus `[data-active]`, `[data-filled]`,
+  `[data-disabled]`, `[data-readonly]`, `[data-invalid]`
+
+```css
+[data-otp-slot][data-active] {
+  border-color: var(--otp-active-color, #5a45d6);
+}
+[data-otp-root][data-invalid] [data-otp-slot] {
+  border-color: #c0392b;
+}
+```
+
+### CSP
+
+The only injected style is the caret-blink keyframes. Pass a `nonce` and it lands on that
+`<style>` element:
+
+```tsx
+<OtpInput length={6} nonce={cspNonce} label="Code" />
+```
+
+For full control over the markup, drop to the [`useOtpInput` hook](/components/otp/custom-slots).
+
+### Theming recipes
+
+Everything visual is a `--otp-*` token or a `data-*` hook — there is no stylesheet and no theme to
+override. See the token and hook lists above. A few common recipes:
+
+#### Underline slots (no boxes)
+
+```css
+[data-otp-root] {
+  --otp-border: none;
+  --otp-radius: 0;
+}
+[data-otp-slot] {
+  border-bottom: 2px solid var(--ifm-color-emphasis-400);
+}
+[data-otp-slot][data-active] {
+  border-bottom-color: #5a45d6;
+}
+```
+
+#### Filled slots
+
+```css
+[data-otp-root] {
+  --otp-bg: #f4f4f5;
+  --otp-border: 1px solid transparent;
+}
+[data-otp-slot][data-filled] {
+  --otp-bg: #ede9fe;
+}
+```
+
+#### Error state
+
+```css
+[data-otp-root][data-invalid] [data-otp-slot] {
+  border-color: #c0392b;
+  --otp-caret-color: #c0392b;
+}
+```
+
+Because the tokens cascade, you can scope a theme to a subtree or flip it per `data-theme` without
+touching the component.
+
+</TabItem>
+
+</Tabs>

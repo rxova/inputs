@@ -1,0 +1,86 @@
+.hero {
+  padding: 4rem 1rem 3rem;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ifm-color-primary) 8%, transparent),
+    transparent
+  );
+}
+
+.heroTitle {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.heroTagline {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  color: var(--ifm-color-emphasis-700);
+  margin: 0.75rem 0 1.75rem;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cardGrid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  transition:
+    border-color 150ms,
+    transform 150ms,
+    box-shadow 150ms;
+}
+
+.card:hover {
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ifm-color-primary) 12%, transparent);
+}
+
+.cardName {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+}
+
+.cardBlurb {
+  margin: 0 0 1rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.cardPkg {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-600);
+  word-break: break-all;
+}
+
+.highlights {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  margin-top: 2.5rem;
+}
+
+.highlightTitle {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.highlightBody {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+}

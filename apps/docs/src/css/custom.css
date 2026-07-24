@@ -26,3 +26,14 @@
 .theme-code-block [data-otp-root] {
   --otp-active-ring: 2px solid var(--ifm-color-primary);
 }
+
+/* Sidebar "COMPONENTS" section divider (type: 'html' item). */
+.sidebar-section-header {
+  margin: 1.25rem 0 0.35rem;
+  padding: 0 var(--ifm-menu-link-padding-horizontal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-600);
+}

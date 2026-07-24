@@ -6,7 +6,11 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**", ".docusaurus/**"],
+      // NOT .docusaurus/**: it's Docusaurus's regenerable internal cache, tied to
+      // the installed theme/plugins. Caching+restoring it across contexts breaks
+      // webpack module resolution (stale @theme/Debug* refs). Only build/** (the
+      // static site) and dist/** (library builds) are real, portable outputs.
+      "outputs": ["dist/**", "build/**"],
       "env": ["DOCS_URL", "DOCS_BASE_URL"]
     },
     "typecheck": {

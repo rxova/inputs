@@ -1,0 +1,41 @@
+---
+title: Quick start
+sidebar_position: 2
+---
+
+# Quick start
+
+Every rxova input is a **controlled component**: give it a `value` and an
+`onChange` (or the component's equivalent) and it behaves like any other form
+field. Here's one of each.
+
+```tsx
+import { useState } from 'react'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+import { Rating } from '@rxova/react-rating-input'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function Example() {
+  const [price, setPrice] = useState<number | null>(null)
+  const [score, setScore] = useState(0)
+  const [code, setCode] = useState('')
+
+  return (
+    <>
+      <CurrencyInput locale="en-US" currency="USD" value={price} onValueChange={setPrice} />
+      <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+      <OtpInput length={6} value={code} onChange={setCode} />
+    </>
+  )
+}
+```
+
+Each component's own page has live, editable examples and its full prop reference:
+
+- [Currency input](/currency) — locale-aware money entry with no cursor bugs.
+- [Rating input](/rating) — any icon, any precision, accessible.
+- [OTP input](/otp) — one-time-code entry with paste and WebOTP support.
+
+From there, the shared guides cover the cross-cutting concerns:
+[Accessibility](/guides/accessibility), [Styling](/guides/styling), and
+[Form libraries](/guides/form-libraries).

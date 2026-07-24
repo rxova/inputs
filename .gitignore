@@ -14,9 +14,9 @@ coverage/
 !.vscode/extensions.json
 apps/playground/dist/
 apps/docs/.docusaurus/
-apps/docs/docs/currency/api/
-apps/docs/docs/rating/api/
-apps/docs/docs/otp/api/
+apps/docs/docs/components/currency/api/
+apps/docs/docs/components/rating/api/
+apps/docs/docs/components/otp/api/
 test-results/
 playwright-report/
 .pw-browsers/

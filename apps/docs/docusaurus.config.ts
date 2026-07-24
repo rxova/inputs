@@ -50,7 +50,7 @@ const config: Config = {
         id: 'api-currency',
         entryPoints: ['../../packages/react-intl-currency-input/src/index.ts'],
         tsconfig: '../../packages/react-intl-currency-input/tsconfig.typedoc.json',
-        out: 'docs/currency/api',
+        out: 'docs/components/currency/api',
       },
     ],
     [
@@ -60,7 +60,7 @@ const config: Config = {
         id: 'api-rating',
         entryPoints: ['../../packages/react-rating-input/src/index.ts'],
         tsconfig: '../../packages/react-rating-input/tsconfig.typedoc.json',
-        out: 'docs/rating/api',
+        out: 'docs/components/rating/api',
       },
     ],
     [
@@ -70,7 +70,7 @@ const config: Config = {
         id: 'api-otp',
         entryPoints: ['../../packages/react-otp-input/src/index.ts'],
         tsconfig: '../../packages/react-otp-input/tsconfig.typedoc.json',
-        out: 'docs/otp/api',
+        out: 'docs/components/otp/api',
       },
     ],
   ],
@@ -93,27 +93,15 @@ const config: Config = {
   themeConfig: {
     navbar: {
       title: 'rxova',
+      // Lean top bar — the persistent left sidebar carries the component list.
       items: [
         {
-          type: 'dropdown',
-          label: 'Docs',
+          type: 'doc',
+          docId: 'getting-started/installation',
+          label: 'Get started',
           position: 'left',
-          items: [
-            { type: 'doc', docId: 'currency/learn/getting-started', label: 'Currency' },
-            { type: 'doc', docId: 'rating/learn/getting-started', label: 'Rating' },
-            { type: 'doc', docId: 'otp/learn/getting-started', label: 'OTP' },
-          ],
         },
-        {
-          type: 'dropdown',
-          label: 'API',
-          position: 'left',
-          items: [
-            { to: '/currency/api', label: 'Currency' },
-            { to: '/rating/api', label: 'Rating' },
-            { to: '/otp/api', label: 'OTP' },
-          ],
-        },
+        { type: 'doc', docId: 'guides/accessibility', label: 'Guides', position: 'left' },
         {
           href: 'https://www.npmjs.com/package/@rxova/react-inputs',
           position: 'right',

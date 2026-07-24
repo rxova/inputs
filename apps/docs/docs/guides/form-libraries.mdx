@@ -1,0 +1,825 @@
+---
+sidebar_position: 3
+title: Form libraries
+---
+
+# Form libraries
+
+The currency input, the rating input, and the OTP input are all **controlled components** built around
+the same contract: a `value`, an `onChange` (or `onValueChange`) that emits the value directly — a
+`number` for currency and rating, a `string` for the code — plus `onBlur` and `name`. Because that is
+exactly the shape form libraries expect, each input drops into any of them with only a thin field
+adapter.
+
+The sections below cover the same five approaches for every component. Pick your library, then use the
+tabs to switch between the currency, rating, and OTP integration — every tab group is linked, so
+choosing a component in one section selects it in all of them.
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+## Native forms
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+Give the field a `name` and it participates in a plain `<form>`.
+
+```tsx
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function PriceForm() {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const data = new FormData(e.currentTarget)
+        console.log(data.get('price'))
+      }}
+    >
+      <label htmlFor="price">Price</label>
+      <CurrencyInput id="price" name="price" locale="en-US" currency="USD" defaultValue={50000} />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+:::note The value a native form submits
+Because the visible field carries the `name` (so it is identifiable to form libraries and to
+`<label htmlFor>`), a plain form submits the **formatted display string** under that name, not the
+raw number. If you need the raw number server-side, read it from `onValueChange` and post it
+yourself, or use one of the [form-library recipes](/guides/form-libraries), which manage the number in
+JavaScript.
+:::
+
+For most apps the recommended path is a form library — the recipes in this section each yield a clean
+`number` with no parsing on your side.
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+No library needed. Pass `name` and the selected value posts natively, exactly like a group of radio
+inputs — because that is what it renders.
+
+### Uncontrolled
+
+Give it a `name` and a `defaultValue`. The chosen value is submitted under that name:
+
+```tsx
+import { Rating } from '@rxova/react-rating-input'
+
+function Feedback() {
+  return (
+    <form method="post" action="/feedback">
+      <Rating name="score" defaultValue={0} onChange={() => {}} precision={1} label="Score" />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+On submit, the form body includes `score=<value>`. Reading it back:
+
+```tsx
+function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault()
+  const data = new FormData(event.currentTarget)
+  const score = Number(data.get('score')) // the selected rating
+}
+```
+
+:::note Why `onChange={() => {}}`
+Providing `onChange` is what makes the component an interactive input (native radios that can be
+submitted). If you truly need it uncontrolled, a no-op handler keeps it interactive while you let the
+DOM hold the value via `defaultValue`. Prefer a controlled `value`/`onChange` pair whenever you have
+state to hold it.
+:::
+
+### Controlled
+
+Hold the value in React state and still submit natively — `name` works in both modes:
+
+```tsx
+function Feedback() {
+  const [score, setScore] = useState(0)
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        console.log(new FormData(e.currentTarget).get('score'))
+      }}
+    >
+      <Rating name="score" value={score} onChange={setScore} precision={1} label="Score" />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+### Required
+
+`required` marks the underlying radio group required, so the browser blocks submission of an unrated
+field with its native validation message.
+
+```tsx
+<Rating name="score" required onChange={() => {}} label="Score" />
+```
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+No form library needed. The single real input **is** the field: give it a `name` and it posts in a
+`<form>` like any `<input>`.
+
+```tsx
+function VerifyForm() {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const data = new FormData(e.currentTarget)
+        verify(data.get('code'))
+      }}
+    >
+      <OtpInput name="code" length={6} required label="One-time code" />
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+`FormData` reads the code straight off the input — no hidden concat field, no serialization step.
+`required` participates in native constraint validation.
+
+Prefer to verify the moment the code is complete rather than on a button press? Use `onComplete`:
+
+```tsx
+<OtpInput name="code" length={6} onComplete={() => formRef.current?.requestSubmit()} label="Code" />
+```
+
+</TabItem>
+
+</Tabs>
+
+## React Hook Form
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+`onValueChange` emits a `number`, not an event, so the `{...register()}` spread does not apply — use
+a `Controller`, the one documented path. `field.onChange` accepts the value directly.
+
+```tsx
+import { Controller, useForm } from 'react-hook-form'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function PriceForm() {
+  const { control, handleSubmit } = useForm<{ price: number | null }>({
+    defaultValues: { price: null },
+  })
+
+  return (
+    <form onSubmit={handleSubmit((values) => console.log(values.price))}>
+      <Controller
+        name="price"
+        control={control}
+        rules={{ required: 'Enter a price', min: { value: 1, message: 'Must be greater than 0' } }}
+        render={({ field, fieldState }) => (
+          <>
+            <label htmlFor="price">Price</label>
+            <CurrencyInput
+              id="price"
+              locale="de-DE"
+              currency="EUR"
+              value={field.value ?? null}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+              invalid={fieldState.invalid}
+              aria-describedby={fieldState.error ? 'price-error' : undefined}
+            />
+            {fieldState.error && <p id="price-error">{fieldState.error.message}</p>}
+          </>
+        )}
+      />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+The form's `price` value is a `number` (or `null`), ready to submit or validate — no parsing on your
+side.
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+`onChange` emits a `number`, not an event, so use a `Controller`. Its `field` object already carries
+`value`, `onChange`, `onBlur`, `name`, and `ref`, which line up one-to-one with `Rating`'s props.
+
+```tsx
+import { useForm, Controller } from 'react-hook-form'
+import { Rating } from '@rxova/react-rating-input'
+
+type Values = { rating: number }
+
+function ReviewForm() {
+  const { control, handleSubmit } = useForm<Values>({ defaultValues: { rating: 0 } })
+
+  return (
+    <form onSubmit={handleSubmit((values) => console.log(values))}>
+      <Controller
+        name="rating"
+        control={control}
+        rules={{ min: { value: 1, message: 'Please rate before submitting' } }}
+        render={({ field, fieldState }) => (
+          <>
+            <Rating
+              {...field} // value, onChange, onBlur, name, ref all line up
+              precision={0.5}
+              label="Overall"
+              invalid={fieldState.invalid}
+              aria-describedby={fieldState.error ? 'rating-error' : undefined}
+            />
+            {fieldState.error && (
+              <p id="rating-error" role="alert">
+                {fieldState.error.message}
+              </p>
+            )}
+          </>
+        )}
+      />
+      <button type="submit">Send review</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- **`{...field}` is the whole adapter.** Because the prop names match, spreading `field` wires value,
+  change, blur, name, and ref at once. Add `precision`, `label`, and error props alongside it.
+- **Validation timing is correct for free.** `field.onBlur` fires when focus leaves the whole group,
+  not while arrowing between icons, so an `onTouched`/`onBlur` validation mode does not fire
+  mid-choice.
+- **`min` is the “required” rule.** An unrated field is `0`; a `min: 1` rule rejects it with your
+  message. For a stricter “must be set”, keep `allowClear={false}` so a chosen value cannot be
+  cleared back to `0`.
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+Because `onChange` emits a `string`, wire it through `<Controller>`:
+
+```tsx
+import { Controller, useForm } from 'react-hook-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  const { control, handleSubmit } = useForm<{ code: string }>({ defaultValues: { code: '' } })
+
+  return (
+    <form onSubmit={handleSubmit((values) => verify(values.code))}>
+      <Controller
+        name="code"
+        control={control}
+        rules={{ minLength: { value: 6, message: 'Enter all six digits' } }}
+        render={({ field, fieldState }) => (
+          <>
+            <OtpInput
+              length={6}
+              label="Verification code"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              inputRef={field.ref}
+              invalid={fieldState.invalid}
+              aria-describedby={fieldState.error ? 'code-error' : undefined}
+            />
+            {fieldState.error && (
+              <p id="code-error" role="alert">
+                {fieldState.error.message}
+              </p>
+            )}
+          </>
+        )}
+      />
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+- `field.value` / `field.onChange` bind the code (a `string`).
+- `field.ref` → `inputRef` lets RHF's `setFocus()` and focus-first-error target the input.
+- `fieldState.invalid` → `invalid` wires `aria-invalid` and `data-invalid`.
+
+To submit automatically once the code completes, use `onComplete` instead of a submit button:
+
+```tsx
+<OtpInput /* …field… */ onComplete={() => formRef.current?.requestSubmit()} />
+```
+
+</TabItem>
+
+</Tabs>
+
+## Formik
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+Wire `value` and `onValueChange` to the field; pass Formik's `field.onBlur` through so touched state
+works — it reads `event.target.name`, which the underlying input carries.
+
+```tsx
+import { Formik, Form, useField } from 'formik'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function PriceField() {
+  const [field, meta, helpers] = useField<number | null>('price')
+  return (
+    <>
+      <label htmlFor="price">Price</label>
+      <CurrencyInput
+        id="price"
+        name="price"
+        locale="de-DE"
+        currency="EUR"
+        value={field.value ?? null}
+        onValueChange={(value) => helpers.setValue(value)}
+        onBlur={field.onBlur}
+        invalid={meta.touched && !!meta.error}
+      />
+      {meta.touched && meta.error && <p>{meta.error}</p>}
+    </>
+  )
+}
+
+function PriceForm() {
+  return (
+    <Formik
+      initialValues={{ price: null as number | null }}
+      validate={(v) => (v.price == null ? { price: 'Enter a price' } : {})}
+      onSubmit={(values) => console.log(values.price)}
+    >
+      <Form>
+        <PriceField />
+        <button type="submit">Submit</button>
+      </Form>
+    </Formik>
+  )
+}
+```
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+Bridge Formik's `useField` helpers to `Rating`'s controlled props. `helpers.setValue` takes the
+`number` that `onChange` emits directly.
+
+```tsx
+import { Formik, Form, useField } from 'formik'
+import { Rating } from '@rxova/react-rating-input'
+
+function RatingField({ name, label }: { name: string; label: string }) {
+  const [field, meta, helpers] = useField<number>(name)
+
+  return (
+    <>
+      <Rating
+        name={name}
+        value={field.value}
+        onChange={helpers.setValue}
+        onBlur={field.onBlur}
+        precision={0.5}
+        label={label}
+        invalid={meta.touched && !!meta.error}
+        aria-describedby={meta.touched && meta.error ? `${name}-error` : undefined}
+      />
+      {meta.touched && meta.error && (
+        <p id={`${name}-error`} role="alert">
+          {meta.error}
+        </p>
+      )}
+    </>
+  )
+}
+
+function ReviewForm() {
+  return (
+    <Formik
+      initialValues={{ rating: 0 }}
+      validate={(v) => (v.rating < 1 ? { rating: 'Please rate before submitting' } : {})}
+      onSubmit={(values) => console.log(values)}
+    >
+      <Form>
+        <RatingField name="rating" label="Overall" />
+        <button type="submit">Send review</button>
+      </Form>
+    </Formik>
+  )
+}
+```
+
+### Notes
+
+- **`helpers.setValue` matches `onChange` exactly** — both speak `number`, so no adapter function is
+  needed.
+- **`field.onBlur` marks the field touched** at the right moment: when focus leaves the whole group.
+  Combined with `meta.touched`, error text does not appear until the user has finished choosing.
+- Pass `name` so the value also participates if the form is ever submitted natively.
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+Bind the field with `useField` and push updates through `setValue`:
+
+```tsx
+import { useField } from 'formik'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function CodeField() {
+  const [field, meta, helpers] = useField<string>('code')
+  return (
+    <>
+      <OtpInput
+        length={6}
+        label="One-time code"
+        name="code"
+        value={field.value}
+        onChange={(value) => helpers.setValue(value)}
+        onBlur={() => helpers.setTouched(true)}
+        invalid={Boolean(meta.touched && meta.error)}
+        aria-describedby={meta.touched && meta.error ? 'code-error' : undefined}
+      />
+      {meta.touched && meta.error && (
+        <p id="code-error" role="alert">
+          {meta.error}
+        </p>
+      )}
+    </>
+  )
+}
+```
+
+Drop `<CodeField />` inside a `<Formik>` / `<Form>` with an `initialValues={{ code: '' }}`. Validate
+in `validationSchema` or `validate` as usual — the value is a plain `string`.
+
+</TabItem>
+
+</Tabs>
+
+## React Final Form
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+React Final Form represents an empty field as `''`, so coerce it to `null` for `value`. The library's
+clamp already handles a stray `''`, but the example is explicit.
+
+```tsx
+import { Form, Field } from 'react-final-form'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function PriceForm() {
+  return (
+    <Form
+      onSubmit={(values) => console.log(values.price)}
+      validate={(v) => (v.price == null ? { price: 'Enter a price' } : {})}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="price">
+            {({ input, meta }) => (
+              <>
+                <label htmlFor="price">Price</label>
+                <CurrencyInput
+                  id="price"
+                  locale="de-DE"
+                  currency="EUR"
+                  value={typeof input.value === 'number' ? input.value : null}
+                  onValueChange={input.onChange}
+                  onBlur={input.onBlur}
+                  name={input.name}
+                  invalid={meta.touched && !!meta.error}
+                />
+                {meta.touched && meta.error && <p>{meta.error}</p>}
+              </>
+            )}
+          </Field>
+          <button type="submit">Submit</button>
+        </form>
+      )}
+    />
+  )
+}
+```
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+Use a `Field` render prop. The one thing to know: React Final Form represents an **empty field as
+`''`** (an empty string), so guard the value into a number before handing it to `Rating`.
+
+```tsx
+import { Form, Field } from 'react-final-form'
+import { Rating } from '@rxova/react-rating-input'
+
+function ReviewForm() {
+  return (
+    <Form
+      onSubmit={(values) => console.log(values)}
+      validate={(v) => (Number(v.rating) >= 1 ? {} : { rating: 'Please rate before submitting' })}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="rating">
+            {({ input, meta }) => (
+              <>
+                <Rating
+                  // RFF uses '' for an empty field, which is not a number.
+                  value={typeof input.value === 'number' ? input.value : 0}
+                  onChange={input.onChange}
+                  onBlur={input.onBlur}
+                  precision={1}
+                  label="Overall"
+                  invalid={meta.touched && !!meta.error}
+                  aria-describedby={meta.touched && meta.error ? 'rating-error' : undefined}
+                />
+                {meta.touched && meta.error && (
+                  <p id="rating-error" role="alert">
+                    {meta.error}
+                  </p>
+                )}
+              </>
+            )}
+          </Field>
+          <button type="submit">Send review</button>
+        </form>
+      )}
+    />
+  )
+}
+```
+
+### Notes
+
+- **The `''` guard is the whole trick.** `typeof input.value === 'number' ? input.value : 0` keeps
+  `Rating` on a numeric value even before the field has been touched.
+- `input.onChange` accepts the emitted `number` directly.
+- `input.onBlur` marks the field touched when focus leaves the whole group, so `meta.touched`-based
+  errors appear only after the user finishes.
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+Use a `Field` render prop. React Final Form represents an empty field as `''` — which is already a
+valid empty code, so unlike a numeric field there is **no value guard to write**.
+
+```tsx
+import { Form, Field } from 'react-final-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  return (
+    <Form
+      onSubmit={(values) => verify(values.code)}
+      validate={(v) => (v.code?.length === 6 ? {} : { code: 'Enter all six digits' })}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="code">
+            {({ input, meta }) => (
+              <>
+                <OtpInput
+                  length={6}
+                  label="One-time code"
+                  name={input.name}
+                  value={input.value}
+                  onChange={input.onChange}
+                  onBlur={input.onBlur}
+                  invalid={Boolean(meta.touched && meta.error)}
+                  aria-describedby={meta.touched && meta.error ? 'code-error' : undefined}
+                />
+                {meta.touched && meta.error && (
+                  <p id="code-error" role="alert">
+                    {meta.error}
+                  </p>
+                )}
+              </>
+            )}
+          </Field>
+          <button type="submit">Verify</button>
+        </form>
+      )}
+    />
+  )
+}
+```
+
+### Notes
+
+- `input.onChange` accepts the emitted `string` directly — the field value _is_ the code.
+- `input.value` is `''` until the user types; that renders as an empty field, no coercion needed.
+- `input.onBlur` marks the field touched when focus leaves the whole control, so
+  `meta.touched`-based errors appear only after the user finishes.
+
+</TabItem>
+
+</Tabs>
+
+## TanStack Form
+
+<Tabs groupId="component">
+
+<TabItem value="currency" label="Currency">
+
+Bind `field.state.value` and `field.handleChange`; pass `field.handleBlur` for touched state.
+
+```tsx
+import { useForm } from '@tanstack/react-form'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function PriceForm() {
+  const form = useForm({
+    defaultValues: { price: 0 },
+    onSubmit: ({ value }) => console.log(value.price),
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field name="price">
+        {(field) => (
+          <>
+            <label htmlFor="price">Price</label>
+            <CurrencyInput
+              id="price"
+              locale="ja-JP"
+              currency="JPY"
+              value={field.state.value}
+              onValueChange={(value) => field.handleChange(value ?? 0)}
+              onBlur={field.handleBlur}
+              name={field.name}
+            />
+          </>
+        )}
+      </form.Field>
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+</TabItem>
+
+<TabItem value="rating" label="Rating">
+
+Bridge a [TanStack Form](https://tanstack.com/form) field to `Rating`'s controlled props.
+`field.handleChange` takes the `number` that `onChange` emits directly, and `field.handleBlur` marks
+the field touched when focus leaves the whole group.
+
+```tsx
+import { useForm } from '@tanstack/react-form'
+import { Rating } from '@rxova/react-rating-input'
+
+function ReviewForm() {
+  const form = useForm({
+    defaultValues: { rating: 0 },
+    onSubmit: ({ value }) => console.log(value),
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field
+        name="rating"
+        validators={{
+          onChange: ({ value }) => (value < 1 ? 'Please rate before submitting' : undefined),
+        }}
+      >
+        {(field) => (
+          <>
+            <Rating
+              name="rating"
+              value={field.state.value}
+              onChange={field.handleChange}
+              onBlur={field.handleBlur}
+              precision={0.5}
+              label="Overall"
+              invalid={!field.state.meta.isValid}
+              aria-describedby={field.state.meta.isValid ? undefined : 'rating-error'}
+            />
+            {!field.state.meta.isValid && (
+              <p id="rating-error" role="alert">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            )}
+          </>
+        )}
+      </form.Field>
+      <button type="submit">Send review</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- **`field.handleChange` matches `onChange` exactly** — both speak `number`, so you can pass it
+  straight through with no adapter.
+- **`field.handleBlur` marks the field touched** when focus leaves the whole group, not while
+  arrowing between icons — so blur-based validation does not fire mid-choice.
+- **The `onChange` validator runs on change and again on submit**, so an unrated field (`0`) blocks
+  submission and surfaces the message.
+- **`field.state.meta.errors` is an array** and `!field.state.meta.isValid` is true whenever it is
+  non-empty — drive both the message and the `invalid` prop from it.
+
+</TabItem>
+
+<TabItem value="otp" label="OTP">
+
+Use a `form.Field` render prop. `field.handleChange` takes the emitted `string` directly, and
+`field.state.value` starts as the empty string you set in `defaultValues` — already a valid empty
+code, so there's nothing to coerce.
+
+```tsx
+import { useForm } from '@tanstack/react-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  const form = useForm({
+    defaultValues: { code: '' },
+    onSubmit: ({ value }) => verify(value.code),
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field
+        name="code"
+        validators={{
+          onChange: ({ value }) => (value.length === 6 ? undefined : 'Enter all six digits'),
+        }}
+      >
+        {(field) => (
+          <>
+            <OtpInput
+              length={6}
+              label="One-time code"
+              name="code"
+              value={field.state.value}
+              onChange={(value) => field.handleChange(value)}
+              onBlur={field.handleBlur}
+              invalid={!field.state.meta.isValid}
+              aria-describedby={field.state.meta.isValid ? undefined : 'code-error'}
+            />
+            {!field.state.meta.isValid && (
+              <p id="code-error" role="alert">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            )}
+          </>
+        )}
+      </form.Field>
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- `field.handleChange` receives the `string` code — no event to unwrap.
+- `field.handleBlur` marks the field touched when focus leaves the whole control, so validation runs
+  at the right time.
+- `field.state.meta.isValid` / `field.state.meta.errors` drive `invalid` and the error message.
+
+</TabItem>
+
+</Tabs>

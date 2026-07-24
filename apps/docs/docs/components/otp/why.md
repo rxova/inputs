@@ -1,0 +1,56 @@
+---
+sidebar_position: 2
+---
+
+# Why this exists
+
+The OTP field looks solved. It isn't — the ecosystem splits into two camps, each with a structural
+weakness, and `@rxova/react-otp-input` targets the empty quadrant between them.
+
+## The two camps
+
+**The single-input camp** — the dominant approach, powering the most-used OTP fields — puts **one
+hidden native `<input>`** under N painted slots. That's the right idea: accessibility, paste, autofill,
+IME and native selection all come for free from the one real field. But it crushes that input to a
+~1 px column with `letter-spacing: -.5em` so the slot boundaries line up, and the cost is steep: **you
+cannot click or tap a specific middle slot to edit it** — only arrow keys move the caret. The
+collapsed-input approach has also historically struggled with Chrome auto-translate and with
+password-manager badges (working around them by hacking the input's width).
+
+**The N-input camp** — design-system pin inputs and standalone multi-input widgets — renders **N
+separate `<input>`s**. That gives real per-slot interaction, but ships only _inside_ a design system
+or _only_ as an `unstable_` primitive, makes you wire your own `aria-label`s, and re-renders per
+keystroke — some flip the mobile keyboard from numeric to alpha mid-entry.
+
+And **almost nobody ships the WebOTP API**. Most libraries rely solely on the `autocomplete` attribute.
+
+## The bet: one real input, real spatial slots
+
+`@rxova/react-otp-input` keeps the single-input architecture — a `pointer-events: none` layer of slots with
+one transparent `<input>` positioned `inset: 0` on top — so screen readers, paste, autofill, WebOTP,
+IME and native `<form>` posting all see one ordinary text field.
+
+Where it diverges is **spatial mapping**. Instead of crushing the input, it lays the input's
+characters out at their **true slot pitch** (monospace metrics + a computed `letter-spacing` matched
+to the slot size and gap). So:
+
+- a click or tap maps to the correct caret index — **tap any slot to edit it**;
+- native selection and the OS copy/paste callout work at real coordinates;
+- backspace, arrows, Home/End and shift-select all come from the platform, per slot, for free.
+
+The visible characters and blinking caret are ours (painted per slot); the input's own text and caret
+are transparent.
+
+## The one honest tradeoff
+
+iOS Safari cannot fully style `::selection` to transparent. When a real selection spans slots on iOS,
+a faint native highlight can show through. So the default `slotInteraction="spatial"` **auto-degrades
+to `"crush"` on iOS** — tap-to-edit stays keyboard-plus-caret there, full spatial everywhere else. You
+can force either mode explicitly. This is a documented, chosen default, not a hidden bug —
+see [Spatial slots](/components/otp/spatial-slots).
+
+## What that buys you
+
+The result is a field that is **standalone, headless, and correct on the exact seams** the incumbents
+leave open — spatial tap-to-edit, WebOTP, CSP-safe styling, formatted paste, translate safety, and
+form-library-native ergonomics — without a design system and without a stylesheet.
