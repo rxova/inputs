@@ -1,6 +1,6 @@
 {
   "name": "@rxova/react-rating-input",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Any icon, any precision, accessible. A headless, zero-dependency React rating component.",
   "keywords": [
