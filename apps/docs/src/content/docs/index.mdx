@@ -1,0 +1,18 @@
+---
+title: Live code smoke test
+---
+
+## A: bare function declaration (what the 29 existing blocks use)
+
+```tsx live
+function TryIt() {
+  const [value, setValue] = useState(3.5)
+  return <div><Rating value={value} onChange={setValue} precision={0.5} /><p>value: {value}</p></div>
+}
+```
+
+## B: JSX expression
+
+```tsx live
+<Rating value={3.5} precision={0.5} />
+```

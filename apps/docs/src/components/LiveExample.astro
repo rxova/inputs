@@ -1,0 +1,17 @@
+---
+/**
+ * Astro wrapper for the react-live island.
+ *
+ * `client:visible` rather than `client:load`: a component page can carry half a
+ * dozen examples, and hydrating all of them on first paint would cost more than
+ * the page is worth. They come alive as they scroll into view.
+ */
+import LiveExample from './LiveExample.tsx'
+
+interface Props {
+  code: string
+}
+const { code } = Astro.props
+---
+
+<LiveExample client:visible code={code} />

@@ -1,0 +1,63 @@
+/* Editable examples. The preview sits on the card surface so components are
+   framed the same way on every page; the editor is visually secondary to it. */
+.rx-live {
+  margin-block: 1.5rem;
+  border: 1px solid var(--rx-rule);
+  border-radius: var(--rx-radius);
+  overflow: hidden;
+}
+.rx-live__preview {
+  padding: 1.5rem;
+  background: var(--rx-card);
+}
+.rx-live__label {
+  display: block;
+  padding: 0.4rem 0.75rem;
+  border-top: 1px solid var(--rx-rule);
+  color: var(--rx-faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rx-live__editor textarea,
+.rx-live__editor pre {
+  font-family: var(--rx-font-mono) !important;
+  font-size: 0.85rem !important;
+}
+.rx-live__error {
+  padding: 0.75rem 1rem;
+  background: #40151b;
+  color: #ffb4b4;
+  font-family: var(--rx-font-mono);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}
+
+/* The components are headless — they read every colour and size from CSS
+   custom properties and ship no stylesheet. Under Docusaurus these picked up
+   the theme's own variables; here the preview surface has to supply them, or a
+   Rating renders as invisible SVG on the card background (which is exactly what
+   happened the first time this ran).
+   
+   Defined on the preview container rather than :root so a page can still
+   override them per example, and so the docs' own chrome is unaffected. */
+.rx-live__preview {
+  color: var(--rx-fg);
+
+  /* Rating */
+  --rfs-color-filled: var(--rx-primary);
+  --rfs-color-empty: var(--rx-rule-strong);
+  --rfs-color-hover: var(--rx-primary-light);
+  --rfs-focus-ring: 2px solid var(--rx-primary);
+  --rfs-focus-ring-offset: 2px;
+
+  /* OTP */
+  --otp-color: var(--rx-fg);
+  --otp-bg: var(--rx-bg);
+  --otp-border: 1px solid var(--rx-rule-strong);
+  --otp-radius: var(--rx-radius-sm);
+  --otp-active-ring: 2px solid var(--rx-primary);
+  --otp-caret-color: var(--rx-primary);
+  --otp-placeholder-color: var(--rx-faint);
+  --otp-separator-color: var(--rx-faint);
+}

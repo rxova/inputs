@@ -1,13 +1,11 @@
 {
-  "extends": "@docusaurus/tsconfig",
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "baseUrl": ".",
-    "paths": {
-      "@rxova/react-intl-currency-input": ["../../packages/react-intl-currency-input/src/index.ts"],
-      "@rxova/react-rating-input": ["../../packages/react-rating-input/src/index.ts"],
-      "@rxova/react-otp-input": ["../../packages/react-otp-input/src/index.ts"]
-    }
+    "paths": { "@components/*": ["src/components/*"] }
   },
-  "include": ["docusaurus.config.ts", "sidebars.ts", "src"],
-  "exclude": ["build", ".docusaurus"]
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
 }
