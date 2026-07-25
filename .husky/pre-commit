@@ -1,11 +1,19 @@
 #!/usr/bin/env sh
 set -e
 
+# Commit-time gate: only the checks that are cheap AND that catch something a
+# commit can get wrong locally. Everything else (tests, build, size budgets,
+# audit, dedupe, packaging) lives in pre-push, which is the gate that decides
+# whether CI will be green. Running the full suite here made every commit of a
+# multi-commit branch pay for the entire pipeline.
+#
+# lint-staged already runs eslint --fix + prettier over exactly the staged
+# files, so the old full-repo `pnpm run lint` on this line was duplication.
 pnpm exec lint-staged
-pnpm run lint
-pnpm run typecheck
-pnpm run test:coverage
-# Build first: size-limit measures dist/, so without this the hook fails
-# confusingly on a fresh clone that has never been built.
-pnpm run build
-pnpm run size
+
+# Typecheck is the one thing lint-staged cannot do per-file: types are a
+# whole-program property. Turbo replays it from cache for every package whose
+# inputs are byte-identical, so in practice this only re-checks the packages the
+# commit actually touched -- without asking git what "changed", which is what
+# keeps it correct during rebase, cherry-pick and merge.
+pnpm exec turbo run typecheck

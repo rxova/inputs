@@ -74,6 +74,28 @@
       "inputs": ["README.md", "packages/*/README.md", "packages/utils/check-doc-snippets.mjs"],
       "outputLogs": "new-only"
     },
+    // A root task (`//#`) for the same reason as check:docs: `pnpm dedupe
+    // --check` reads the whole workspace in one pass from the root, so there is
+    // nothing to fan out. It is the single most expensive check in the pre-push
+    // gate (~23s) and yet a pure function of the dependency graph — the
+    // lockfile, the workspace definition, and every manifest that feeds them.
+    // Keying the cache on exactly those files means editing source, tests or
+    // docs replays it instantly, while any dependency change re-runs it.
+    //
+    // Deliberately NOT applied to audit:check: that one's result depends on the
+    // upstream advisory database, which changes without any file changing here,
+    // so caching it locally could replay a pass over a newly-disclosed CVE.
+    "//#dedupe:check": {
+      "outputs": [],
+      "inputs": [
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "package.json",
+        "packages/*/package.json",
+        "apps/*/package.json"
+      ],
+      "outputLogs": "new-only"
+    },
     "e2e": {
       "cache": false
     },
