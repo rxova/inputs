@@ -1,5 +1,11 @@
 # @rxova/react-intl-currency-input
 
+## 0.1.2
+
+### Patch Changes
+
+- [`52a71be`](https://github.com/rxova/react-inputs/commit/52a71be1cacad59dafff8b3951cbc15bf4b2fd88) - Add the currency input package logo and refresh the Rxova React Inputs documentation.
+
 ## 0.1.1
 
 ### Patch Changes
