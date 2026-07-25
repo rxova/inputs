@@ -10,7 +10,8 @@
       // the installed theme/plugins. Caching+restoring it across contexts breaks
       // webpack module resolution (stale @theme/Debug* refs). Only build/** (the
       // static site) and dist/** (library builds) are real, portable outputs.
-      "outputs": ["dist/**", "build/**"],
+      // The docs package overrides this with build/** in its local config.
+      "outputs": ["dist/**"],
       // A library build only reads src + build config. Excluding e2e/tests/demo/
       // docs-adjacent files keeps editing them from busting the build cache
       // (they can't affect dist). $TURBO_DEFAULT$ keeps the normal file set.
@@ -25,7 +26,6 @@
         "!README.md",
         "!CHANGELOG.md"
       ],
-      "env": ["DOCS_URL", "DOCS_BASE_URL"],
       "outputLogs": "new-only"
     },
     "typecheck": {
@@ -43,6 +43,10 @@
       "outputs": ["coverage/**"],
       "outputLogs": "new-only"
     },
+    // These three all inspect a package's build artifacts, so they must never
+    // run against a stale or absent dist. Declaring the dependency here rather
+    // than per-package means a package added later inherits the guarantee — a
+    // missing local turbo.json would otherwise pass silently against old output.
     "check:exports": {
       "dependsOn": ["build"],
       "outputs": [],
@@ -51,10 +55,13 @@
     "pack:smoke": {
       "dependsOn": ["build"],
       "outputs": [],
-      // The smoke test logic lives in the shared packages/utils/pack-smoke.mjs,
-      // outside each package — include it so editing it invalidates the cache
-      // instead of silently replaying an old pass.
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/utils/pack-smoke.mjs"],
+      // Smoke-test logic lives in shared scripts outside each package — include
+      // both so editing either invalidates the cache instead of replaying an old pass.
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/utils/pack-smoke.mjs",
+        "$TURBO_ROOT$/packages/utils/codemod-pack-smoke.mjs"
+      ],
       "outputLogs": "new-only"
     },
     "size": {

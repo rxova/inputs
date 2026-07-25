@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { run as jscodeshift } from 'jscodeshift/src/Runner'
+import { realpathSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { TRANSFORMS } from './registry'
@@ -26,7 +27,7 @@ const [name, ...paths] = positionals
 
 if (!name || args.includes('--help') || args.includes('-h')) {
   usage()
-  process.exit(name ? 0 : 1)
+  process.exit(args.includes('--help') || args.includes('-h') ? 0 : 1)
 }
 
 const entry = TRANSFORMS.find((t) => t.name === name)
@@ -43,7 +44,8 @@ if (paths.length === 0) {
 }
 
 // process.argv[1] is this script (dist/bin.cjs); transforms sit in dist/transforms/.
-const transformPath = resolve(dirname(process.argv[1] ?? ''), 'transforms', `${name}.cjs`)
+const executablePath = realpathSync(process.argv[1] ?? '')
+const transformPath = resolve(dirname(executablePath), 'transforms', `${name}.cjs`)
 const dry = args.includes('--dry')
 
 jscodeshift(transformPath, paths, {
