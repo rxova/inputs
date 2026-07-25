@@ -10,6 +10,35 @@ overrides:
   # sockjs has no patched release and still requests uuid 8.x through the docs
   # dev server, so force the first version containing the bounds-check fix.
   uuid: 11.1.1
+  # GHSA-mh99-v99m-4gvg: unbounded brace expansion crashes the process (DoS).
+  # Scoped to the 5.x line on purpose. Two copies resolve here --
+  # minimatch@3.1.5 -> brace-expansion@1.1.16 and minimatch@10.2.5 ->
+  # brace-expansion@5.0.7 -- and only the second is in the advisory's affected
+  # line. A bare `brace-expansion: '>=5.0.8'` would also drag the 1.x consumer
+  # across four majors for no security gain; this way the fix is a patch bump
+  # with an unchanged API. Dev-only (eslint's minimatch), never shipped.
+  brace-expansion@5: '>=5.0.8'
+auditConfig:
+  # GHSA-mh99-v99m-4gvg (brace-expansion DoS). The 5.x line is fixed by the
+  # override above; this ignore covers the ONE remaining copy, which has no
+  # available fix:
+  #   apps/docs > @docusaurus/core > serve-handler@6.1.7 > minimatch@3.1.5
+  #     > brace-expansion@1.1.16
+  # serve-handler@6.1.7 is the latest release and pins minimatch to exactly
+  # 3.1.5; minimatch's legacy-v3 line ends at 3.1.5; and 1.1.16 is the newest
+  # 1.x brace-expansion, while the advisory marks everything <5.0.8 affected.
+  # Bumping that copy to 5.x is not an option: 5.x exports { expand } rather
+  # than a callable, and minimatch@3 calls require('brace-expansion')(...)
+  # directly, so it would break `docusaurus serve` at runtime.
+  #
+  # Scope of the risk: the docs site's local preview server, dev-only, never
+  # part of any published package.
+  #
+  # REMOVE THIS as soon as serve-handler ships a release off minimatch@3.1.5 --
+  # `pnpm why minimatch` should then show no 3.x copy, and dropping this line
+  # must leave `pnpm run audit:check` green.
+  ignoreGhsas:
+    - GHSA-mh99-v99m-4gvg
 allowBuilds:
   core-js: false
   esbuild: true
