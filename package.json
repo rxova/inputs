@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The rxova monorepo: a suite of headless, accessible React input components.",
+  "description": "Rxova React Inputs: a suite of headless, accessible React input components.",
   "scripts": {
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",

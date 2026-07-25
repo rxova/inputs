@@ -1,16 +1,16 @@
 <p align="center">
   <a href="https://rxova.org/packages/react-inputs/">
-    <img src="apps/docs/static/img/logo.png" width="112" alt="rxova" />
+    <img src="assets/logo.svg" width="112" alt="Rxova React Inputs logo" />
   </a>
 </p>
 
-<h1 align="center">rxova</h1>
+<h1 align="center">Rxova React Inputs</h1>
 
-<p align="center"><strong>The tricky React inputs, done right.</strong></p>
+<p align="center"><strong>Complex React inputs made simple. Headless, lightweight, accessible, tested E2E.</strong></p>
 
 <p align="center">
-  Headless, accessible, zero-dependency React input components — currency, rating,<br />
-  and one-time-code — that each solve a problem the ecosystem keeps getting wrong.
+  Thoughtful React components for polished input experiences, with flexible styling,<br />
+  small bundles, and careful attention to interaction details.
 </p>
 
 <p align="center">
@@ -26,30 +26,29 @@
   <a href="https://rxova.org/packages/react-inputs/"><strong>Documentation</strong></a> ·
   <a href="https://rxova.org/packages/react-inputs/getting-started/installation">Installation</a> ·
   <a href="https://rxova.org/packages/react-inputs/getting-started/quick-start">Quick start</a> ·
-  <a href="https://rxova.org/packages/react-inputs/overview">Why these three</a> ·
+  <a href="https://rxova.org/packages/react-inputs/overview">Why Rxova React Inputs</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 ---
 
-Most input libraries ship a hundred components and get the hard ones wrong. rxova ships three and
-gets them right: a currency field that reads every locale fact from `Intl` instead of hardcoding
-"a comma every three digits", a rating that fills icons to exact fractions, and a one-time-code
-field built on one real `<input>` so paste, SMS autofill and IME come from the platform.
+Complex inputs deserve careful handling of formatting, interaction, accessibility and forms. Rxova
+React Inputs brings those details together in focused components, helping you create a polished
+experience while keeping control of markup and styling.
 
-The same principles hold across all three — a real `<input>` where it matters, native form
-submission, keyboard and screen-reader behaviour inherited from platform semantics rather than
-hand-rolled JavaScript, a small typed API, and **no stylesheet to import**.
+Every component follows the same principles: platform semantics, native form submission, a small
+typed API and **no stylesheet to import**. The result is a suite that works with your design system
+and gives you more time to focus on the experience you want to build.
 
 ## The suite
 
 | Package                                                                                                                                                                                                                                       | What it does                                                                    | Brotli    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------- |
 | [**`@rxova/react-intl-currency-input`**](packages/react-intl-currency-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-intl-currency-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-intl-currency-input) | Locale-aware money entry with correct grouping, symbols and no cursor bugs      | ≤ 3.25 kB |
-| [**`@rxova/react-rating-input`**](packages/react-rating-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-rating-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-rating-input)                             | Any icon, any precision. A real `radiogroup` interactive, an image read-only    | ≤ 3 kB    |
+| [**`@rxova/react-rating-input`**](packages/react-rating-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-rating-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-rating-input)                             | Any icon, any precision, with `radiogroup` semantics and a read-only image mode | ≤ 3 kB    |
 | [**`@rxova/react-otp-input`**](packages/react-otp-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-otp-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-otp-input)                                         | One-time-code entry with spatial slots, paste handling and WebOTP autofill      | ≤ 4.5 kB  |
 | [**`@rxova/react-inputs`**](packages/react-inputs)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-inputs?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-inputs)                                                     | Meta-package — the whole suite from one install, tree-shaken to what you import | ≤ 10 kB   |
-| [**`@rxova/codemod`**](packages/codemod)<br />[![npm](https://img.shields.io/npm/v/@rxova/codemod?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/codemod)                                                                         | `jscodeshift` transforms that migrate you off other libraries                   | —         |
+| [**`@rxova/codemod`**](packages/codemod)<br />[![npm](https://img.shields.io/npm/v/@rxova/codemod?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/codemod)                                                                         | `jscodeshift` helpers for supported migration paths                             | —         |
 
 ## Installation
 
@@ -68,19 +67,22 @@ npm install @rxova/react-otp-input
 The two are equivalent — the meta-package re-exports each component, and `sideEffects: false`
 means your bundler drops whatever you don't import.
 
+## Usage
+
 ```ts
 import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
 // or
 import { OtpInput } from '@rxova/react-otp-input'
 ```
 
-**Requires** React 18 or 19 — the only peer dependency (currency also peers `react-dom`). Dual
-ESM/CJS builds with types for both, published with npm provenance.
+Requires React 18 or 19. React is the shared peer dependency; the currency package also lists React
+DOM as a peer. Each package includes dual ESM/CJS builds with types for both and is published with
+npm provenance.
 
 ## Quick start
 
-Every rxova input is a controlled component: give it a value and a change handler and it behaves
-like any other form field.
+Components from Rxova React Inputs use controlled values: provide a value and a change handler, and
+they fit naturally alongside your other form fields.
 
 ```tsx
 import { useState } from 'react'
@@ -101,28 +103,29 @@ function Checkout() {
 }
 ```
 
-Each component emits a plain value — a `number`, a `number`, and a `string` — not a synthetic
-event. Pass `name` instead and the value posts natively from a plain `<form>`.
+Each change handler receives the component's plain value rather than a synthetic event. Add `name`
+when you want the value to submit natively from a plain `<form>`.
 
-## Why rxova
+## Why Rxova React Inputs
 
 - **Headless.** No stylesheet to import. Only layout-critical CSS is inlined; everything visual is
   a CSS custom property or a `data-*` hook, and those selectors are covered by semver.
-- **Accessible by construction.** Native radios in a `radiogroup`, one real `<input>` behind the
-  OTP slots, `role="img"` when read-only. Keyboard navigation, focus-visible, RTL and
+- **Accessible by construction.** Native radios in a `radiogroup`, a single underlying `<input>`
+  behind the OTP slots, and `role="img"` when read-only. Keyboard navigation, focus-visible, RTL and
   `prefers-reduced-motion` come from the platform, and every build is checked with
   `@axe-core/playwright`.
-- **Zero runtime dependencies.** `react` is the only peer. Nothing else reaches your bundle, and
-  each package carries a `size-limit` budget enforced on every pull request.
-- **Correct on the seams.** Bulgarian's "space only above 9999", Hindi lakh grouping, Arabic native
-  digits, formatted paste, Chrome auto-translate, IME, RTL, SSR/RSC.
+- **Lightweight.** There are no bundled runtime dependencies. React is a peer, and the currency
+  package also peers React DOM. Each package carries a `size-limit` budget enforced on every pull
+  request.
+- **Designed for important details.** Locale-specific grouping, native digits, formatted paste,
+  browser translation, IME, RTL and SSR/RSC are covered as part of the supported experience.
 - **Typed, tested, documented.** TypeScript strict, 95% per-file coverage thresholds, unit plus
-  real-browser plus Playwright e2e suites, and an API reference generated from source by TypeDoc so
-  it cannot drift from the code.
+  browser plus Playwright E2E suites, and an API reference generated from source by TypeDoc so it
+  stays aligned with the code.
 
 ## Documentation
 
-Full guides, live editable examples and the generated API reference:
+Full guides, live editable examples and the generated API reference for Rxova React Inputs:
 **[rxova.org/packages/react-inputs](https://rxova.org/packages/react-inputs/)**
 
 | Component | Guide                                                               | API reference                                                          |
@@ -138,28 +141,18 @@ Cross-cutting guides:
 
 ## Migrating
 
-Coming from another library? There are guides for
-[`input-otp`](https://rxova.org/packages/react-inputs/migrating/from-input-otp),
-[`react-otp-input`](https://rxova.org/packages/react-inputs/migrating/from-react-otp-input),
-[`react-currency-input-field`](https://rxova.org/packages/react-inputs/migrating/from-react-currency-input-field),
-[`react-rating`](https://rxova.org/packages/react-inputs/migrating/from-react-rating),
-[`react-stars`](https://rxova.org/packages/react-inputs/migrating/from-react-stars) and
-[plain radio buttons](https://rxova.org/packages/react-inputs/migrating/from-radio-buttons).
-
-Part of it is automated. Preview a transform before it writes anything:
-
-```bash
-npx @rxova/codemod input-otp-to-otp --dry ./src
-```
+Each component package includes migration guidance. Choose your component in the
+[Rxova React Inputs documentation](https://rxova.org/packages/react-inputs/) to find its available
+guides.
 
 ## Contributing
 
 ```bash
 pnpm install
-pnpm dev              # shared playground for all three components
+pnpm dev              # shared playground for the component suite
 pnpm run docs         # docs site (use `pnpm run`: `docs` can shadow a pnpm builtin)
 pnpm build            # turbo run build, cached
-pnpm test             # unit + real-browser suites
+pnpm test             # unit + browser suites
 pnpm typecheck
 pnpm lint
 pnpm exec changeset   # stage a release
@@ -206,4 +199,4 @@ apps/
 
 ## License
 
-[MIT](LICENSE) © rxova
+[MIT](LICENSE) © Rxova
