@@ -42,6 +42,7 @@ auditConfig:
 allowBuilds:
   core-js: false
   esbuild: true
+  sharp: true
 minimumReleaseAgeExclude:
   - '@vitejs/plugin-react@6.0.4'
   # Reviewed dependency upgrades requested before the 24-hour quarantine ends.
@@ -49,3 +50,4 @@ minimumReleaseAgeExclude:
   - lint-staged@17.2.0
   - tsdown@0.22.14
   - verkit@0.3.0
+  - '@rxova/brand'

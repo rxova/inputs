@@ -1,0 +1,949 @@
+---
+title: 'About'
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+## Custom icons
+
+The library owns geometry; you own appearance. An `icon` (and optional `emptyIcon`) can be any
+`ReactNode`, or a **function** of per-icon state.
+
+### An SVG
+
+Any SVG works. Size it in `em` so it scales with `--rfs-size`, and give it `fill="currentColor"` so
+it picks up the fill color the component sets from `--rfs-color-filled`:
+
+```tsx
+function Heart() {
+  return (
+    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+      <path d="M12 21s-8-4.9-8-10.4A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 3.6C20 16.1 12 21 12 21z" />
+    </svg>
+  )
+}
+```
+
+```tsx
+<Rating value={3.5} max={5} icon={<Heart />} style={{ '--rfs-color-filled': 'crimson' }} />
+```
+
+Provide a distinct outline for the empty state, or omit `emptyIcon` to reuse the same icon dimmed:
+
+```tsx
+<Rating value={3.5} icon={<HeartFilled />} emptyIcon={<HeartOutline />} />
+```
+
+### An emoji
+
+An emoji string is a valid icon, including ZWJ sequences (the component never clips mid-sequence):
+
+```tsx
+<Rating value={3.5} icon="⭐" />
+<Rating value={2.5} icon="👩‍🍳" />
+```
+
+:::caution[Emoji ignore `--rfs-color-filled`]
+Emoji render from a **color font**, so CSS `color` cannot recolor them. The implicit empty layer is
+therefore dimmed with `--rfs-empty-filter` (a `grayscale`/`opacity` filter), which works on emoji and
+SVG alike. Pass an explicit `emptyIcon` to control the empty look yourself.
+:::
+
+### An image
+
+```tsx
+<Rating value={4} icon={<img src="/badge.svg" alt="" width="24" height="24" />} />
+```
+
+### A render function
+
+For conditional icons, pass a function. It receives per-icon state and returns a node:
+
+```tsx
+<Rating value={2.5} icon={(s) => <span>{s.partial ? '◐' : s.filled ? '●' : '○'}</span>} />
+```
+
+The state object:
+
+| Field     | Meaning                                   |
+| --------- | ----------------------------------------- |
+| `index`   | 0-based position in the row               |
+| `fill`    | Fill ratio for this icon, `0..1`          |
+| `filled`  | `fill >= 1`                               |
+| `empty`   | `fill <= 0`                               |
+| `partial` | `0 < fill < 1`                            |
+| `active`  | A hover/keyboard preview covers this icon |
+
+Because the fill layer clips whatever you return by width, a render function still gets exact
+partial fills — you are choosing the _glyph_, not reimplementing the geometry.
+
+## Forms
+
+`onChange` emits a **`number`, not an event**, so `{...register('rating')}` will not work directly.
+Every major form library has a controlled adapter — that is the supported path, and it is one line
+longer than a plain input.
+
+The props that make a rating a well-behaved form field:
+
+| Prop                 | Purpose                                                        |
+| -------------------- | -------------------------------------------------------------- |
+| `name`               | Radio group name; also posts a value to a native `<form>`      |
+| `value` / `onChange` | Controlled value in, `number` out                              |
+| `onBlur`             | Fires when focus leaves the **whole group**, not between icons |
+| `invalid`            | Sets `aria-invalid` and `data-invalid` for error styling       |
+| `aria-describedby`   | Points the group at your external error / help text            |
+| `required`           | Marks the field required                                       |
+
+:::tip[Validation fires at the right time]
+`onBlur` fires only when focus leaves the entire group — never while arrowing between icons — so
+touched-based validation does not fire while the user is still choosing.
+:::
+
+### Copy-paste recipes
+
+Each library has a dedicated, complete recipe:
+
+- **[React Hook Form](/components/rating/about)** — `Controller` + `rules`
+- **[Formik](/components/rating/about)** — `useField` + helpers
+- **[React Final Form](/components/rating/about)** — `Field` render prop
+- **[TanStack Form](/components/rating/about)** — `form.Field` + validators
+- **[Native `<form>`](/components/rating/about)** — no library, posts via `name`
+
+### The shape they share
+
+All three controlled adapters line up the same handful of props. React Hook Form is the shortest
+because `field` already carries `value`, `onChange`, `onBlur`, `name`, and `ref`:
+
+```tsx
+<Controller
+  name="rating"
+  control={control}
+  rules={{ min: { value: 1, message: 'Please rate' } }}
+  render={({ field, fieldState }) => (
+    <>
+      <Rating
+        {...field} // value, onChange, onBlur, name, ref all line up
+        precision={0.5}
+        invalid={fieldState.invalid}
+        aria-describedby={fieldState.error ? 'rating-err' : undefined}
+      />
+      {fieldState.error && <p id="rating-err">{fieldState.error.message}</p>}
+    </>
+  )}
+/>
+```
+
+### Native forms
+
+With a plain `<form>`, no adapter is needed — pass `name` and the selected value posts natively under
+that name:
+
+```tsx
+<form method="post">
+  <Rating name="score" defaultValue={0} onChange={() => {}} precision={1} label="Score" />
+  <button type="submit">Submit</button>
+</form>
+```
+
+See [Native forms](/components/rating/about) for the uncontrolled and controlled variants.
+
+## Styling
+
+There is no stylesheet to import. `Rating` inlines only the handful of declarations that make the
+layout work (the flex row, the two stacked layers, the clip that reveals a partial fill). Everything
+_visual_ — size, spacing, colour, motion, focus — is exposed as either a **CSS custom property** you
+set, or a **`data-*` hook** you target from your own CSS.
+
+That means you style it the way you style your own components: no wrapper, no `!important`, no
+reaching into internals, no class-name lottery. Every knob on this page is **live** — edit any demo
+and watch the component react.
+
+:::tip[Everything below is editable]
+The blocks marked **Live** render the actual component. Change a number or a colour and it updates
+instantly.
+:::
+
+### The anatomy of one icon
+
+Knowing what the properties _target_ makes the rest of the page obvious. Each icon slot is two
+absolutely-stacked layers inside a sized box:
+
+```
+[data-rfs-root]                     ← the flex row; --rfs-gap separates items
+ └─ [data-rfs-item]                 ← one icon slot; --rfs-size sets its font-size (the box)
+     ├─ [data-rfs-layer="empty"]    ← the track, full width; --rfs-color-empty (+ --rfs-empty-filter)
+     └─ [data-rfs-layer="fill"]     ← the fill, clipped to the value's %; --rfs-color-filled
+```
+
+The fill layer sits on top of the empty layer and is clipped to a percentage width, so a `4.3`
+rating reveals 30% of the fifth icon. Because the box is sized by **`font-size`**, an emoji (which
+scales by font-size, not `width`/`height`) sizes identically to an inline SVG.
+
+### Interactive playground
+
+Drag the sliders and pick colours — the box at the top is a live, interactive `Rating`, and the
+panel underneath is the exact CSS you'd paste into your own stylesheet.
+
+```tsx live
+function StylingPlayground() {
+  const [size, setSize] = useState(2.5)
+  const [gap, setGap] = useState(0.25)
+  const [filled, setFilled] = useState('#f5a623')
+  const [empty, setEmpty] = useState('#d8d8d8')
+  const [hover, setHover] = useState('#f5a623')
+  const [transition, setTransition] = useState(120)
+  const [score, setScore] = useState(3.5)
+
+  const vars = {
+    '--rfs-size': `${size}rem`,
+    '--rfs-gap': `${gap}rem`,
+    '--rfs-color-filled': filled,
+    '--rfs-color-empty': empty,
+    '--rfs-color-hover': hover,
+    '--rfs-transition': `${transition}ms`,
+  }
+
+  const Row = ({ label, children }) => (
+    <label
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '7rem 1fr auto',
+        alignItems: 'center',
+        gap: '0.75rem',
+      }}
+    >
+      <span style={{ fontSize: '0.85rem' }}>{label}</span>
+      {children}
+    </label>
+  )
+
+  return (
+    <div style={{ display: 'grid', gap: '1.25rem' }}>
+      <div style={{ minHeight: `${size * 1.4}rem`, display: 'flex', alignItems: 'center' }}>
+        <Rating value={score} onChange={setScore} precision={0.5} style={vars} label="Playground" />
+      </div>
+
+      <div style={{ display: 'grid', gap: '0.5rem', maxWidth: 460 }}>
+        <Row label="size">
+          <input
+            type="range"
+            min={1}
+            max={6}
+            step={0.25}
+            value={size}
+            onChange={(e) => setSize(+e.target.value)}
+          />
+          <code>{size}rem</code>
+        </Row>
+        <Row label="gap">
+          <input
+            type="range"
+            min={0}
+            max={1.5}
+            step={0.05}
+            value={gap}
+            onChange={(e) => setGap(+e.target.value)}
+          />
+          <code>{gap}rem</code>
+        </Row>
+        <Row label="transition">
+          <input
+            type="range"
+            min={0}
+            max={800}
+            step={20}
+            value={transition}
+            onChange={(e) => setTransition(+e.target.value)}
+          />
+          <code>{transition}ms</code>
+        </Row>
+        <Row label="filled">
+          <input type="color" value={filled} onChange={(e) => setFilled(e.target.value)} />
+          <code>{filled}</code>
+        </Row>
+        <Row label="empty">
+          <input type="color" value={empty} onChange={(e) => setEmpty(e.target.value)} />
+          <code>{empty}</code>
+        </Row>
+        <Row label="hover">
+          <input type="color" value={hover} onChange={(e) => setHover(e.target.value)} />
+          <code>{hover}</code>
+        </Row>
+      </div>
+
+      <pre style={{ margin: 0 }}>
+        {`[data-rfs-root] {\n${Object.entries(vars)
+          .map(([k, v]) => `  ${k}: ${v};`)
+          .join('\n')}\n}`}
+      </pre>
+    </div>
+  )
+}
+```
+
+### Every custom property
+
+The complete set. Every one has a fallback baked in, so you only override what you care about.
+
+| Property                  | Default                      | Controls                                                       |
+| ------------------------- | ---------------------------- | -------------------------------------------------------------- |
+| `--rfs-size`              | `1.25rem`                    | Icon size. Any unit — it's a `font-size`, so `em`/`%` cascade. |
+| `--rfs-gap`               | `0.125rem`                   | Horizontal space between icons.                                |
+| `--rfs-color-filled`      | `#f5a623`                    | Colour of the filled (fill-layer) icon.                        |
+| `--rfs-color-empty`       | `#d8d8d8`                    | Colour of the empty (track) icon.                              |
+| `--rfs-color-hover`       | `var(--rfs-color-filled)`    | Colour of the hover/keyboard preview fill.                     |
+| `--rfs-empty-filter`      | `grayscale(1) opacity(0.35)` | CSS `filter` on the _implicit_ empty layer (see below).        |
+| `--rfs-transition`        | `120ms`                      | Duration of the fill/preview width transition.                 |
+| `--rfs-focus-ring`        | `2px solid Highlight`        | `outline` shorthand drawn on the focused icon.                 |
+| `--rfs-focus-ring-offset` | `2px`                        | `outline-offset` of the focus ring.                            |
+| `--rfs-focus-ring-radius` | `2px`                        | `border-radius` of the focus ring.                             |
+
+Because they're custom properties, they **cascade**. Set them on `[data-rfs-root]`, on the element's
+`style` prop, on a wrapper `class`, or on `:root` for the whole app — whatever scope you want.
+
+#### Size — `--rfs-size`
+
+Size is a single property, in any unit. Set it inline for one instance, or on an ancestor to size a
+whole group. Since it's a `font-size`, relative units (`em`, `%`) inherit naturally.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem' }}>
+  <Rating value={3.5} style={{ '--rfs-size': '1rem' }} />
+  <Rating value={3.5} style={{ '--rfs-size': '1.75rem' }} />
+  <Rating value={3.5} style={{ '--rfs-size': '3rem' }} />
+</div>
+```
+
+#### Gap — `--rfs-gap`
+
+The space between icons. `0` packs them flush; larger values give an airier row.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '1.75rem' }}>
+  <Rating value={3.5} style={{ '--rfs-gap': '0' }} />
+  <Rating value={3.5} style={{ '--rfs-gap': '0.25rem' }} />
+  <Rating value={3.5} style={{ '--rfs-gap': '0.75rem' }} />
+</div>
+```
+
+#### Colours — filled, empty, hover
+
+Three independent colours. `--rfs-color-hover` defaults to `--rfs-color-filled`, so a rating with no
+hover colour set previews in its fill colour; override it for a distinct “I'm about to pick this”
+tint. **Hover over the interactive one** to see the hover colour.
+
+```tsx live
+function Colours() {
+  const [score, setScore] = useState(3)
+  const brand = {
+    '--rfs-color-filled': '#6d28d9',
+    '--rfs-color-empty': '#e5e7eb',
+    '--rfs-color-hover': '#c026d3',
+    '--rfs-size': '2rem',
+  }
+  return (
+    <div style={{ display: 'grid', gap: '0.75rem' }}>
+      <Rating value={3.5} style={brand} />
+      <Rating value={score} onChange={setScore} precision={0.5} style={brand} label="Pick" />
+    </div>
+  )
+}
+```
+
+:::caution[Colour is a no-op on emoji]
+Emoji render from a **colour font** (COLR/CBDT), so `--rfs-color-filled` and `--rfs-color-empty` have
+no effect on them — you cannot recolour 🌟 with CSS `color`. That's exactly why the empty layer is
+dimmed with a **filter** instead. See the next section.
+:::
+
+#### The empty layer — `--rfs-empty-filter`
+
+When you don't pass an `emptyIcon`, the track is the _same_ glyph as the fill, dimmed by a CSS
+`filter` so it reads as “empty”. A filter — unlike `color` — works on emoji and SVG alike, which is
+why the default is `grayscale(1) opacity(0.35)` rather than a grey colour.
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '2rem' }}>
+  <Rating value={2.5} icon="⭐" />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'grayscale(1) opacity(0.2)' }} />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'sepia(1) opacity(0.5)' }} />
+  <Rating value={2.5} icon="⭐" style={{ '--rfs-empty-filter': 'none' }} />
+</div>
+```
+
+If you pass an explicit `emptyIcon`, **no filter is applied** — that artwork is your own empty look,
+so the component leaves it alone.
+
+```tsx live
+<Rating
+  value={2.5}
+  style={{ '--rfs-size': '2rem' }}
+  icon={<span>●</span>}
+  emptyIcon={<span style={{ color: '#cbd5e1' }}>○</span>}
+/>
+```
+
+#### Motion — `--rfs-transition`
+
+The fill width animates when the value or hover preview changes; `--rfs-transition` is its duration.
+Crank it up here and hover slowly to watch the fill glide.
+
+```tsx live
+function Motion() {
+  const [score, setScore] = useState(2)
+  return (
+    <Rating
+      value={score}
+      onChange={setScore}
+      precision={0.5}
+      label="Slow fill"
+      style={{
+        '--rfs-size': '2.5rem',
+        '--rfs-transition': '450ms',
+        '--rfs-color-hover': '#22c55e',
+      }}
+    />
+  )
+}
+```
+
+<img
+  src={`${import.meta.env.BASE_URL}img/rating/examples/styling-hover.gif`}
+  alt="Hovering a rating with a slow transition and a distinct green hover colour"
+  width="260"
+/>
+
+:::note[Respects `prefers-reduced-motion`]
+The transition is dropped automatically when the user has **Reduce motion** turned on — no
+configuration needed. Set `--rfs-transition: 0ms` to disable it for everyone.
+:::
+
+#### Focus ring — `--rfs-focus-ring`
+
+When a rating is operated by keyboard, a focus ring is drawn on the focused icon. It's an `outline`
+(so the fill layer's `overflow: hidden` can't clip it), with a matching offset and corner radius. Tab
+into the rating below and use the arrow keys.
+
+```tsx live
+function Focus() {
+  const [score, setScore] = useState(0)
+  return (
+    <Rating
+      value={score}
+      onChange={setScore}
+      precision={1}
+      label="Focus me with Tab, then arrow keys"
+      style={{
+        '--rfs-size': '2.5rem',
+        '--rfs-focus-ring': '3px solid #2563eb',
+        '--rfs-focus-ring-offset': '4px',
+        '--rfs-focus-ring-radius': '6px',
+      }}
+    />
+  )
+}
+```
+
+| Property                  | Maps to          | Default               |
+| ------------------------- | ---------------- | --------------------- |
+| `--rfs-focus-ring`        | `outline`        | `2px solid Highlight` |
+| `--rfs-focus-ring-offset` | `outline-offset` | `2px`                 |
+| `--rfs-focus-ring-radius` | `border-radius`  | `2px`                 |
+
+`Highlight` is the system focus colour, so the default ring matches the user's OS accent out of the
+box. Override the shorthand for a branded ring.
+
+### Data-attribute hooks
+
+For anything a custom property doesn't cover, target these attributes from your own CSS. They are
+**stable and covered by semver** — safe to build a design system on.
+
+| Selector                                  | Marks                                           |
+| ----------------------------------------- | ----------------------------------------------- |
+| `[data-rfs-root]`                         | The root element.                               |
+| `[data-rfs-item]`                         | One icon slot (its value is the 0-based index). |
+| `[data-rfs-layer="fill"\|"empty"]`        | The fill layer vs. the empty/track layer.       |
+| `[data-state="full"\|"partial"\|"empty"]` | Per-icon fill state.                            |
+| `[data-active]`                           | Icons under the current hover/keyboard preview. |
+| `[data-readonly]`                         | Present in read-only (display) mode.            |
+| `[data-disabled]`                         | Present when `disabled`.                        |
+| `[data-invalid]`                          | Present when `invalid`.                         |
+
+#### Per-state theming
+
+Because the state lives in the DOM, you can restyle a whole state by _setting a variable_ from a
+selector — no per-instance props. A red error look driven only by the `invalid` prop:
+
+```css
+[data-rfs-root][data-invalid] {
+  --rfs-color-filled: #dc2626;
+  --rfs-color-empty: #fecaca;
+}
+
+/* Fade the control while it's unavailable. */
+[data-rfs-root][data-disabled] {
+  opacity: 0.5;
+}
+```
+
+The same states, side by side:
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '1.75rem' }}>
+  <Rating
+    value={3}
+    invalid
+    style={{ '--rfs-color-filled': '#dc2626', '--rfs-color-empty': '#fecaca' }}
+  />
+  <Rating value={3} onChange={() => {}} disabled style={{ opacity: 0.5 }} />
+  <Rating value={3.5} />
+</div>
+```
+
+You can also reach past variables into structure — e.g. a rule that targets only partially-filled
+icons, or only the icons under the pointer:
+
+```css
+/* Nudge the icon currently being previewed. */
+[data-rfs-item][data-active] {
+  transform: scale(1.15);
+}
+
+/* Give the fill layer a subtle glow. */
+[data-rfs-layer='fill'] {
+  filter: drop-shadow(0 0 2px currentColor);
+}
+```
+
+### Where to set the variables
+
+The same three scopes as any custom property — pick per use:
+
+```tsx
+// Per instance — inline style:
+<Rating value={4.3} style={{ '--rfs-size': '2rem', '--rfs-color-filled': '#6d28d9' }} />
+
+// Per theme — a class you control:
+<Rating value={4.3} className="brand-rating" />
+
+// App-wide — on :root, so every rating inherits it:
+```
+
+```css
+:root {
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-empty: #e5e7eb;
+}
+.brand-rating {
+  --rfs-size: 2rem;
+}
+```
+
+Tailwind, CSS Modules, and styled-components all work the same way — they only ever _set variables_.
+Those patterns are in the theming recipes below.
+
+### Theming recipes
+
+Everything visual is a `--rfs-*` custom property (see the property list above for the full set).
+That means you can theme the component with whatever styling tool you already use — no wrapper
+component, no `!important`, no reaching into internals.
+
+#### Plain CSS
+
+```css
+.rating-brand {
+  --rfs-size: 1.5rem;
+  --rfs-gap: 0.25rem;
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-empty: #e5e7eb;
+}
+```
+
+```tsx
+<Rating className="rating-brand" value={4.3} />
+```
+
+#### CSS Modules
+
+```css title="Rating.module.css"
+.brand {
+  --rfs-color-filled: #6d28d9;
+  --rfs-color-hover: #7c3aed;
+}
+```
+
+```tsx
+import styles from './Rating.module.css'
+
+function Stars() {
+  return <Rating className={styles.brand} value={4.3} />
+}
+```
+
+#### Tailwind CSS
+
+Set the custom properties with arbitrary properties, no plugin required:
+
+```tsx
+<Rating value={4.3} className="[--rfs-color-filled:theme(colors.violet.600)] [--rfs-size:1.5rem]" />
+```
+
+Or map them to your design tokens in a component layer:
+
+```css
+@layer components {
+  .rating {
+    --rfs-color-filled: theme(colors.violet.600);
+    --rfs-color-empty: theme(colors.gray.200);
+  }
+}
+```
+
+#### styled-components / Emotion
+
+Because the knobs are custom properties, a styled wrapper only needs to _set variables_ — it never
+has to know the component's internals:
+
+```tsx
+import styled from 'styled-components'
+import { Rating } from '@rxova/react-rating-input'
+
+const BrandRating = styled(Rating)`
+  --rfs-color-filled: ${(p) => p.theme.colors.brand};
+  --rfs-color-empty: ${(p) => p.theme.colors.subtle};
+  --rfs-size: 1.5rem;
+`
+```
+
+None of these add a runtime dependency to `@rxova/react-rating-input` — they are entirely your styling
+layer setting variables the component reads.
+
+#### Per-state theming (recipe)
+
+Target the semver-stable `data-*` hooks to theme states — for example, a red error look driven only
+by the `invalid` prop:
+
+```css
+[data-rfs-root][data-invalid] {
+  --rfs-color-filled: #dc2626;
+  --rfs-color-empty: #fecaca;
+}
+```
+
+### Gallery
+
+Every image below is captured from the component itself, never hand-drawn:
+
+<img
+  src={`${import.meta.env.BASE_URL}img/rating/examples/styling-gallery.png`}
+  alt="A gallery of ratings styled with different sizes, gaps, colours, and empty-layer filters"
+  width="520"
+/>
+
+### See also
+
+- [Custom icons](/components/rating/about) — swapping the glyph and the render-function API.
+- [Displaying a score](/components/rating/usage) — sizing in context, precision and rounding.
+
+## Form libraries
+
+### Native forms
+
+No library needed. Pass `name` and the selected value posts natively, exactly like a group of radio
+inputs — because that is what it renders.
+
+### Uncontrolled
+
+Give it a `name` and a `defaultValue`. The chosen value is submitted under that name:
+
+```tsx
+import { Rating } from '@rxova/react-rating-input'
+
+function Feedback() {
+  return (
+    <form method="post" action="/feedback">
+      <Rating name="score" defaultValue={0} onChange={() => {}} precision={1} label="Score" />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+On submit, the form body includes `score=<value>`. Reading it back:
+
+```tsx
+function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault()
+  const data = new FormData(event.currentTarget)
+  const score = Number(data.get('score')) // the selected rating
+}
+```
+
+:::note[Why `onChange={() => {}}`]
+Providing `onChange` is what makes the component an interactive input (native radios that can be
+submitted). If you truly need it uncontrolled, a no-op handler keeps it interactive while you let the
+DOM hold the value via `defaultValue`. Prefer a controlled `value`/`onChange` pair whenever you have
+state to hold it.
+:::
+
+### Controlled
+
+Hold the value in React state and still submit natively — `name` works in both modes:
+
+```tsx
+function Feedback() {
+  const [score, setScore] = useState(0)
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        console.log(new FormData(e.currentTarget).get('score'))
+      }}
+    >
+      <Rating name="score" value={score} onChange={setScore} precision={1} label="Score" />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+### Required
+
+`required` marks the underlying radio group required, so the browser blocks submission of an unrated
+field with its native validation message.
+
+```tsx
+<Rating name="score" required onChange={() => {}} label="Score" />
+```
+
+### React Hook Form
+
+`onChange` emits a `number`, not an event, so use a `Controller`. Its `field` object already carries
+`value`, `onChange`, `onBlur`, `name`, and `ref`, which line up one-to-one with `Rating`'s props.
+
+```tsx
+import { useForm, Controller } from 'react-hook-form'
+import { Rating } from '@rxova/react-rating-input'
+
+type Values = { rating: number }
+
+function ReviewForm() {
+  const { control, handleSubmit } = useForm<Values>({ defaultValues: { rating: 0 } })
+
+  return (
+    <form onSubmit={handleSubmit((values) => console.log(values))}>
+      <Controller
+        name="rating"
+        control={control}
+        rules={{ min: { value: 1, message: 'Please rate before submitting' } }}
+        render={({ field, fieldState }) => (
+          <>
+            <Rating
+              {...field} // value, onChange, onBlur, name, ref all line up
+              precision={0.5}
+              label="Overall"
+              invalid={fieldState.invalid}
+              aria-describedby={fieldState.error ? 'rating-error' : undefined}
+            />
+            {fieldState.error && (
+              <p id="rating-error" role="alert">
+                {fieldState.error.message}
+              </p>
+            )}
+          </>
+        )}
+      />
+      <button type="submit">Send review</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- **`{...field}` is the whole adapter.** Because the prop names match, spreading `field` wires value,
+  change, blur, name, and ref at once. Add `precision`, `label`, and error props alongside it.
+- **Validation timing is correct for free.** `field.onBlur` fires when focus leaves the whole group,
+  not while arrowing between icons, so an `onTouched`/`onBlur` validation mode does not fire
+  mid-choice.
+- **`min` is the “required” rule.** An unrated field is `0`; a `min: 1` rule rejects it with your
+  message. For a stricter “must be set”, keep `allowClear={false}` so a chosen value cannot be
+  cleared back to `0`.
+
+### Formik
+
+Bridge Formik's `useField` helpers to `Rating`'s controlled props. `helpers.setValue` takes the
+`number` that `onChange` emits directly.
+
+```tsx
+import { Formik, Form, useField } from 'formik'
+import { Rating } from '@rxova/react-rating-input'
+
+function RatingField({ name, label }: { name: string; label: string }) {
+  const [field, meta, helpers] = useField<number>(name)
+
+  return (
+    <>
+      <Rating
+        name={name}
+        value={field.value}
+        onChange={helpers.setValue}
+        onBlur={field.onBlur}
+        precision={0.5}
+        label={label}
+        invalid={meta.touched && !!meta.error}
+        aria-describedby={meta.touched && meta.error ? `${name}-error` : undefined}
+      />
+      {meta.touched && meta.error && (
+        <p id={`${name}-error`} role="alert">
+          {meta.error}
+        </p>
+      )}
+    </>
+  )
+}
+
+function ReviewForm() {
+  return (
+    <Formik
+      initialValues={{ rating: 0 }}
+      validate={(v) => (v.rating < 1 ? { rating: 'Please rate before submitting' } : {})}
+      onSubmit={(values) => console.log(values)}
+    >
+      <Form>
+        <RatingField name="rating" label="Overall" />
+        <button type="submit">Send review</button>
+      </Form>
+    </Formik>
+  )
+}
+```
+
+### Notes
+
+- **`helpers.setValue` matches `onChange` exactly** — both speak `number`, so no adapter function is
+  needed.
+- **`field.onBlur` marks the field touched** at the right moment: when focus leaves the whole group.
+  Combined with `meta.touched`, error text does not appear until the user has finished choosing.
+- Pass `name` so the value also participates if the form is ever submitted natively.
+
+### React Final Form
+
+Use a `Field` render prop. The one thing to know: React Final Form represents an **empty field as
+`''`** (an empty string), so guard the value into a number before handing it to `Rating`.
+
+```tsx
+import { Form, Field } from 'react-final-form'
+import { Rating } from '@rxova/react-rating-input'
+
+function ReviewForm() {
+  return (
+    <Form
+      onSubmit={(values) => console.log(values)}
+      validate={(v) => (Number(v.rating) >= 1 ? {} : { rating: 'Please rate before submitting' })}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="rating">
+            {({ input, meta }) => (
+              <>
+                <Rating
+                  // RFF uses '' for an empty field, which is not a number.
+                  value={typeof input.value === 'number' ? input.value : 0}
+                  onChange={input.onChange}
+                  onBlur={input.onBlur}
+                  precision={1}
+                  label="Overall"
+                  invalid={meta.touched && !!meta.error}
+                  aria-describedby={meta.touched && meta.error ? 'rating-error' : undefined}
+                />
+                {meta.touched && meta.error && (
+                  <p id="rating-error" role="alert">
+                    {meta.error}
+                  </p>
+                )}
+              </>
+            )}
+          </Field>
+          <button type="submit">Send review</button>
+        </form>
+      )}
+    />
+  )
+}
+```
+
+### Notes
+
+- **The `''` guard is the whole trick.** `typeof input.value === 'number' ? input.value : 0` keeps
+  `Rating` on a numeric value even before the field has been touched.
+- `input.onChange` accepts the emitted `number` directly.
+- `input.onBlur` marks the field touched when focus leaves the whole group, so `meta.touched`-based
+  errors appear only after the user finishes.
+
+### TanStack Form
+
+Bridge a [TanStack Form](https://tanstack.com/form) field to `Rating`'s controlled props.
+`field.handleChange` takes the `number` that `onChange` emits directly, and `field.handleBlur` marks
+the field touched when focus leaves the whole group.
+
+```tsx
+import { useForm } from '@tanstack/react-form'
+import { Rating } from '@rxova/react-rating-input'
+
+function ReviewForm() {
+  const form = useForm({
+    defaultValues: { rating: 0 },
+    onSubmit: ({ value }) => console.log(value),
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field
+        name="rating"
+        validators={{
+          onChange: ({ value }) => (value < 1 ? 'Please rate before submitting' : undefined),
+        }}
+      >
+        {(field) => (
+          <>
+            <Rating
+              name="rating"
+              value={field.state.value}
+              onChange={field.handleChange}
+              onBlur={field.handleBlur}
+              precision={0.5}
+              label="Overall"
+              invalid={!field.state.meta.isValid}
+              aria-describedby={field.state.meta.isValid ? undefined : 'rating-error'}
+            />
+            {!field.state.meta.isValid && (
+              <p id="rating-error" role="alert">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            )}
+          </>
+        )}
+      </form.Field>
+      <button type="submit">Send review</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- **`field.handleChange` matches `onChange` exactly** — both speak `number`, so you can pass it
+  straight through with no adapter.
+- **`field.handleBlur` marks the field touched** when focus leaves the whole group, not while
+  arrowing between icons — so blur-based validation does not fire mid-choice.
+- **The `onChange` validator runs on change and again on submit**, so an unrated field (`0`) blocks
+  submission and surfaces the message.
+- **`field.state.meta.errors` is an array** and `!field.state.meta.isValid` is true whenever it is
+  non-empty — drive both the message and the `invalid` prop from it.

@@ -1,0 +1,102 @@
+---
+title: 'Introduction'
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+**A React currency `<input>` that's correct in every language.** Bulgarian spaces, Japanese yen,
+Hindi lakhs, Arabic digits, Swiss apostrophes — all right by default. Zero dependencies, no cursor
+jumps, no config. Pass a `locale` and a `currency`; `Intl` does the rest.
+
+<p align="center">
+  <img
+    src={`${import.meta.env.BASE_URL}img/currency/examples/matrix.png`}
+    alt="One amount formatted in Bulgarian, German, French, Japanese, Egyptian and Kuwaiti Arabic, Hindi and Swiss German"
+    width="440"
+  />
+</p>
+
+Every other library hardcodes "a comma every three digits" and breaks the moment it meets Bulgarian
+or Hindi. This one asks `Intl.NumberFormat` for the answer — so `5000` stays `5000` but `50000`
+becomes `50 000`, ¥ shows no decimals, and ₹ groups in lakhs. Automatically.
+
+<Tabs syncKey="package-manager">
+  <TabItem label="pnpm">
+
+```bash
+pnpm add @rxova/react-intl-currency-input
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```bash
+npm install @rxova/react-intl-currency-input
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```bash
+yarn add @rxova/react-intl-currency-input
+```
+
+  </TabItem>
+  <TabItem label="bun">
+
+```bash
+bun add @rxova/react-intl-currency-input
+```
+
+  </TabItem>
+</Tabs>
+
+<small>`react` and `react-dom` (>= 18) are the only peers. No stylesheet to import.</small>
+
+## The problem
+
+There is no `<input type="currency">`. A currency field has to, per locale:
+
+- pick the right **group separator** — `,` (en-US), `.` (de-DE), and a **non-breaking space** in
+  bg-BG / fr-FR (U+00A0 or U+202F, _not_ an ASCII space);
+- pick the right **decimal separator** — `.` or `,`;
+- place the **symbol** correctly — leading `$5`, trailing `5 €` — where the symbol may be multiple
+  characters and contain letters (`лв.`, `CHF`, `zł`, `kr`);
+- use the right number of **fraction digits** — JPY 0, most currencies 2, KWD/BHD 3;
+- honor the **minimum-grouping quirk** — Bulgarian shows no group separator below 10000
+  (`5000` → `5000`, but `50000` → `50 000`);
+- optionally render **native digits** — ar-EG `٠١٢٣`, fa-IR, bn-IN;
+
+…and do all of that **without the caret jumping** as separators shift while typing.
+
+## The insight
+
+Every one of those bullets except the caret is _already solved_ by `Intl.NumberFormat` — if you let
+it own the formatting and never reconstruct grouping yourself.
+
+The most-downloaded React currency inputs are buggy precisely because they re-implement grouping
+with a hardcoded separator and a hardcoded "every three digits" rule. That is what mis-formats
+Bulgarian and inserts a separator where there should be none.
+
+This library delegates **100% of formatting** to `Intl` and derives every separator from
+`formatToParts`. Bulgarian, right-to-left symbol placement, and three-digit currencies then come out
+**correct by construction** — they are not special cases in the code.
+
+## And the caret
+
+Rather than fight caret math, the field simply shows a formatted value when idle and a plain number
+while focused. No separators move while you type, so there is nothing to reposition. It is a small,
+arguably-correct UX trade for a field you only read formatted once you are done.
+
+## How it compares
+
+| Library                              | Approach                                     | The gap                                                                      |
+| ------------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| **@rxova/react-intl-currency-input** | Delegates all formatting to `Intl`           | —                                                                            |
+| `react-currency-input-field`         | Hardcoded separator + "every 3 digits"       | Mis-formats bg-BG; groups below 10000 where it should not                    |
+| `react-number-format`                | Its own parser/formatter, separators by hand | Correct only if _you_ know every locale rule — the work this library removes |
+| `react-text-mask`                    | A mask _is_ a hardcoded-locale assumption    | No `Intl` awareness at all                                                   |
+
+Not "another masked money input" — **the locale-correct one**.

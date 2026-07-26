@@ -1,0 +1,224 @@
+---
+title: 'Migrating'
+sidebar:
+  order: 4
+---
+
+## From react-rating
+
+[`react-rating`](https://www.npmjs.com/package/react-rating) (by dreyescat) uses a flexible,
+symbol-based range model. This guide maps that API to the icon-count and precision model used by
+`@rxova/react-rating-input`.
+
+:::note[Research date]
+This API mapping was verified against `react-rating` **2.0.5** on 2026-07-23. Re-verify the mapping
+if you use a different version.
+:::
+
+### Prop mapping
+
+| `react-rating`                            | `@rxova/react-rating-input`           | Notes                                                    |
+| ----------------------------------------- | ------------------------------------- | -------------------------------------------------------- |
+| `initialRating={4}`                       | `value={4}` (or `defaultValue`)       | Controlled `value`, not an initial seed                  |
+| `stop={5}` (with `start`/`step`)          | `max={5}`                             | `max` is the icon count directly, not a numeric range    |
+| `start` / `step`                          | —                                     | No range model; `max` icons of one unit each             |
+| `fractions={2}`                           | `precision={0.5}`                     | `fractions={n}` → `precision={1/n}` (e.g. `4` → `0.25`)  |
+| `readonly`                                | `readOnly` (or omit `onChange`)       | Omitting `onChange` is the idiomatic read-only           |
+| `direction="rtl"`                         | `dir="rtl"` (or inherit from the DOM) |                                                          |
+| `fullSymbol` / `emptySymbol`              | `icon` / `emptyIcon`                  | A `ReactNode` or render function                         |
+| `placeholderRating` / `placeholderSymbol` | —                                     | Use `value` + `emptyIcon`; no separate placeholder layer |
+| `onChange={(v) => …}`                     | `onChange={(v) => …}`                 | Both emit a **`number`** — no change needed              |
+| `onHover={(v) => …}`                      | `onHoverChange={(v) => …}`            | Emits `null` (not `undefined`) when the hover ends       |
+| `quiet`                                   | `--rfs-transition`                    | Control motion via CSS instead of a prop                 |
+
+### Before / after
+
+```tsx
+// Before — react-rating
+<Rating
+  initialRating={3.5}
+  stop={5}
+  fractions={2}
+  readonly
+  emptySymbol={<span className="icon-star-empty" />}
+  fullSymbol={<span className="icon-star-full" />}
+  onChange={setScore}
+/>
+```
+
+```tsx
+// After — @rxova/react-rating-input
+<Rating
+  value={3.5}
+  max={5}
+  precision={0.5}
+  readOnly
+  emptyIcon={<StarEmpty />}
+  icon={<StarFull />}
+  onChange={setScore}
+/>
+```
+
+### Features available after migration
+
+- **Built-in accessibility semantics.** Interactive ratings use a `radiogroup` of native radios;
+  read-only ratings use `role="img"`. Keyboard, focus-visible, and screen-reader behavior is included.
+- **Exact continuous fills.** `precision={0}` can render any fractional value, such as `4.28`.
+- **Defensive value handling.** Out-of-range, `NaN`, and `Infinity` values are clamped.
+
+### Migration notes
+
+- **Convert subdivisions to a step size.** `fractions` is a count of subdivisions; `precision` is
+  the step size.
+  `fractions={2}` → `precision={0.5}`, `fractions={4}` → `precision={0.25}`.
+- **Represent the displayed score with `value`.** A score previously supplied as a placeholder can
+  be passed as `value`.
+- **Interactive input needs `precision >= 0.5`.** The radiogroup exposes discrete options, so
+  continuous _input_ has no steps to select. Continuous _display_ works at any precision.
+
+## From react-stars
+
+[`react-stars`](https://www.npmjs.com/package/react-stars) is a compact star-rating component with
+styling props. This guide maps those props to the component API and CSS custom properties used by
+`@rxova/react-rating-input`.
+
+:::note[Research date]
+This API mapping was verified against `react-stars` **2.2.5** on 2026-07-23. Re-verify the mapping if
+you use a different version.
+:::
+
+### Prop mapping
+
+| `react-stars`         | `@rxova/react-rating-input`     | Notes                                        |
+| --------------------- | ------------------------------- | -------------------------------------------- |
+| `count={5}`           | `max={5}`                       | Number of icons                              |
+| `value={3.5}`         | `value={3.5}`                   | Same prop name                               |
+| `half={true}`         | `precision={0.5}`               | `half={false}` → `precision={1}`             |
+| `edit={false}`        | `readOnly` (or omit `onChange`) | Read-only equivalent                         |
+| `char="●"`            | `icon="●"`                      | Any `ReactNode` — string, emoji, SVG, or JSX |
+| `color1` (inactive)   | `--rfs-color-empty`             | A CSS custom property                        |
+| `color2` (active)     | `--rfs-color-filled`            | A CSS custom property                        |
+| `size="24px"`         | `--rfs-size: 24px`              | A CSS custom property, any unit              |
+| `className`           | `className`                     | Same                                         |
+| `onChange={(v) => …}` | `onChange={(v) => …}`           | Both emit a **`number`** — no change needed  |
+
+### Before / after
+
+```tsx
+// Before — react-stars
+<ReactStars
+  count={5}
+  value={3.5}
+  half
+  char="★"
+  color1="#e0e0e0"
+  color2="#f5a623"
+  size={24}
+  onChange={setScore}
+/>
+```
+
+```tsx
+// After — @rxova/react-rating-input
+<Rating
+  max={5}
+  value={3.5}
+  precision={0.5}
+  onChange={setScore}
+  style={{
+    ['--rfs-size' as string]: '24px',
+    ['--rfs-color-empty' as string]: '#e0e0e0',
+    ['--rfs-color-filled' as string]: '#f5a623',
+  }}
+/>
+```
+
+The default icon is already a star, so `char="★"` usually needs no `icon` at all. For a different
+glyph, pass `icon="●"` (or any node).
+
+### Features available after migration
+
+- **Built-in accessibility semantics.** Interactive ratings use native radios in a `radiogroup`;
+  read-only ratings use `role="img"`.
+- **Flexible icon content.** Icons can be SVGs, images, emoji (including ZWJ sequences), or render
+  functions.
+- **Exact continuous fills** with explicit `precision` and `rounding` controls.
+- **A stable styling contract** through semver-covered `--rfs-*` variables and `data-*` hooks.
+
+### Migration notes
+
+- **Map editability to read-only state.** `edit={false}` becomes `readOnly` (or omit `onChange`).
+- **Colors move to CSS.** `color1`/`color2`/`size` become `--rfs-color-empty` /
+  `--rfs-color-filled` / `--rfs-size` — set them via `style`, a `className`, or your theme.
+- **Emoji keep their own colors.** When using a colored emoji as the icon, see
+  [Custom icons](/components/rating/about) for styling options.
+
+## From hand-rolled radio buttons
+
+A well-built rating input is usually a group of radio buttons under the hood — which is exactly what
+`@rxova/react-rating-input` renders in interactive mode. If you have a bespoke radio-based star widget,
+this migration lets you keep the same semantic foundation while moving the rating behavior and
+styling into a reusable component.
+
+### A typical starting point
+
+```tsx
+// Before — a hand-rolled radiogroup
+<fieldset role="radiogroup" aria-label="Rating">
+  {[1, 2, 3, 4, 5].map((n) => (
+    <label key={n}>
+      <input
+        type="radio"
+        name="rating"
+        value={n}
+        checked={score === n}
+        onChange={() => setScore(n)}
+      />
+      <span className="sr-only">{n} stars</span>
+      <StarIcon filled={n <= score} />
+    </label>
+  ))}
+</fieldset>
+```
+
+`@rxova/react-rating-input` packages common rating behaviors around this foundation, including partial
+and half fills, hover preview, radiogroup arrow-key semantics, RTL fill direction, focus-ring
+handling, `prefers-reduced-motion`, and group-level `onBlur` behavior.
+
+### After
+
+```tsx
+// After — @rxova/react-rating-input
+<Rating name="rating" value={score} onChange={setScore} max={5} precision={0.5} label="Rating" />
+```
+
+The DOM contract remains familiar: a `radiogroup` of native radios, one tab stop, and native form
+submission under `name`.
+
+### Mapping your building blocks
+
+| Your hand-rolled piece                       | `@rxova/react-rating-input`                  |
+| -------------------------------------------- | -------------------------------------------- |
+| `role="radiogroup"` + `<input type="radio">` | Rendered for you when `onChange` is set      |
+| `name` on each input                         | `name` prop (posts natively)                 |
+| `checked` / `onChange` wiring                | `value` / `onChange`                         |
+| `aria-label` on the group                    | `label` (or `formatLabel`)                   |
+| Per-option `sr-only` text                    | `formatOptionLabel(value, max)`              |
+| `.sr-only` visually-hidden CSS               | Built in                                     |
+| Manual half-fill CSS                         | `precision={0.5}` + exact fill geometry      |
+| `aria-invalid` / error `aria-describedby`    | `invalid` + `aria-describedby`               |
+| Hover state bookkeeping                      | `onHoverChange` (or nothing — it just works) |
+
+### Keep your validation
+
+Because `name`, `onBlur`, `invalid`, `required`, and `aria-describedby` are all first-class, your
+existing form wiring ports directly — see [Forms](/components/rating/about) and the per-library
+[recipes](/components/rating/about). If you were validating on blur, note that `onBlur` here
+fires when focus leaves the **whole group**, rather than when focus moves between icons.
+
+### When to keep rolling your own
+
+If your widget is genuinely bespoke — a non-linear scale, per-option custom content, an entirely
+different interaction — reach for `useRating` instead of `Rating`. It gives you the same state
+machine (value, hover, focus, fills, steps, group blur) in ~900 B, and you render the DOM. See the
+[API reference](/components/rating/api).

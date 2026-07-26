@@ -1,0 +1,82 @@
+---
+title: 'rxova'
+sidebar:
+  order: 0
+  label: 'Overview'
+slug: overview
+---
+
+**The tricky React inputs, done right.** Three headless, accessible, zero-dependency
+React input components that each solve a problem the ecosystem keeps getting wrong —
+correct localized formatting, exact fractional ratings, and a true one-time-code field.
+Same design principles across all three: one native `<input>` where it matters, native
+form submission, keyboard and screen-reader support, and a small typed API backed by
+tests. No stylesheet to import.
+
+## The suite
+
+<div class="rx-suite">
+
+<div class="rx-suite__item">
+  <h3 id="currency" class="rx-suite__title">
+    <img src={`${import.meta.env.BASE_URL}img/logos/currency.svg`} alt="" width="24" height="24" />
+    <span>Currency</span>
+  </h3>
+  <div>
+    <p>
+      A currency <code>&lt;input&gt;</code> that is correct in every language — Bulgarian spaces,
+      Japanese yen, Hindi lakhs, Arabic digits — because it reads every locale fact from
+      <code>Intl.NumberFormat</code> instead of hardcoding "a comma every three digits". No cursor
+      jumps.
+    </p>
+    <p class="rx-suite__links">
+      <a href="/components/currency/introduction">Introduction</a>
+      <a href="/components/currency/api">API</a>
+    </p>
+  </div>
+</div>
+
+<div class="rx-suite__item">
+  <h3 id="rating" class="rx-suite__title">
+    <img src={`${import.meta.env.BASE_URL}img/logos/rating.svg`} alt="" width="24" height="24" />
+    <span>Rating</span>
+  </h3>
+  <div>
+    <p>
+      Exact partial fills for any icon — SVG, emoji, images or custom JSX — that becomes a fully
+      accessible input the moment you add <code>onChange</code>. One component, two modes: a
+      read-only score and an interactive form control.
+    </p>
+    <p class="rx-suite__links">
+      <a href="/components/rating/introduction">Introduction</a>
+      <a href="/components/rating/api">API</a>
+    </p>
+  </div>
+</div>
+
+<div class="rx-suite__item">
+  <h3 id="otp" class="rx-suite__title">
+    <img src={`${import.meta.env.BASE_URL}img/logos/otp.svg`} alt="" width="24" height="24" />
+    <span>OTP</span>
+  </h3>
+  <div>
+    <p>
+      A one-time-code input with one native <code>&lt;input&gt;</code> underneath and slots painted
+      on top — so paste, SMS autofill, IME and native form submission come from the platform, and
+      you can tap any slot to edit it.
+    </p>
+    <p class="rx-suite__links">
+      <a href="/components/otp/introduction">Introduction</a>
+      <a href="/components/otp/api">API</a>
+    </p>
+  </div>
+</div>
+
+</div>
+
+## Shared conventions
+
+Every component in the suite emits a plain value from `onChange` (a `number`, a `number`,
+and a `string` respectively), posts natively under `name`, ships zero runtime
+dependencies and no stylesheet, and is documented with a live playground plus an API
+reference generated from source with TypeDoc.

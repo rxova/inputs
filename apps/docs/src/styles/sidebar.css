@@ -1,0 +1,26 @@
+/**
+ * A static "Components" section header in the sidebar.
+ *
+ * Starlight's sidebar has exactly two entry types — links and collapsible
+ * groups — so a plain heading cannot be expressed in the config. Wrapping the
+ * three components in a group worked, but it put an accordion between the
+ * reader and the thing the site is about: you had to expand "Components"
+ * before you could see any component.
+ *
+ * So the components sit at the top level and the heading is drawn here, before
+ * the first of them. It is tied to sidebar order (Overview, Getting started,
+ * then the three components) — reorder the sidebar and this selector needs to
+ * move with it.
+ */
+.sidebar-content ul.top-level > li:nth-child(3)::before {
+  content: 'Components';
+  display: block;
+  margin-block: 1.75rem 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--sl-color-hairline);
+  color: var(--sl-color-gray-3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

@@ -3,7 +3,12 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["build/**"],
+      // Astro emits dist/, not Docusaurus's build/. Leaving the old path here
+      // would make a cache hit restore nothing, and the aggregator would upload
+      // an empty tree rather than fail loudly.
+      "outputs": ["dist/**"],
+      // .astro/ is Astro's regenerable internal cache — same reasoning as the
+      // root config's note about .docusaurus/.
       "env": ["DOCS_URL", "DOCS_BASE_URL"]
     }
   }
