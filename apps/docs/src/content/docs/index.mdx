@@ -34,7 +34,8 @@ Grouping, symbol placement, decimal rules and digit systems all come from `Intl`
 — not from a regex. The caret stays where you put it while the value reformats
 underneath you.
 
-<LiveExample code={`function CurrencyDemo() {
+<LiveExample
+  code={`function CurrencyDemo() {
   const [locale, setLocale] = useState('de-DE')
   const currency = { 'de-DE': 'EUR', 'bg-BG': 'BGN', 'hi-IN': 'INR', 'ar-EG': 'EGP', 'ja-JP': 'JPY' }[locale]
   return (
@@ -54,7 +55,8 @@ underneath you.
       </div>
     </div>
   )
-}`} />
+}`}
+/>
 
 ## Ratings at any precision
 
@@ -62,7 +64,8 @@ Whole, half or continuous — with any icon. Interactive, it is a native
 `radiogroup`, so arrow keys, form submission and screen-reader announcements
 come from the browser. Read-only, it is an image with a label.
 
-<LiveExample code={`function RatingDemo() {
+<LiveExample
+  code={`function RatingDemo() {
   const [value, setValue] = useState(3.5)
   const [precision, setPrecision] = useState(0.5)
   return (
@@ -91,14 +94,16 @@ come from the browser. Read-only, it is an image with a label.
       </div>
     </div>
   )
-}`} />
+}`}
+/>
 
 ## One-time codes without the hacks
 
 One native `<input>` behind spatial slots — so paste, SMS autofill, IME and
 password managers keep working. Not six inputs held together with key handlers.
 
-<LiveExample code={`function OtpDemo() {
+<LiveExample
+  code={`function OtpDemo() {
   const [code, setCode] = useState('')
   return (
     <div>
@@ -108,28 +113,27 @@ password managers keep working. Not six inputs held together with key handlers.
       </p>
     </div>
   )
-}`} />
+}`}
+/>
 
 ## Why this one
 
 <CardGrid>
   <Card title="Headless" icon="setting">
-    No stylesheet to import and nothing to override. Style with CSS custom
-    properties and `data-*` hooks, and it inherits whatever your app already
-    looks like.
+    No stylesheet to import and nothing to override. Style with CSS custom properties and `data-*`
+    hooks, and it inherits whatever your app already looks like.
   </Card>
   <Card title="Zero runtime dependencies" icon="rocket">
-    `react` is the only peer. Nothing else reaches your bundle, and everything
-    tree-shakes to what you actually import.
+    `react` is the only peer. Nothing else reaches your bundle, and everything tree-shakes to what
+    you actually import.
   </Card>
   <Card title="Accessible by construction" icon="approve-check">
-    Native platform semantics rather than ARIA sprinkled on top — keyboard, focus,
-    and form behaviour come from the browser. Every build is checked with
-    axe-core.
+    Native platform semantics rather than ARIA sprinkled on top — keyboard, focus, and form
+    behaviour come from the browser. Every build is checked with axe-core.
   </Card>
   <Card title="Correct on the seams" icon="puzzle">
-    Bulgarian's space-only-above-9999, Hindi lakh grouping, Arabic-Indic digits,
-    formatted paste, Chrome auto-translate, IME composition, RTL and SSR.
+    Bulgarian's space-only-above-9999, Hindi lakh grouping, Arabic-Indic digits, formatted paste,
+    Chrome auto-translate, IME composition, RTL and SSR.
   </Card>
 </CardGrid>
 

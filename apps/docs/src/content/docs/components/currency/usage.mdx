@@ -1,5 +1,5 @@
 ---
-title: "Usage"
+title: 'Usage'
 sidebar:
   order: 2
 ---
@@ -33,11 +33,17 @@ The field **formats as you type**: grouping and the symbol stay visible, and the
 `5000` stays `5000 €`, but the moment it crosses 10000 a space appears — the Bulgarian rule that only
 groups above 9999, applied for free because `Intl` owns the formatting.
 
-<img src={`${import.meta.env.BASE_URL}img/currency/examples/bulgarian.gif`} alt="Typing in a Bulgarian field: 5000 stays 5000, 50000 becomes 50 000" />
+<img
+  src={`${import.meta.env.BASE_URL}img/currency/examples/bulgarian.gif`}
+  alt="Typing in a Bulgarian field: 5000 stays 5000, 50000 becomes 50 000"
+/>
 
 Notice the caret never jumps, even as separators appear and the symbol shifts:
 
-<img src={`${import.meta.env.BASE_URL}img/currency/examples/live.gif`} alt="Formatting live while typing across several locales" />
+<img
+  src={`${import.meta.env.BASE_URL}img/currency/examples/live.gif`}
+  alt="Formatting live while typing across several locales"
+/>
 
 ## How it works
 

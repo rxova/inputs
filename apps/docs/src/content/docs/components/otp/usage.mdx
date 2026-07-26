@@ -1,5 +1,5 @@
 ---
-title: "Usage"
+title: 'Usage'
 sidebar:
   order: 2
 ---
@@ -86,7 +86,11 @@ More on the architecture and its one honest tradeoff in [Why this exists](/compo
 The flagship. Because the underlying input's characters sit at their true slot pitch, a click or tap lands
 the caret on the slot under your finger — so you can **edit any slot, not just the last one**.
 
-<img src={`${import.meta.env.BASE_URL}img/otp/examples/interactive-tap-edit.gif`} alt="Tapping a middle slot to edit it in place" width="280" />
+<img
+  src={`${import.meta.env.BASE_URL}img/otp/examples/interactive-tap-edit.gif`}
+  alt="Tapping a middle slot to edit it in place"
+  width="280"
+/>
 
 Try it — type a code, then click the third box and retype it:
 
@@ -140,7 +144,11 @@ Receiving the code is where OTP fields quietly break. Here every path is treated
 Paste a formatted code and the separators are stripped, the digits distributed, overflow truncated,
 and any selection replaced:
 
-<img src={`${import.meta.env.BASE_URL}img/otp/examples/interactive-typing.gif`} alt="Typing a six-digit code" width="280" />
+<img
+  src={`${import.meta.env.BASE_URL}img/otp/examples/interactive-typing.gif`}
+  alt="Typing a six-digit code"
+  width="280"
+/>
 
 ```tsx live
 function Paste() {

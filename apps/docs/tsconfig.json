@@ -7,5 +7,8 @@
     "paths": { "@components/*": ["src/components/*"] }
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  // build/ is the old Docusaurus output; .astro/ and dist/ are generated.
+  // astro check will happily typecheck webpack bundles it finds and run out of
+  // memory doing it.
+  "exclude": ["dist", "build", ".astro", "node_modules"]
 }

@@ -1,5 +1,5 @@
 ---
-title: "Usage"
+title: 'Usage'
 sidebar:
   order: 2
 ---
@@ -139,8 +139,8 @@ import { Rating } from '@rxova/react-rating-input'
 
 What each renders:
 
-| Code                                            | Result                                                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Code                                            | Result                                                                                                                |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `<Rating value={4.3} />`                        | <img src={`${import.meta.env.BASE_URL}img/rating/examples/continuous.png`} alt="4.3 stars, continuous" width="200" /> |
 | `<Rating value={4.3} precision={1} />`          | <img src={`${import.meta.env.BASE_URL}img/rating/examples/whole.png`} alt="4 whole stars" width="200" />              |
 | `<Rating value={4.3} precision={0.5} />`        | <img src={`${import.meta.env.BASE_URL}img/rating/examples/half.png`} alt="4.5 stars" width="200" />                   |
@@ -190,7 +190,11 @@ component must not crash a page over a data value from an API.
 <Rating value={7.5} max={10} />
 ```
 
-<img src={`${import.meta.env.BASE_URL}img/rating/examples/max10.png`} alt="7.5 out of 10 stars" width="320" />
+<img
+  src={`${import.meta.env.BASE_URL}img/rating/examples/max10.png`}
+  alt="7.5 out of 10 stars"
+  width="320"
+/>
 
 ### Custom icons
 
@@ -245,7 +249,11 @@ function Feedback() {
 
 Hovering previews the value; clicking commits it:
 
-<img src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-half.gif`} alt="Hovering and clicking a half-star rating" width="240" />
+<img
+  src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-half.gif`}
+  alt="Hovering and clicking a half-star rating"
+  width="240"
+/>
 
 Internally this renders a `radiogroup` of visually-hidden **native radio inputs**, so arrow-key
 navigation, form participation, focus-visible, and screen-reader announcements all come from the
@@ -279,7 +287,11 @@ text direction, so it stays intuitive in RTL.
 
 Arrow keys walking up the scale, then `Backspace` to clear:
 
-<img src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-keyboard.gif`} alt="Selecting a rating with the arrow keys, then clearing with Backspace" width="240" />
+<img
+  src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-keyboard.gif`}
+  alt="Selecting a rating with the arrow keys, then clearing with Backspace"
+  width="240"
+/>
 
 ### Hover preview
 

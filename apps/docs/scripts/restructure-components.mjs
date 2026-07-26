@@ -14,7 +14,15 @@
  * component they migrate to. The API section stays generated.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync } from 'node:fs'
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+  readdirSync,
+  statSync,
+} from 'node:fs'
 import { join, dirname } from 'node:path'
 
 const DOCS = 'src/content/docs'
@@ -140,7 +148,8 @@ function extractTab(text, label) {
   return out.join('\n\n')
 }
 
-const frontmatter = (title, order) => `---\ntitle: ${JSON.stringify(title)}\nsidebar:\n  order: ${order}\n---\n\n`
+const frontmatter = (title, order) =>
+  `---\ntitle: ${JSON.stringify(title)}\nsidebar:\n  order: ${order}\n---\n\n`
 
 /** Merge several source pages into one, keeping their H2s as section breaks. */
 function merge(paths, { demote = false } = {}) {
@@ -193,7 +202,10 @@ for (const [name, cfg] of Object.entries(COMPONENTS)) {
   const usage = merge(cfg.usage, { demote: true })
   if (overview) {
     const { body } = split(overview)
-    const rest = withoutImports(body).split(/^(?=## )/m).slice(1).join('')
+    const rest = withoutImports(body)
+      .split(/^(?=## )/m)
+      .slice(1)
+      .join('')
     if (rest.trim()) {
       usage.body = `${rest.trim()}\n\n${usage.body}`
       usage.imports = [...new Set([...usage.imports, ...importsOf(body)])]

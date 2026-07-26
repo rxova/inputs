@@ -74,7 +74,12 @@ export default defineConfig({
     starlight({
       ...sharedStarlightConfig({
         project: 'react-inputs',
-        customCss: ['./src/styles/live.css', './src/styles/sidebar.css', './src/styles/logos.css', './src/styles/content.css'],
+        customCss: [
+          './src/styles/live.css',
+          './src/styles/sidebar.css',
+          './src/styles/logos.css',
+          './src/styles/content.css',
+        ],
         // Components sit LAST and are the destination, not a preamble:
         // getting-started is a one-time read, the component list is what you
         // come back to. Each component is one clickable entry whose five

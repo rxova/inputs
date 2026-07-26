@@ -1,5 +1,5 @@
 ---
-title: "About"
+title: 'About'
 sidebar:
   order: 3
 ---
@@ -76,7 +76,10 @@ function LocaleExamples() {
 The same `1234567.89`, formatted by the same code — the language decides the separators, symbol side
 and digits, the currency decides the fraction count:
 
-<img src={`${import.meta.env.BASE_URL}img/currency/examples/matrix.png`} alt="One amount formatted in Bulgarian, German, French, Japanese, Egyptian and Kuwaiti Arabic, Hindi and Swiss German" />
+<img
+  src={`${import.meta.env.BASE_URL}img/currency/examples/matrix.png`}
+  alt="One amount formatted in Bulgarian, German, French, Japanese, Egyptian and Kuwaiti Arabic, Hindi and Swiss German"
+/>
 
 None of these is a special case in the code — the same path formats all of them.
 
@@ -115,7 +118,10 @@ The currency and the language are independent. Show US dollars to a German user,
 Bulgarian one — the fraction-digit count follows the **currency** (USD is always 2, JPY always 0,
 KWD always 3), while the separators, symbol placement and digits follow the **language**:
 
-<img src={`${import.meta.env.BASE_URL}img/currency/examples/same-currency.png`} alt="US$ 1,234,567.50 formatted in nine languages" />
+<img
+  src={`${import.meta.env.BASE_URL}img/currency/examples/same-currency.png`}
+  alt="US$ 1,234,567.50 formatted in nine languages"
+/>
 
 ```tsx live
 function Demo() {
@@ -137,7 +143,10 @@ function Demo() {
 Locales like `ar-EG` render non-ASCII digits by default. While editing, the field shows ASCII digits
 (you type on an ASCII keyboard), but on blur it renders in the locale's native digits, right-to-left:
 
-<img src={`${import.meta.env.BASE_URL}img/currency/examples/arabic.gif`} alt="Typing ASCII into an Arabic field, then blurring to native Arabic-Indic digits" />
+<img
+  src={`${import.meta.env.BASE_URL}img/currency/examples/arabic.gif`}
+  alt="Typing ASCII into an Arabic field, then blurring to native Arabic-Indic digits"
+/>
 
 It also **parses native digits**, so a paste works. Force a numbering system end-to-end with
 `numberingSystem`.

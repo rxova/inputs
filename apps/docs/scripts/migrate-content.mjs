@@ -136,7 +136,11 @@ for (const file of walk(SRC)) {
   body = body.replace(
     /!\[([^\]]*)\]\(\/img\/([^)]+)\)/g,
     (_m, alt, path) =>
-      '<img src={`${import.meta.env.BASE_URL}img/' + path + '`} alt="' + alt.replace(/"/g, '&quot;') + '" />',
+      '<img src={`${import.meta.env.BASE_URL}img/' +
+      path +
+      '`} alt="' +
+      alt.replace(/"/g, '&quot;') +
+      '" />',
   )
 
   // Raw JSX <img src="/inputs/img/..."> — a hardcoded site prefix that matched
