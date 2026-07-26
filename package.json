@@ -23,7 +23,7 @@
     "docs": "pnpm run docs:dev",
     "docs:dev": "turbo run dev --filter=@rxova/docs",
     "docs:build": "turbo run build --filter=@rxova/docs",
-    "e2e": "turbo run e2e --concurrency=1",
+    "e2e": "turbo run e2e",
     "e2e:install": "playwright install --with-deps chromium firefox webkit",
     "release": "turbo run build && changeset publish",
     "prepare": "husky",
