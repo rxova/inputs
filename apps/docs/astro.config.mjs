@@ -5,6 +5,7 @@ import { createStarlightTypeDocPlugin } from 'starlight-typedoc'
 import starlightLinksValidator from 'starlight-links-validator'
 import { sharedStarlightConfig } from '@rxova/brand'
 import remarkLiveCode from './src/plugins/remark-live-code.mjs'
+import remarkBaseLinks from './src/plugins/remark-base-links.mjs'
 
 /**
  * Defaults keep the standalone build working; the rxova.org aggregator sets
@@ -66,7 +67,9 @@ export default defineConfig({
     // Turns ```tsx live fences into the react-live island. Docusaurus had
     // theme-live-codeblock; Starlight has no equivalent, and for a component
     // library the editable examples are the product.
-    remarkPlugins: [remarkLiveCode],
+    // remarkBaseLinks makes the site's root-relative links honour `base`, which
+    // Docusaurus did for free and Astro does not — see the plugin's header.
+    remarkPlugins: [remarkLiveCode, [remarkBaseLinks, { base }]],
   },
 
   integrations: [
@@ -117,6 +120,9 @@ export default defineConfig({
           })),
         ],
       }),
+      // Applies `base` to the hero action links, which live in frontmatter and
+      // so never reach the remark pipeline. See the middleware for why.
+      routeMiddleware: './src/route-middleware.mjs',
       plugins: [
         currencyPlugin,
         ratingPlugin,
