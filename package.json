@@ -27,9 +27,9 @@
     "e2e:install": "playwright install --with-deps chromium firefox webkit",
     "release": "turbo run build && changeset publish",
     "prepare": "husky",
-    "check:docs": "node packages/utils/check-doc-snippets.mjs",
-    "check:browsers": "node packages/utils/check-browsers.mjs",
-    "verify": "node packages/utils/verify.mjs"
+    "check:docs": "node --import tsx ./packages/utils/check-doc-snippets.ts",
+    "check:browsers": "node --import tsx ./packages/utils/check-browsers.ts",
+    "verify": "node --import tsx ./packages/utils/verify.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

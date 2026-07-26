@@ -4,18 +4,18 @@ import path from 'node:path'
 import process from 'node:process'
 
 /**
- * The CI changeset gate. Replaces `changeset status --since=origin/main`, which
- * could only answer "is there a changeset" — it could not validate the shape of
- * one, and its only escape hatch was a label checked in YAML.
+ * PR gate: fails when a change to a published package lands without a
+ * changeset. Escape hatches: the `skip-changeset` label, `[skip-changeset]`
+ * in the PR title, or a diff that only touches docs/CI/config.
  *
- * Shared, near-verbatim, with rxova/brand, rxova/use-everywhere and
- * rxova/journey. Keep the differences to the two repo-specific constants below;
- * everything else should stay diffable across the four copies, because this is
- * one of the files earmarked for @rxova/repo-tooling.
+ * Shared, near-verbatim, across the four rxova repos. Keep the differences to
+ * the two constants below so the copies stay diffable — this is one of the
+ * files earmarked for @rxova/repo-tooling. Its behaviour is pinned by
+ * check-changeset.test.ts, which spawns it against a throwaway git repo.
  */
 
-/** Prefixes of the packages whose changes must be released. */
-const PUBLISHABLE_PACKAGE_PREFIXES = [
+/** Directory prefixes of packages that are published to npm. */
+const publishedPackageDirs = [
   'packages/react-intl-currency-input/',
   'packages/react-otp-input/',
   'packages/react-rating-input/',
@@ -23,10 +23,19 @@ const PUBLISHABLE_PACKAGE_PREFIXES = [
   'packages/codemod/',
 ]
 
-/** How to create a changeset here, quoted in the failure message. */
-const CREATE_HINT = "'pnpm exec changeset'"
+/**
+ * Files that never require a changeset when they are the whole diff.
+ *
+ * The directory alternatives carry a `/.*` suffix on purpose. An earlier
+ * version wrote them as `^(docs\/|\.github\/|…)$`, where the `$` meant each
+ * branch could only ever match the bare directory string — never a path
+ * beneath it — so those prefixes were dead and files were only skipped when
+ * they happened to carry one of the listed extensions.
+ */
+const allowedPattern =
+  /^((apps|\.github|\.changeset|\.husky|packages\/utils|packages\/demo-kit)\/.*|.*\.(md|txt|yml|yaml|json))$/
 
-function getEnv(name: string, required = true): string | undefined {
+const getEnv = (name: string, required = true): string | undefined => {
   const value = process.env[name]
   if (!value && required) {
     throw new Error(`Missing required env: ${name}`)
@@ -34,11 +43,11 @@ function getEnv(name: string, required = true): string | undefined {
   return value
 }
 
-function run(cmd: string): string {
+const run = (cmd: string): string => {
   return execSync(cmd, { encoding: 'utf8' }).trim()
 }
 
-function getChangedFiles(baseSha: string, headSha: string, diffFilter?: string): string[] {
+const getChangedFiles = (baseSha: string, headSha: string, diffFilter?: string): string[] => {
   const filterArg = diffFilter ? ` --diff-filter=${diffFilter}` : ''
   const output = run(`git diff --name-only${filterArg} ${baseSha} ${headSha}`)
   if (!output) return []
@@ -48,14 +57,14 @@ function getChangedFiles(baseSha: string, headSha: string, diffFilter?: string):
     .filter(Boolean)
 }
 
-function getChangesetFiles(files: readonly string[]): string[] {
+const getChangesetFiles = (files: readonly string[]): string[] => {
   return files.filter(
     (file) =>
       file.startsWith('.changeset/') && file.endsWith('.md') && path.basename(file) !== 'README.md',
   )
 }
 
-function extractFrontmatterPackageCount(markdown: string): number {
+const extractFrontmatterPackageCount = (markdown: string): number => {
   const match = /^---\s*\n([\s\S]*?)\n---\s*(?:\n|$)/.exec(markdown)
   if (!match) {
     return 0
@@ -65,12 +74,15 @@ function extractFrontmatterPackageCount(markdown: string): number {
   const packageLines = frontmatter
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => /^"[^"]+"\s*:\s*(patch|minor|major)(?:\s+#.*)?$/.test(line))
+    // Both quote styles: `changeset add` writes double quotes, but Prettier
+    // with singleQuote rewrites them, and a double-quote-only pattern then
+    // counts zero packages and fails a perfectly valid changeset.
+    .filter((line) => /^("[^"]+"|'[^']+')\s*:\s*(patch|minor|major)(?:\s+#.*)?$/.test(line))
 
   return packageLines.length
 }
 
-function ensureSinglePackagePerChangeset(files: readonly string[]): void {
+const ensureSinglePackagePerChangeset = (files: readonly string[]): void => {
   const errors: string[] = []
 
   for (const file of files) {
@@ -95,25 +107,15 @@ function ensureSinglePackagePerChangeset(files: readonly string[]): void {
   }
 }
 
-/**
- * Note on the pattern: the `docs/`, `.github/` and `.changeset/` alternatives
- * are anchored by `$`, so they only ever match those exact strings — never a
- * path beneath them. Files in those directories are auto-skipped in practice
- * only when they also carry one of the listed extensions. That is conservative
- * (it demands a changeset more often, never less), so it is left as-is to stay
- * byte-comparable with the other three repos rather than quietly loosening a
- * release gate in four places at once.
- */
-function isDocsOrConfigOnly(files: readonly string[]): boolean {
-  const allowedPattern = /^(docs\/|\.github\/|\.changeset\/|.*\.(md|txt|yml|yaml|json))$/
+const isDocsOrConfigOnly = (files: readonly string[]): boolean => {
   const touchesPackage = files.some((file) =>
-    PUBLISHABLE_PACKAGE_PREFIXES.some((prefix) => file.startsWith(prefix)),
+    publishedPackageDirs.some((dir) => file.startsWith(dir)),
   )
 
   return files.length > 0 && files.every((file) => allowedPattern.test(file)) && !touchesPackage
 }
 
-function getLabels(repo: string, prNumber: string, token: string): string[] {
+const getLabels = (repo: string, prNumber: string, token: string): string[] => {
   try {
     const output = run(
       `gh api -H "Authorization: Bearer ${token}" repos/${repo}/issues/${prNumber}/labels --jq '.[].name'`,
@@ -124,12 +126,15 @@ function getLabels(repo: string, prNumber: string, token: string): string[] {
       .map((line) => line.trim())
       .filter(Boolean)
   } catch {
+    // Deliberately not fatal: a transient API blip should not block a PR. Note
+    // that a *permissions* problem looks the same from here, so the changeset
+    // job must grant `pull-requests: read` or the label hatch silently no-ops.
     console.warn('Warning: failed to fetch labels via GH API, proceeding without labels.')
     return []
   }
 }
 
-function main(): void {
+const main = (): void => {
   const baseSha = getEnv('BASE_SHA')
   const headSha = getEnv('HEAD_SHA')
   const repo = getEnv('GITHUB_REPOSITORY')
@@ -172,7 +177,7 @@ function main(): void {
   }
 
   console.error(
-    `No changeset found. Add one with ${CREATE_HINT} or apply the 'skip-changeset' label.`,
+    "No changeset found. Add one with 'pnpm exec changeset' or apply the 'skip-changeset' label.",
   )
   process.exit(1)
 }

@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { readManifest } from './manifest'
 
 /**
  * Proves the published artifact, not the source tree.
@@ -18,7 +19,7 @@ import { fileURLToPath } from 'node:url'
  * the aggregate package without reaching the public registry.
  */
 
-const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
+const pkg = readManifest(join(process.cwd(), 'package.json'))
 const name = pkg.name
 // fileURLToPath, not URL.pathname: pathname stays percent-encoded, so a checkout
 // under a path with a space would yield a `%20` that no fs call can resolve.
@@ -40,7 +41,7 @@ const FORBIDDEN = [/^package\/src\//, /\.test\./, /^package\/e2e\//, /^package\/
 const workdir = mkdtempSync(join(tmpdir(), 'rxova-pack-'))
 let failures = 0
 
-const fail = (message) => {
+const fail = (message: string): void => {
   console.error(`  ✖ ${message}`)
   failures += 1
 }
@@ -52,20 +53,20 @@ try {
       .map((entry) => join(packagesDir, entry.name))
       .filter((directory) => {
         try {
-          return Boolean(JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')).name)
+          return Boolean(readManifest(join(directory, 'package.json')).name)
         } catch {
           return false
         }
       })
       .map((directory) => {
-        const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
+        const manifest = readManifest(join(directory, 'package.json'))
         return [manifest.name, directory]
       }),
   )
   const internalDependencies = Object.keys(pkg.dependencies ?? {}).filter((dependency) =>
     workspacePackages.has(dependency),
   )
-  const dependencyTarballs = {}
+  const dependencyTarballs: Record<string, string> = {}
 
   for (const dependency of internalDependencies) {
     console.log(`Packing workspace dependency ${dependency}…`)

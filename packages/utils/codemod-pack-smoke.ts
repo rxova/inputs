@@ -3,8 +3,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { readManifest } from './manifest'
 
-const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
+const pkg = readManifest(join(process.cwd(), 'package.json'))
 const REQUIRED = [
   'package/dist/bin.cjs',
   'package/dist/transforms/input-otp-to-otp.cjs',
@@ -17,7 +18,7 @@ const FORBIDDEN = [/^package\/src\//, /\.test\./, /^package\/e2e\//]
 const workdir = mkdtempSync(join(tmpdir(), 'rxova-codemod-pack-'))
 let failures = 0
 
-const fail = (message) => {
+const fail = (message: string): void => {
   console.error(`  ✖ ${message}`)
   failures += 1
 }
