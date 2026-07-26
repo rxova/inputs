@@ -102,8 +102,44 @@
       ],
       "outputLogs": "new-only"
     },
+    // Building the demo Vite app the Playwright suite serves. Split out of the
+    // suite's own webServer (which used to `demo:build && demo:preview` on every
+    // run) so the build is cached and only recomputed when something it bundles
+    // changes. The demo aliases both the library and demo-kit to *source*
+    // (see each demo/vite.config.ts), so the cache key must cover all three:
+    // this package's src, its demo, and demo-kit's source — the last via
+    // $TURBO_ROOT$ because it lives in another package with no build step of its
+    // own to depend on. Test files never reach the bundle, so excluding them
+    // keeps editing a spec from rebuilding the demo.
+    "demo:build": {
+      "outputs": ["demo/dist/**"],
+      "inputs": [
+        "demo/**",
+        // Exclude our own build output: an explicit `demo/**` input glob would
+        // otherwise fold demo/dist back into the hash, so every build produced a
+        // new key and nothing ever hit cache.
+        "!demo/dist/**",
+        "src/**",
+        "!src/**/*.test.*",
+        "!src/**/*.browser.test.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/packages/demo-kit/src/**"
+      ],
+      "outputLogs": "new-only"
+    },
+    // Now cacheable. It was `cache: false` — safe but wasteful, re-running all
+    // three suites even when nothing they touch changed. Correctness comes from
+    // the hash: `dependsOn: demo:build` folds in everything the served page is
+    // built from (src, demo, demo-kit), and `inputs` adds the only other things
+    // that change a run's outcome — the specs and the Playwright config. A
+    // failing run is never cached, so red always re-runs; a green run replays.
+    // Per-package hashing means a change in one package leaves the other two
+    // suites replaying from cache.
     "e2e": {
-      "cache": false
+      "dependsOn": ["demo:build"],
+      "inputs": ["e2e/**", "playwright.config.ts"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "outputLogs": "new-only"
     },
     // No `start` task. It was the Docusaurus-era name for the docs dev server,
     // and after the Starlight migration no package declared it — so

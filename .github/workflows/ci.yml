@@ -237,8 +237,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/setup-playwright
 
-      # `turbo run e2e` runs each package's Playwright suite against its own
-      # preview port; each suite's webServer builds the demo it serves.
+      # `turbo run e2e` builds each package's demo (the cached `demo:build`
+      # task) and runs its Playwright suite against its own preview port. The
+      # three packages run concurrently; unchanged suites replay from the
+      # `.turbo` cache restored above.
       - run: pnpm run e2e
       - name: Upload Playwright reports
         if: failure()
