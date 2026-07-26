@@ -58,8 +58,8 @@
       // both so editing either invalidates the cache instead of replaying an old pass.
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/packages/utils/pack-smoke.mjs",
-        "$TURBO_ROOT$/packages/utils/codemod-pack-smoke.mjs"
+        "$TURBO_ROOT$/packages/utils/pack-smoke.ts",
+        "$TURBO_ROOT$/packages/utils/codemod-pack-smoke.ts"
       ],
       "outputLogs": "new-only"
     },
@@ -77,7 +77,7 @@
     // README (or the script) invalidates it instead of replaying a stale pass.
     "//#check:docs": {
       "outputs": [],
-      "inputs": ["README.md", "packages/*/README.md", "packages/utils/check-doc-snippets.mjs"],
+      "inputs": ["README.md", "packages/*/README.md", "packages/utils/check-doc-snippets.ts"],
       "outputLogs": "new-only"
     },
     // A root task (`//#`) for the same reason as check:docs: `pnpm dedupe
@@ -105,11 +105,13 @@
     "e2e": {
       "cache": false
     },
+    // No `start` task. It was the Docusaurus-era name for the docs dev server,
+    // and after the Starlight migration no package declared it — so
+    // `turbo run start` matched nothing, printed "No tasks were executed" and
+    // exited 0. The root `docs:dev` script pointed at it, which meant
+    // `pnpm run docs` silently did nothing instead of starting Astro. Both are
+    // gone; `dev` below is the one dev-server task.
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "start": {
       "cache": false,
       "persistent": true
     }

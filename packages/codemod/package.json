@@ -28,7 +28,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "check:exports": "publint --strict && attw --pack .",
-    "pack:smoke": "node ../utils/codemod-pack-smoke.mjs",
+    "pack:smoke": "node --import tsx ../utils/codemod-pack-smoke.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepack": "pnpm build"

@@ -1,19 +1,23 @@
 #!/usr/bin/env sh
 set -e
 
-# Commit-time gate: only the checks that are cheap AND that catch something a
-# commit can get wrong locally. Everything else (tests, build, size budgets,
-# audit, dedupe, packaging) lives in pre-push, which is the gate that decides
-# whether CI will be green. Running the full suite here made every commit of a
-# multi-commit branch pay for the entire pipeline.
+# eslint --fix + prettier --write over exactly the staged files.
 #
-# lint-staged already runs eslint --fix + prettier over exactly the staged
-# files, so the old full-repo `pnpm run lint` on this line was duplication.
+# lint-staged already covers the staged set, so the full-repo `pnpm run lint`
+# this line used to carry was duplication.
 pnpm exec lint-staged
 
-# Typecheck is the one thing lint-staged cannot do per-file: types are a
-# whole-program property. Turbo replays it from cache for every package whose
-# inputs are byte-identical, so in practice this only re-checks the packages the
-# commit actually touched -- without asking git what "changed", which is what
-# keeps it correct during rebase, cherry-pick and merge.
-pnpm exec turbo run typecheck
+# The whole-program checks lint-staged cannot do per-file: types are a property
+# of the program, not of a file, and a unit test can only fail against the whole
+# module graph. Turbo replays both from cache for every package whose inputs are
+# byte-identical, so in practice this re-checks only what the commit actually
+# touched — without asking git what "changed", which is what keeps it correct
+# mid-rebase, after a cherry-pick and on a merge.
+#
+# `test`, not `test:coverage`: the coverage thresholds need the browser project,
+# which is slow enough to push people around the hook. pre-push runs the
+# coverage variant, and CI runs it again.
+#
+# Everything heavier — build, size budgets, audit, dedupe, packaging, e2e —
+# stays in pre-push (see scripts/verify.mjs) and CI.
+pnpm exec turbo run typecheck test

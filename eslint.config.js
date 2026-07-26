@@ -3,15 +3,24 @@ import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 import reactHooks from 'eslint-plugin-react-hooks'
+import astro from 'eslint-plugin-astro'
 
 export default defineConfig(
   globalIgnores([
     '**/dist/',
     'coverage/',
     '**/node_modules/',
-    'apps/docs/', // Docusaurus app: its own toolchain, typecheck and lint concerns
+    // The Astro/Starlight docs site owns its own toolchain: `astro check` is its
+    // typecheck (wired in as its `typecheck` task), and its TS/MDX sources sit
+    // outside this program's tsconfig, so strictTypeChecked cannot see them.
+    // Listed by extension rather than as `apps/docs/**` so that `.astro` is
+    // never in the ignore set: those components are hand-written source and
+    // were going completely unlinted. A `!` negation does not work here —
+    // ESLint prunes an ignored directory before it ever considers the files
+    // inside it, so the re-include never fires.
+    'apps/docs/**/*.{ts,tsx,js,jsx,mjs,cjs,mdx,md,json}',
     '**/build/',
-    '**/.docusaurus/',
+    '**/.astro/',
     'test-results/',
     'playwright-report/',
     '.pw-browsers/',
@@ -23,6 +32,10 @@ export default defineConfig(
     '**/*.config.js',
   ]),
   js.configs.recommended,
+  // Deliberately the non-type-checked recommended set: the docs site's .astro
+  // files are not part of the root tsconfig program, so the type-aware rules
+  // have nothing to resolve against. `astro check` covers their types.
+  ...astro.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
@@ -45,9 +58,14 @@ export default defineConfig(
     rules: reactHooks.configs.recommended.rules,
   },
   {
-    // Build/verify tooling is plain ESM JavaScript, outside the TS program.
-    // Lives in the private @rxova/utils package (and any top-level scripts/).
-    files: ['scripts/**/*.mjs', 'packages/utils/**/*.mjs'],
+    // Build/verify tooling in the private @rxova/utils package (and any
+    // top-level scripts/). Mostly plain ESM JavaScript outside the TS program;
+    // check-changeset.ts is TypeScript, kept diffable with the sibling repos,
+    // and covered by packages/utils/tsconfig.json.
+    //
+    // These are CLIs: reporting to stdout/stderr is their entire output
+    // contract, so the library-wide `no-console: error` does not apply.
+    files: ['scripts/**/*.{mjs,ts}', 'packages/utils/**/*.{mjs,ts}'],
     languageOptions: { globals: globals.node, sourceType: 'module' },
     rules: { 'no-console': 'off' },
   },

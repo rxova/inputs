@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
+import { readManifest } from './manifest'
 
 /**
  * Keeps the browser list in the root `e2e:install` in step with the projects
@@ -16,8 +17,8 @@ import process from 'node:process'
 
 const root = process.cwd()
 
-const rootPkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
-const install = rootPkg.scripts['e2e:install']
+const rootPkg = readManifest(resolve(root, 'package.json'))
+const install = rootPkg.scripts?.['e2e:install']
 if (!install) {
   console.error('✖ root package.json has no `e2e:install` script')
   process.exit(1)
@@ -39,7 +40,9 @@ const allProjects = new Set()
 
 for (const configPath of configs) {
   const config = readFileSync(configPath, 'utf8')
-  const projects = [...config.matchAll(/name:\s*'([a-z]+)'/g)].map((m) => m[1])
+  const projects = [...config.matchAll(/name:\s*'([a-z]+)'/g)]
+    .map((m) => m[1])
+    .filter((name): name is string => name !== undefined)
   const relative = configPath.slice(root.length + 1)
 
   if (projects.length === 0) {

@@ -1,8 +1,6 @@
-import { chromium } from 'playwright'
+import { chromium, type Page } from 'playwright'
 import { PNG } from 'pngjs'
 import gifenc from 'gifenc'
-
-const { GIFEncoder, quantize, applyPalette } = gifenc
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
@@ -28,39 +26,54 @@ const OUT_DIRS = [
   fileURLToPath(new URL('../packages/react-intl-currency-input/assets/examples/', import.meta.url)),
 ]
 
-const save = (name, buffer) => {
+const save = (name: string, buffer: Buffer): void => {
   for (const dir of OUT_DIRS) writeFileSync(`${dir}${name}`, buffer)
 }
 
-const clipOf = (box) => ({
-  x: Math.round(box.x),
-  y: Math.round(box.y),
-  width: Math.round(box.width),
-  height: Math.round(box.height),
-})
+interface Clip {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
-function encodeGif(frames) {
-  const gif = GIFEncoder()
+const clipOf = (box: Clip | null): Clip => {
+  if (!box) throw new Error('element has no bounding box — it is not laid out')
+  return {
+    x: Math.round(box.x),
+    y: Math.round(box.y),
+    width: Math.round(box.width),
+    height: Math.round(box.height),
+  }
+}
+
+interface Frame {
+  buffer: Buffer
+  delay: number
+}
+
+function encodeGif(frames: readonly Frame[]): Buffer {
+  const gif = gifenc.GIFEncoder()
   for (const { buffer, delay } of frames) {
     const png = PNG.sync.read(buffer)
-    const palette = quantize(png.data, 256)
-    const index = applyPalette(png.data, palette)
+    const palette = gifenc.quantize(png.data, 256)
+    const index = gifenc.applyPalette(png.data, palette)
     gif.writeFrame(index, png.width, png.height, { palette, delay })
   }
   gif.finish()
   return Buffer.from(gif.bytes())
 }
 
-async function shotBox(page, id) {
+async function shotBox(page: Page, id: string): Promise<Clip> {
   const el = page.locator(`[data-shot="${id}"]`)
   await el.waitFor({ state: 'visible' })
   return clipOf(await el.boundingBox())
 }
 
 /** A frame grabber bound to one shot's clip. */
-function grabber(page, clip) {
-  const frames = []
-  const grab = async (delay) => {
+function grabber(page: Page, clip: Clip) {
+  const frames: Frame[] = []
+  const grab = async (delay: number): Promise<void> => {
     frames.push({ buffer: await page.screenshot({ clip }), delay })
   }
   return { frames, grab }
@@ -71,7 +84,7 @@ function grabber(page, clip) {
  * value crosses 10000 a (non-breaking) space appears — the CLDR rule that only
  * groups above 9999, applied for free because Intl owns the formatting.
  */
-async function bulgarianGif(page) {
+async function bulgarianGif(page: Page) {
   await page.reload({ waitUntil: 'networkidle' })
   const clip = await shotBox(page, 'bulgarian')
   const field = page.locator('[data-shot="bulgarian"] input')
@@ -95,7 +108,7 @@ async function bulgarianGif(page) {
 }
 
 /** The core mechanic: grouping and the symbol appear live as you type, caret stable. */
-async function liveGif(page) {
+async function liveGif(page: Page) {
   await page.reload({ waitUntil: 'networkidle' })
   const clip = await shotBox(page, 'live')
   const field = page.locator('[data-shot="live"] input')
@@ -116,7 +129,7 @@ async function liveGif(page) {
 }
 
 /** Type ASCII, blur, and it renders in native Arabic-Indic digits, right-to-left. */
-async function arabicGif(page) {
+async function arabicGif(page: Page) {
   await page.reload({ waitUntil: 'networkidle' })
   const clip = await shotBox(page, 'arabic')
   const field = page.locator('[data-shot="arabic"] input')
@@ -159,7 +172,7 @@ async function main() {
   console.log(`\n✔ captured to:\n  ${OUT_DIRS.join('\n  ')}`)
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error(error)
   process.exit(1)
 })

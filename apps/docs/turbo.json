@@ -3,12 +3,17 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      // Astro emits dist/, not Docusaurus's build/. Leaving the old path here
-      // would make a cache hit restore nothing, and the aggregator would upload
-      // an empty tree rather than fail loudly.
+      // Astro emits dist/. Not .astro/ — that is Astro's regenerable internal
+      // cache, and restoring a tool's own scratch directory across contexts is
+      // how you get stale module resolution. Only the built site is a portable
+      // output.
       "outputs": ["dist/**"],
-      // .astro/ is Astro's regenerable internal cache — same reasoning as the
-      // root config's note about .docusaurus/.
+      // These mount the site under the aggregator's base path and change every
+      // emitted URL, so they belong in the cache key: without them a root-base
+      // build could replay for the /packages/react-inputs/ build and the
+      // breakage would stay invisible until rxova.org served it. Declared here
+      // rather than on the root task so setting them does not also invalidate
+      // the library builds, which never read them.
       "env": ["DOCS_URL", "DOCS_BASE_URL"]
     }
   }

@@ -52,7 +52,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "check:exports": "publint --strict && attw --pack .",
-    "pack:smoke": "node ../utils/pack-smoke.mjs",
+    "pack:smoke": "node --import tsx ../utils/pack-smoke.ts",
     "size": "size-limit",
     "prepack": "pnpm build"
   },

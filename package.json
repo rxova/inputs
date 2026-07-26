@@ -21,15 +21,15 @@
     "dev": "turbo run dev --filter=@rxova/playground",
     "playground:build": "turbo run build --filter=@rxova/playground",
     "docs": "pnpm run docs:dev",
-    "docs:dev": "turbo run start --filter=@rxova/docs",
+    "docs:dev": "turbo run dev --filter=@rxova/docs",
     "docs:build": "turbo run build --filter=@rxova/docs",
     "e2e": "turbo run e2e --concurrency=1",
     "e2e:install": "playwright install --with-deps chromium firefox webkit",
     "release": "turbo run build && changeset publish",
     "prepare": "husky",
-    "check:docs": "node packages/utils/check-doc-snippets.mjs",
-    "check:browsers": "node packages/utils/check-browsers.mjs",
-    "verify": "node packages/utils/verify.mjs"
+    "check:docs": "node --import tsx ./packages/utils/check-doc-snippets.ts",
+    "check:browsers": "node --import tsx ./packages/utils/check-browsers.ts",
+    "verify": "node --import tsx ./packages/utils/verify.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
@@ -42,22 +42,25 @@
     "@types/node": "^26.1.1",
     "axe-core": "^4.12.1",
     "eslint": "^10.7.0",
+    "eslint-plugin-astro": "^3.0.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
     "playwright": "^1.61.1",
     "prettier": "^3.9.6",
-    "turbo": "^2.5.8",
+    "prettier-plugin-astro": "^0.14.1",
+    "tsx": "^4.23.1",
+    "turbo": "^2.10.6",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.65.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "*.{ts,tsx,js,jsx,mjs,astro}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,yml,yaml,css}": [
+    "*.{json,jsonc,css,md,mdx,yaml,yml}": [
       "prettier --write"
     ]
   },

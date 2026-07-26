@@ -1,5 +1,33 @@
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
+import { pathToFileURL } from 'node:url'
+
+/**
+ * A gate step: either a package.json script, or one Turbo invocation — never
+ * both and never neither. That invariant is asserted by `stepInvocation` below
+ * and pinned by verify.test.ts, rather than expressed as a discriminated union:
+ * this repo sets `exactOptionalPropertyTypes: false`, which stops `?: never`
+ * from discriminating, and its lint config forbids both `!` and the `as` form
+ * that would otherwise paper over it.
+ */
+export interface VerifyStep {
+  readonly name: string
+  readonly script?: string
+  readonly turbo?: readonly string[]
+}
+
+/** Just the part of spawnSync's result the runner reads. */
+export interface StepResult {
+  readonly status: number | null
+  readonly error?: unknown
+}
+
+export interface RunVerifyOptions {
+  log?: (message: string) => void
+  error?: (message: unknown) => void
+  runScript?: (step: VerifyStep) => StepResult
+  only?: readonly string[] | null
+}
 
 /**
  * One ordered definition of "is this releasable", executed locally by the
@@ -28,7 +56,7 @@ import process from 'node:process'
  * eslint and prettier both key on file content + config, so an unchanged file
  * is never re-read.
  */
-export const steps = [
+export const steps: readonly VerifyStep[] = [
   { name: 'Audit dependencies', script: 'audit:check' },
   // Cached by Turbo on the lockfile + manifests (see turbo.json) rather than
   // run directly, which is what turns this from the slowest step in the gate
@@ -57,18 +85,28 @@ export const steps = [
   { name: 'Smoke-test the package tarball', script: 'pack:smoke' },
 ]
 
-const runPnpmScript = (step) =>
-  step.turbo
-    ? spawnSync('pnpm', ['exec', 'turbo', 'run', ...step.turbo], { stdio: 'inherit' })
-    : spawnSync('pnpm', ['run', step.script], { stdio: 'inherit' })
+/** The argv a step maps to, and the single point where the invariant is checked. */
+export const stepInvocation = (step: VerifyStep): readonly string[] => {
+  if (step.turbo !== undefined) return ['exec', 'turbo', 'run', ...step.turbo]
+  const { script } = step
+  if (script === undefined) {
+    throw new Error(`verify step "${step.name}" declares neither \`script\` nor \`turbo\``)
+  }
+  return ['run', script]
+}
+
+const runPnpmScript = (step: VerifyStep): StepResult =>
+  spawnSync('pnpm', [...stepInvocation(step)], { stdio: 'inherit' })
 
 export function runVerify({
   log = console.log,
   error = console.error,
   runScript = runPnpmScript,
   only = null,
-} = {}) {
-  const idsOf = (step) => step.turbo ?? [step.script]
+}: RunVerifyOptions = {}): number {
+  // Ids, not names: the `only` filter selects by script name or turbo task.
+  const idsOf = (step: VerifyStep): readonly string[] =>
+    step.turbo ?? (step.script === undefined ? [] : [step.script])
   const selected = only ? steps.filter((s) => idsOf(s).some((id) => only.includes(id))) : steps
 
   for (const step of selected) {
@@ -80,9 +118,7 @@ export function runVerify({
       return 1
     }
     if (result.status !== 0) {
-      const invocation = step.turbo
-        ? `pnpm exec turbo run ${step.turbo.join(' ')}`
-        : `pnpm run ${step.script}`
+      const invocation = `pnpm ${stepInvocation(step).join(' ')}`
       error(`\n✖ Failed: ${step.name} (${invocation})`)
       return result.status ?? 1
     }
@@ -92,7 +128,11 @@ export function runVerify({
   return 0
 }
 
-const isEntrypoint = process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())
+// Compares full URLs, not basenames. The previous form matched on the file
+// name alone, so importing this module from a test whose own path happened to
+// end in `verify.ts` would have run the entire gate.
+const isEntrypoint =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href
 
 if (isEntrypoint) {
   process.exit(runVerify())

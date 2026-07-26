@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  // The rest of this package is plain .mjs, deliberately outside the TS
+  // program. check-changeset.ts is TypeScript so it can stay diffable with the
+  // copies in the sibling repos, and the root eslint config lints `**/*.ts`
+  // with projectService — a .ts file in no program is a parse error, not a
+  // silent skip. Mirrors use-everywhere/packages/tooling/tsconfig.json.
+  "include": ["*.ts"]
+}
