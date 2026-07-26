@@ -1,18 +1,147 @@
 ---
-title: Live code smoke test
+title: rxova
+description: Headless, accessible, zero-dependency React inputs — currency, rating, and one-time-code.
+template: splash
+hero:
+  tagline: The tricky React inputs, done right.
+  actions:
+    - text: Get started
+      link: /getting-started/installation
+      icon: right-arrow
+      variant: primary
+    - text: Browse the components
+      link: /components/currency/introduction
+      icon: document
+      variant: minimal
+    - text: GitHub
+      link: https://github.com/rxova/react-inputs
+      icon: external
+      variant: minimal
 ---
 
-## A: bare function declaration (what the 29 existing blocks use)
+import { CardGrid, Card } from '@astrojs/starlight/components'
+import LiveExample from '@components/LiveExample.astro'
 
-```tsx live
-function TryIt() {
+Most input libraries ship a hundred components and get the hard ones wrong.
+This one ships the three that are genuinely hard — and gets them right.
+
+Nothing below is a screenshot. Every example runs in this page, and you can edit
+any of it.
+
+## Money that respects the locale
+
+Grouping, symbol placement, decimal rules and digit systems all come from `Intl`
+— not from a regex. The caret stays where you put it while the value reformats
+underneath you.
+
+<LiveExample code={`function CurrencyDemo() {
+  const [locale, setLocale] = useState('de-DE')
+  const currency = { 'de-DE': 'EUR', 'bg-BG': 'BGN', 'hi-IN': 'INR', 'ar-EG': 'EGP', 'ja-JP': 'JPY' }[locale]
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 13, opacity: 0.7, marginBottom: 6 }}>
+        Locale
+      </label>
+      <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+        <option value="de-DE">de-DE — German</option>
+        <option value="bg-BG">bg-BG — Bulgarian</option>
+        <option value="hi-IN">hi-IN — Hindi (lakh grouping)</option>
+        <option value="ar-EG">ar-EG — Arabic (native digits)</option>
+        <option value="ja-JP">ja-JP — Japanese (no decimals)</option>
+      </select>
+      <div style={{ marginTop: 14 }}>
+        <CurrencyInput locale={locale} currency={currency} defaultValue={50000} />
+      </div>
+    </div>
+  )
+}`} />
+
+## Ratings at any precision
+
+Whole, half or continuous — with any icon. Interactive, it is a native
+`radiogroup`, so arrow keys, form submission and screen-reader announcements
+come from the browser. Read-only, it is an image with a label.
+
+<LiveExample code={`function RatingDemo() {
   const [value, setValue] = useState(3.5)
-  return <div><Rating value={value} onChange={setValue} precision={0.5} /><p>value: {value}</p></div>
-}
+  const [precision, setPrecision] = useState(0.5)
+  return (
+    <div>
+      <Rating value={value} onChange={setValue} precision={precision} />
+      <p style={{ marginTop: 10, fontSize: 14 }}>
+        value <strong>{value}</strong> · precision {precision}
+      </p>
+      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        {[1, 0.5, 0.1].map((p) => (
+          <button
+            key={p}
+            onClick={() => setPrecision(p)}
+            style={{
+              padding: '3px 12px',
+              borderRadius: 999,
+              cursor: 'pointer',
+              border: '1px solid var(--rx-rule-strong)',
+              background: p === precision ? 'var(--rx-primary)' : 'transparent',
+              color: p === precision ? '#fff' : 'inherit',
+            }}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}`} />
+
+## One-time codes without the hacks
+
+One native `<input>` behind spatial slots — so paste, SMS autofill, IME and
+password managers keep working. Not six inputs held together with key handlers.
+
+<LiveExample code={`function OtpDemo() {
+  const [code, setCode] = useState('')
+  return (
+    <div>
+      <OtpInput value={code} onChange={setCode} length={6} />
+      <p style={{ marginTop: 12, fontSize: 14 }}>
+        {code.length === 6 ? '✓ complete — ' : ''}value: <strong>{code || '(empty)'}</strong>
+      </p>
+    </div>
+  )
+}`} />
+
+## Why this one
+
+<CardGrid>
+  <Card title="Headless" icon="setting">
+    No stylesheet to import and nothing to override. Style with CSS custom
+    properties and `data-*` hooks, and it inherits whatever your app already
+    looks like.
+  </Card>
+  <Card title="Zero runtime dependencies" icon="rocket">
+    `react` is the only peer. Nothing else reaches your bundle, and everything
+    tree-shakes to what you actually import.
+  </Card>
+  <Card title="Accessible by construction" icon="approve-check">
+    Native platform semantics rather than ARIA sprinkled on top — keyboard, focus,
+    and form behaviour come from the browser. Every build is checked with
+    axe-core.
+  </Card>
+  <Card title="Correct on the seams" icon="puzzle">
+    Bulgarian's space-only-above-9999, Hindi lakh grouping, Arabic-Indic digits,
+    formatted paste, Chrome auto-translate, IME composition, RTL and SSR.
+  </Card>
+</CardGrid>
+
+## Get going
+
+```sh
+npm install @rxova/react-inputs
 ```
 
-## B: JSX expression
-
-```tsx live
-<Rating value={3.5} precision={0.5} />
+```tsx
+import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
 ```
+
+Typed, strict, and covered by a test suite that runs in a browser.
+[Start here →](/getting-started/installation)

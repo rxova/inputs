@@ -1,0 +1,93 @@
+---
+title: "Migrating"
+sidebar:
+  order: 4
+---
+
+## Migrating from react-currency-input-field
+
+The two libraries solve the same problem differently. `react-currency-input-field` derives a
+separator from one probe and then applies that separator while rebuilding the editable value;
+this package delegates each complete idle value to `Intl` and uses `formatToParts()` only to parse
+the user's locale-specific input.
+
+:::note[Research date]
+Verified against `react-currency-input-field` **4.0.6** on 2026-07-24. Re-check the comparison when
+upgrading either package.
+:::
+
+### Prop mapping
+
+| `react-currency-input-field`          | `@rxova/react-intl-currency-input`                           |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `intlConfig={{ locale, currency }}`   | `locale` + `currency` (top-level props)                      |
+| `groupSeparator` / `decimalSeparator` | _(derived from the locale — remove them)_                    |
+| `prefix` / `suffix`                   | _(derived from the currency — remove them)_                  |
+| `decimalScale`                        | `maximumFractionDigits`                                      |
+| `fixedDecimalLength`                  | `minimumFractionDigits` + `maximumFractionDigits`            |
+| `allowNegativeValue`                  | `allowNegative`                                              |
+| `step`                                | `step`                                                       |
+| `transformRawValue`                   | `transformRawValue`                                          |
+| `value` (string)                      | `value` (`number \| null`)                                   |
+| `onValueChange(value, name, values)`  | `onValueChange(value, meta)` — `value` is a `number \| null` |
+
+### Before
+
+```tsx
+import { useState } from 'react'
+import CurrencyInput from 'react-currency-input-field'
+
+function BeforeMigration() {
+  const [value, setValue] = useState<string | undefined>()
+
+  return (
+    <CurrencyInput
+      intlConfig={{ locale: 'bg-BG', currency: 'EUR' }}
+      groupSeparator=" "
+      decimalSeparator=","
+      decimalScale={2}
+      value={value}
+      onValueChange={setValue}
+    />
+  )
+}
+```
+
+### After
+
+```tsx
+import { useState } from 'react'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+function AfterMigration() {
+  const [value, setValue] = useState<number | null>(null)
+
+  return <CurrencyInput locale="bg-BG" currency="EUR" value={value} onValueChange={setValue} />
+}
+```
+
+### What changes for the better
+
+- **Bulgarian grouping is correct.** A hardcoded `groupSeparator=" "` uses an ASCII space and groups
+  below 10000. Version 4.0.6's locale probe uses `1000.1`; Bulgarian intentionally emits no group
+  part for that value, so the derived separator is empty. Here the non-breaking separator and the
+  "only above 9999" threshold come from `Intl`/CLDR automatically.
+- **The value is a number.** No more parsing a formatted string back into a number before you submit.
+- **Fewer props.** Separators, prefix/suffix, and fraction digits default from the locale and
+  currency.
+- **Live formatting with a stable caret.** Like `react-currency-input-field`, this formats as you
+  type; the caret is anchored to the digit you typed rather than the character index, so grouping
+  changes never move it. Prefer no caret logic at all? `formatMode="blur"` edits a plain number while
+  focused and formats on blur.
+- **Native digits round-trip.** Arabic and other numbering systems are mapped through `Intl` rather
+  than an ASCII-only parser.
+
+### What to double-check
+
+- Your `onValueChange` handler now receives a `number | null`, not a string. Update anything that
+  did string work on it.
+- If you relied on a custom separator that did not match the locale, switch to the correct `locale`
+  instead.
+- Abbreviations such as `1k`, arbitrary prefixes/suffixes, and `customInput` are intentionally not
+  supported. They make the field a generic numeric mask rather than a locale-defined currency
+  input. Use `transformRawValue` for application-specific cleanup before parsing.

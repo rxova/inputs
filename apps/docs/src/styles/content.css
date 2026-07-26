@@ -1,0 +1,73 @@
+/**
+ * The suite listing on the Overview page.
+ *
+ * It previously used an emoji plus the npm package name as the heading — which
+ * meant the heading *was* a link, so each row rendered large, bold and purple.
+ * Three of those stacked read as three shouts rather than a list.
+ *
+ * Here the mark carries the recognition, the heading steps down to roughly body
+ * weight, and the links are quiet until hovered.
+ */
+.rx-suite {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.rx-suite__item {
+  display: block;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--sl-color-hairline);
+}
+
+.rx-suite__item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The mark sits on the heading's own line and is centred against it, rather
+   than beside the whole block where it aligned to the top of the text column. */
+.rx-suite__title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.rx-suite__title img {
+  flex: none;
+  display: block;
+}
+
+/* A notch down from Starlight's h3, and no longer competing with the page title. */
+.rx-suite__item h3 {
+  margin: 0 0 0.4rem;
+  font-size: var(--sl-text-lg);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.rx-suite__item p {
+  margin: 0;
+  color: var(--sl-color-gray-2);
+  font-size: var(--sl-text-sm);
+  line-height: 1.6;
+}
+
+.rx-suite__links {
+  display: flex;
+  gap: 1.1rem;
+  margin-top: 0.6rem !important;
+}
+
+.rx-suite__links a {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-xs);
+  text-decoration: none;
+}
+
+.rx-suite__links a:hover {
+  color: var(--sl-color-white);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

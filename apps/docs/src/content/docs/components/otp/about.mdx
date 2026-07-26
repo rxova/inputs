@@ -1,0 +1,641 @@
+---
+title: "About"
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+## WebOTP
+
+Programmatic SMS retrieval on Android Chrome — the primitive no other OTP library ships. It is
+**progressive enhancement**, layered on top of `autocomplete="one-time-code"`, never instead of it,
+and a clean no-op everywhere the API is absent.
+
+### On the component
+
+```tsx
+<OtpInput length={6} value={code} onChange={setCode} webOTP label="Code" />
+```
+
+When the field mounts, it calls `navigator.credentials.get({ otp: { transport: ['sms'] } })`. If the
+user grants an incoming code, it fills the whole field at once.
+
+### The standalone hook
+
+Use `useWebOTP` to drive any target — including a custom [headless](/components/otp/about) render:
+
+```tsx
+import { useOtpInput, useWebOTP } from '@rxova/react-otp-input'
+
+function Field() {
+  const otp = useOtpInput({ length: 6 })
+  useWebOTP({ enabled: true, onReceive: otp.setValue })
+  // …render with otp's prop-getters…
+}
+```
+
+### Cleanup is handled
+
+The request is aborted on unmount **and** when `enabled` flips off — the fix for the leaked-request /
+dangling-timer class of bug (a `credentials.get` left in flight past unmount resolving into a
+setState on a gone component). Pass your own `signal` to cancel it too:
+
+```tsx
+useWebOTP({ enabled, onReceive, signal: controller.signal })
+```
+
+It only ever runs where `'OTPCredential' in window` — so on iOS, desktop, and non-Chrome Android it
+simply does nothing, and your `autocomplete` suggestion still works.
+
+## Custom rendering
+
+Two escape hatches when tokens aren't enough: a **render prop** (keep the input, own the slots) and
+the **headless hook** (own everything).
+
+### Render prop
+
+`render` receives the per-slot state and returns your markup. The input overlay is still wired for
+you:
+
+```tsx live
+function Dashes() {
+  const [code, setCode] = useState('42')
+  return (
+    <OtpInput
+      length={4}
+      value={code}
+      onChange={setCode}
+      label="Code"
+      render={({ slots }) => (
+        <div style={{ display: 'inline-flex', gap: '0.6rem' }}>
+          {slots.map((slot) => (
+            <span
+              key={slot.index}
+              style={{
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: '1.5rem',
+                borderBottom: '3px solid currentColor',
+                minWidth: '1.6rem',
+                textAlign: 'center',
+              }}
+            >
+              {slot.char ?? (slot.hasFakeCaret ? '|' : ' ')}
+            </span>
+          ))}
+        </div>
+      )}
+    />
+  )
+}
+```
+
+Each slot carries `{ index, char, isFilled, isActive, hasFakeCaret, placeholder, isDisabled, isReadOnly }`.
+
+### Headless hook
+
+`useOtpInput` is the state machine behind every tier. Own the entire markup with its prop-getters:
+
+```tsx
+const otp = useOtpInput({ length: 6, value: code, onChange: setCode })
+
+<div {...otp.getContainerProps()}>
+  <input {...otp.getInputProps()} />
+  {otp.slots.map((s) => (
+    <div key={s.index} {...otp.getSlotProps(s.index)}>
+      {s.char ?? s.placeholder}
+      {s.hasFakeCaret && <span data-otp-caret />}
+    </div>
+  ))}
+</div>
+```
+
+The prop-getters **merge** your handlers rather than clobbering them, so you can add your own
+`onFocus`/`onChange` and the internal wiring still runs. It also returns `{ value, isComplete,
+isFocused, setValue, clear, focus, inputRef }`. See the [API reference](/components/otp/api) for the full shape.
+
+## Forms
+
+`onChange` emits the sanitized **`string`** — the newly entered code, not a DOM event — and the
+underlying input posts natively under `name`. That combination drops into every form library.
+
+```tsx
+// The single input IS the form field.
+<OtpInput name="code" length={6} label="One-time code" />
+```
+
+### What each prop is for
+
+| Prop                 | Purpose                                                         |
+| -------------------- | --------------------------------------------------------------- |
+| `value` / `onChange` | Controlled value; `onChange(value: string)`                     |
+| `defaultValue`       | Uncontrolled initial value                                      |
+| `onComplete`         | Fires once the value reaches `length` — wire submit/verify here |
+| `name`               | Posts natively in a `<form>`; the name RHF/Formik bind to       |
+| `onBlur`             | Fires when focus leaves the whole control, never between slots  |
+| `invalid`            | Sets `aria-invalid` and `data-invalid`                          |
+| `aria-describedby`   | id(s) of external error/help text                               |
+| `inputRef`           | Ref to the underlying `<input>` (focus management)              |
+
+### `onComplete`, not auto-submit
+
+The library never touches your `<form>`. When the code fills, `onComplete(value)` fires — submit,
+verify, or advance focus from there. That keeps the decision yours:
+
+```tsx live
+function Complete() {
+  const [code, setCode] = useState('')
+  const [status, setStatus] = useState('waiting')
+  return (
+    <div>
+      <OtpInput
+        length={4}
+        value={code}
+        onChange={setCode}
+        onComplete={(v) => setStatus(`verifying ${v}…`)}
+        label="Code"
+      />
+      <p style={{ fontSize: '0.9rem' }}>{status}</p>
+    </div>
+  )
+}
+```
+
+### Library recipes
+
+The same three props — `value`, `onChange`, `name` — bind to every form library. Expand one for the
+essential wiring, then follow the link for the full example with validation and error display.
+
+<details>
+<summary><strong>React Hook Form</strong> — <code>&lt;Controller&gt;</code></summary>
+
+```tsx
+<Controller
+  name="code"
+  control={control}
+  render={({ field, fieldState }) => (
+    <OtpInput
+      length={6}
+      label="Verification code"
+      value={field.value}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      name={field.name}
+      inputRef={field.ref}
+      invalid={fieldState.invalid}
+    />
+  )}
+/>
+```
+
+`field.ref` → `inputRef` lets RHF's `setFocus()` and focus-first-error target the input.
+Full example: [React Hook Form recipe](/components/otp/about).
+
+</details>
+
+<details>
+<summary><strong>Formik</strong> — <code>useField</code></summary>
+
+```tsx
+const [field, meta, helpers] = useField<string>('code')
+
+<OtpInput
+  length={6}
+  label="One-time code"
+  name="code"
+  value={field.value}
+  onChange={(value) => helpers.setValue(value)}
+  onBlur={() => helpers.setTouched(true)}
+  invalid={Boolean(meta.touched && meta.error)}
+/>
+```
+
+The value is a plain `string`, so `validationSchema` / `validate` work unchanged.
+Full example: [Formik recipe](/components/otp/about).
+
+</details>
+
+<details>
+<summary><strong>React Final Form</strong> — <code>Field</code></summary>
+
+```tsx
+<Field name="code">
+  {({ input, meta }) => (
+    <OtpInput
+      length={6}
+      label="One-time code"
+      name={input.name}
+      value={input.value}
+      onChange={input.onChange}
+      onBlur={input.onBlur}
+      invalid={Boolean(meta.touched && meta.error)}
+    />
+  )}
+</Field>
+```
+
+An empty field is `''`, which is already a valid empty code — no value guard to write.
+Full example: [React Final Form recipe](/components/otp/about).
+
+</details>
+
+<details>
+<summary><strong>TanStack Form</strong> — <code>form.Field</code></summary>
+
+```tsx
+<form.Field name="code">
+  {(field) => (
+    <OtpInput
+      length={6}
+      label="One-time code"
+      name="code"
+      value={field.state.value}
+      onChange={(value) => field.handleChange(value)}
+      onBlur={field.handleBlur}
+      invalid={!field.state.meta.isValid}
+    />
+  )}
+</form.Field>
+```
+
+`field.handleChange` receives the `string` code directly — no event to unwrap.
+Full example: [TanStack Form recipe](/components/otp/about).
+
+</details>
+
+<details>
+<summary><strong>Native <code>&lt;form&gt;</code></strong> — no library, posts via <code>name</code></summary>
+
+```tsx
+<form
+  onSubmit={(e) => {
+    e.preventDefault()
+    const data = new FormData(e.currentTarget)
+    verify(data.get('code'))
+  }}
+>
+  <OtpInput name="code" length={6} required label="One-time code" />
+  <button type="submit">Verify</button>
+</form>
+```
+
+`FormData` reads the code straight off the input — no hidden concat field, no serialization step.
+Full example: [Native forms recipe](/components/otp/about).
+
+</details>
+
+Set `blurOnComplete` to dismiss the mobile keyboard once the code is entered.
+
+## Styling
+
+No stylesheet to import. Only layout-critical CSS is inlined; everything visual is a `--otp-*` custom
+property or a `data-*` hook — both covered by semver.
+
+### Custom properties
+
+Set them on `[data-otp-root]` or any ancestor:
+
+```css
+[data-otp-root] {
+  --otp-slot-size: 2.5rem;
+  --otp-gap: 0.5rem;
+  --otp-radius: 0.5rem;
+  --otp-border: 1px solid #d4d4d8;
+  --otp-color: inherit;
+  --otp-bg: transparent;
+  --otp-font-size: 1.125rem;
+  --otp-caret-color: currentColor;
+  --otp-active-ring: 2px solid Highlight;
+}
+```
+
+Try it — everything below is just tokens:
+
+```tsx live
+function Themed() {
+  const [code, setCode] = useState('123')
+  return (
+    <div
+      style={{
+        '--otp-slot-size': '3rem',
+        '--otp-radius': '0.9rem',
+        '--otp-gap': '0.4rem',
+        '--otp-border': '2px solid #5a45d6',
+        '--otp-active-ring': '3px solid #f5a623',
+        '--otp-font-size': '1.4rem',
+      }}
+    >
+      <OtpInput length={6} value={code} onChange={setCode} label="Themed code" />
+    </div>
+  )
+}
+```
+
+### Stable `data-*` hooks
+
+All covered by semver:
+
+- Structure: `[data-otp-root]`, `[data-otp-input]`, `[data-otp-slot]`, `[data-otp-group]`,
+  `[data-otp-separator]`, `[data-otp-caret]`
+- Per-slot state: `[data-state="filled" | "active" | "empty"]`, plus `[data-active]`, `[data-filled]`,
+  `[data-disabled]`, `[data-readonly]`, `[data-invalid]`
+
+```css
+[data-otp-slot][data-active] {
+  border-color: var(--otp-active-color, #5a45d6);
+}
+[data-otp-root][data-invalid] [data-otp-slot] {
+  border-color: #c0392b;
+}
+```
+
+### CSP
+
+The only injected style is the caret-blink keyframes. Pass a `nonce` and it lands on that
+`<style>` element:
+
+```tsx
+<OtpInput length={6} nonce={cspNonce} label="Code" />
+```
+
+For full control over the markup, drop to the [`useOtpInput` hook](/components/otp/about).
+
+### Theming recipes
+
+Everything visual is a `--otp-*` token or a `data-*` hook — there is no stylesheet and no theme to
+override. See the token and hook lists above. A few common recipes:
+
+#### Underline slots (no boxes)
+
+```css
+[data-otp-root] {
+  --otp-border: none;
+  --otp-radius: 0;
+}
+[data-otp-slot] {
+  border-bottom: 2px solid var(--rx-rule-strong);
+}
+[data-otp-slot][data-active] {
+  border-bottom-color: #5a45d6;
+}
+```
+
+#### Filled slots
+
+```css
+[data-otp-root] {
+  --otp-bg: #f4f4f5;
+  --otp-border: 1px solid transparent;
+}
+[data-otp-slot][data-filled] {
+  --otp-bg: #ede9fe;
+}
+```
+
+#### Error state
+
+```css
+[data-otp-root][data-invalid] [data-otp-slot] {
+  border-color: #c0392b;
+  --otp-caret-color: #c0392b;
+}
+```
+
+Because the tokens cascade, you can scope a theme to a subtree or flip it per `data-theme` without
+touching the component.
+
+## Form libraries
+
+### Native forms
+
+No form library needed. The single underlying input **is** the field: give it a `name` and it posts in a
+`<form>` like any `<input>`.
+
+```tsx
+function VerifyForm() {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const data = new FormData(e.currentTarget)
+        verify(data.get('code'))
+      }}
+    >
+      <OtpInput name="code" length={6} required label="One-time code" />
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+`FormData` reads the code straight off the input — no hidden concat field, no serialization step.
+`required` participates in native constraint validation.
+
+Prefer to verify the moment the code is complete rather than on a button press? Use `onComplete`:
+
+```tsx
+<OtpInput name="code" length={6} onComplete={() => formRef.current?.requestSubmit()} label="Code" />
+```
+
+### React Hook Form
+
+Because `onChange` emits a `string`, wire it through `<Controller>`:
+
+```tsx
+import { Controller, useForm } from 'react-hook-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  const { control, handleSubmit } = useForm<{ code: string }>({ defaultValues: { code: '' } })
+
+  return (
+    <form onSubmit={handleSubmit((values) => verify(values.code))}>
+      <Controller
+        name="code"
+        control={control}
+        rules={{ minLength: { value: 6, message: 'Enter all six digits' } }}
+        render={({ field, fieldState }) => (
+          <>
+            <OtpInput
+              length={6}
+              label="Verification code"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              inputRef={field.ref}
+              invalid={fieldState.invalid}
+              aria-describedby={fieldState.error ? 'code-error' : undefined}
+            />
+            {fieldState.error && (
+              <p id="code-error" role="alert">
+                {fieldState.error.message}
+              </p>
+            )}
+          </>
+        )}
+      />
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+- `field.value` / `field.onChange` bind the code (a `string`).
+- `field.ref` → `inputRef` lets RHF's `setFocus()` and focus-first-error target the input.
+- `fieldState.invalid` → `invalid` wires `aria-invalid` and `data-invalid`.
+
+To submit automatically once the code completes, use `onComplete` instead of a submit button:
+
+```tsx
+<OtpInput /* …field… */ onComplete={() => formRef.current?.requestSubmit()} />
+```
+
+### Formik
+
+Bind the field with `useField` and push updates through `setValue`:
+
+```tsx
+import { useField } from 'formik'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function CodeField() {
+  const [field, meta, helpers] = useField<string>('code')
+  return (
+    <>
+      <OtpInput
+        length={6}
+        label="One-time code"
+        name="code"
+        value={field.value}
+        onChange={(value) => helpers.setValue(value)}
+        onBlur={() => helpers.setTouched(true)}
+        invalid={Boolean(meta.touched && meta.error)}
+        aria-describedby={meta.touched && meta.error ? 'code-error' : undefined}
+      />
+      {meta.touched && meta.error && (
+        <p id="code-error" role="alert">
+          {meta.error}
+        </p>
+      )}
+    </>
+  )
+}
+```
+
+Drop `<CodeField />` inside a `<Formik>` / `<Form>` with an `initialValues={{ code: '' }}`. Validate
+in `validationSchema` or `validate` as usual — the value is a plain `string`.
+
+### React Final Form
+
+Use a `Field` render prop. React Final Form represents an empty field as `''` — which is already a
+valid empty code, so unlike a numeric field there is **no value guard to write**.
+
+```tsx
+import { Form, Field } from 'react-final-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  return (
+    <Form
+      onSubmit={(values) => verify(values.code)}
+      validate={(v) => (v.code?.length === 6 ? {} : { code: 'Enter all six digits' })}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit}>
+          <Field name="code">
+            {({ input, meta }) => (
+              <>
+                <OtpInput
+                  length={6}
+                  label="One-time code"
+                  name={input.name}
+                  value={input.value}
+                  onChange={input.onChange}
+                  onBlur={input.onBlur}
+                  invalid={Boolean(meta.touched && meta.error)}
+                  aria-describedby={meta.touched && meta.error ? 'code-error' : undefined}
+                />
+                {meta.touched && meta.error && (
+                  <p id="code-error" role="alert">
+                    {meta.error}
+                  </p>
+                )}
+              </>
+            )}
+          </Field>
+          <button type="submit">Verify</button>
+        </form>
+      )}
+    />
+  )
+}
+```
+
+### Notes
+
+- `input.onChange` accepts the emitted `string` directly — the field value _is_ the code.
+- `input.value` is `''` until the user types; that renders as an empty field, no coercion needed.
+- `input.onBlur` marks the field touched when focus leaves the whole control, so
+  `meta.touched`-based errors appear only after the user finishes.
+
+### TanStack Form
+
+Use a `form.Field` render prop. `field.handleChange` takes the emitted `string` directly, and
+`field.state.value` starts as the empty string you set in `defaultValues` — already a valid empty
+code, so there's nothing to coerce.
+
+```tsx
+import { useForm } from '@tanstack/react-form'
+import { OtpInput } from '@rxova/react-otp-input'
+
+function VerifyForm() {
+  const form = useForm({
+    defaultValues: { code: '' },
+    onSubmit: ({ value }) => verify(value.code),
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+    >
+      <form.Field
+        name="code"
+        validators={{
+          onChange: ({ value }) => (value.length === 6 ? undefined : 'Enter all six digits'),
+        }}
+      >
+        {(field) => (
+          <>
+            <OtpInput
+              length={6}
+              label="One-time code"
+              name="code"
+              value={field.state.value}
+              onChange={(value) => field.handleChange(value)}
+              onBlur={field.handleBlur}
+              invalid={!field.state.meta.isValid}
+              aria-describedby={field.state.meta.isValid ? undefined : 'code-error'}
+            />
+            {!field.state.meta.isValid && (
+              <p id="code-error" role="alert">
+                {field.state.meta.errors.join(', ')}
+              </p>
+            )}
+          </>
+        )}
+      </form.Field>
+      <button type="submit">Verify</button>
+    </form>
+  )
+}
+```
+
+### Notes
+
+- `field.handleChange` receives the `string` code — no event to unwrap.
+- `field.handleBlur` marks the field touched when focus leaves the whole control, so validation runs
+  at the right time.
+- `field.state.meta.isValid` / `field.state.meta.errors` drive `invalid` and the error message.

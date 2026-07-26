@@ -1,0 +1,319 @@
+---
+title: "Usage"
+sidebar:
+  order: 2
+---
+
+## Try it
+
+Change the precision, swap the icon, toggle interactive mode — or edit the code. It renders and runs
+right here (`Rating` and `useState` are already in scope).
+
+```tsx live
+function TryIt() {
+  const [value, setValue] = useState(3.5)
+  const [precision, setPrecision] = useState(0.5)
+  const [icon, setIcon] = useState('★')
+  const [interactive, setInteractive] = useState(true)
+
+  const chip = (on) => ({
+    padding: '3px 11px',
+    marginRight: 6,
+    borderRadius: 999,
+    cursor: 'pointer',
+    border: '1px solid var(--rx-rule)',
+    background: on ? 'var(--rx-primary)' : 'transparent',
+    color: on ? '#fff' : 'inherit',
+  })
+
+  return (
+    <div>
+      <div style={{ fontSize: '2.75rem', lineHeight: 1, minHeight: '3rem' }}>
+        <Rating
+          value={value}
+          onChange={interactive ? setValue : undefined}
+          precision={precision}
+          icon={icon}
+          label="Try @rxova/react-rating-input"
+        />
+      </div>
+      <p style={{ margin: '0.5rem 0 1rem', color: 'var(--rx-muted)' }}>
+        value = <b>{value}</b>
+        {interactive ? ' — click or use the arrow keys' : ' — read-only display'}
+      </p>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center' }}>
+        <span>
+          precision{' '}
+          <button style={chip(precision === 0)} onClick={() => setPrecision(0)}>
+            continuous
+          </button>
+          <button style={chip(precision === 0.5)} onClick={() => setPrecision(0.5)}>
+            half
+          </button>
+          <button style={chip(precision === 1)} onClick={() => setPrecision(1)}>
+            whole
+          </button>
+        </span>
+        <span>
+          icon{' '}
+          <button style={chip(icon === '★')} onClick={() => setIcon('★')}>
+            ★
+          </button>
+          <button style={chip(icon === '⭐')} onClick={() => setIcon('⭐')}>
+            ⭐
+          </button>
+          <button style={chip(icon === '❤️')} onClick={() => setIcon('❤️')}>
+            ❤️
+          </button>
+        </span>
+        <label style={{ cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={interactive}
+            onChange={(e) => setInteractive(e.target.checked)}
+          />{' '}
+          interactive
+        </label>
+      </div>
+    </div>
+  )
+}
+```
+
+## Install
+
+```bash
+pnpm add @rxova/react-rating-input     # or: npm i / yarn add / bun add
+```
+
+`react` (>= 18) is the only peer dependency — nothing else to install, and no stylesheet to import.
+Then it is one import: `import { Rating } from '@rxova/react-rating-input'`. A read-only score is
+`<Rating value={4.3} />`; adding `onChange` is the only difference for an interactive input.
+
+## Why this one, not another star widget
+
+- **Accessibility is built in.** Native radios in a radiogroup when interactive, `role="img"` when
+  not — keyboard, focus-visible, RTL, and form-error wiring, all tested.
+- **Fractional display is exact and icon-agnostic.** `4.3` is a 30%-filled fifth icon — with SVG,
+  emoji, images, or custom JSX, not one of a few baked-in half-steps.
+- **Zero runtime dependencies**, ~2.5 kB brotli, and no CSS to import.
+- **One component, two modes.** A read-only score and an interactive form control — adding `onChange`
+  is the only difference.
+- **Small, typed API**, backed by browser, SSR, packaging, and accessibility tests.
+
+More on the geometry and accessibility decisions in [Why this exists](/components/rating/introduction).
+
+## Into a form in one line
+
+`onChange` emits a **`number`, not an event**, so it drops into the controlled adapter of every major
+form library:
+
+[React Hook Form](/components/rating/about) · [Formik](/components/rating/about) ·
+[React Final Form](/components/rating/about) · [TanStack Form](/components/rating/about) ·
+[plain `<form>`](/components/rating/about)
+
+## Next
+
+- [Displaying a score](/components/rating/usage) — precision, rounding, and custom icons
+- [Taking a rating](/components/rating/usage) — interaction, keyboard, and hover
+- [Accessibility](/components/rating/about) · [Styling](/components/rating/about)
+- [Migrating](/components/rating/migrating) from `react-rating`, `react-stars`, or a radio widget
+- [API reference](/components/rating/api) — generated from the source on every build
+
+## Displaying a score
+
+Without an `onChange`, `Rating` is a read-only display: `role="img"` with an accessible label, no tab
+stop, and icons hidden from assistive technology. This is the mode for review summaries, listing
+scores, and dashboards.
+
+```tsx
+import { Rating } from '@rxova/react-rating-input'
+
+<Rating value={4.3} />                       // continuous — a 30%-filled fifth star
+<Rating value={4.3} precision={1} />         // 4 stars
+<Rating value={4.3} precision={0.5} />       // 4.5 stars
+<Rating value={4.3} icon="⭐" />              // emoji
+<Rating value={3} max={10} icon={<Heart />} emptyIcon={<HeartOutline />} />
+```
+
+What each renders:
+
+| Code                                            | Result                                                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `<Rating value={4.3} />`                        | <img src={`${import.meta.env.BASE_URL}img/rating/examples/continuous.png`} alt="4.3 stars, continuous" width="200" /> |
+| `<Rating value={4.3} precision={1} />`          | <img src={`${import.meta.env.BASE_URL}img/rating/examples/whole.png`} alt="4 whole stars" width="200" />              |
+| `<Rating value={4.3} precision={0.5} />`        | <img src={`${import.meta.env.BASE_URL}img/rating/examples/half.png`} alt="4.5 stars" width="200" />                   |
+| `<Rating value={4.3} icon="⭐" />`              | <img src={`${import.meta.env.BASE_URL}img/rating/examples/emoji.png`} alt="emoji rating" width="200" />               |
+| `<Rating value={3} max={5} icon={<Heart />} />` | <img src={`${import.meta.env.BASE_URL}img/rating/examples/hearts.png`} alt="3 of 5 hearts" width="200" />             |
+
+The first four, rendered live — **edit any value**:
+
+```tsx live
+<div style={{ display: 'grid', gap: '0.75rem', fontSize: '1.75rem' }}>
+  <Rating value={4.3} />
+  <Rating value={4.3} precision={1} />
+  <Rating value={4.3} precision={0.5} />
+  <Rating value={4.3} icon="⭐" />
+</div>
+```
+
+### Precision and rounding
+
+Two orthogonal props: **`precision`** is the grid a value snaps to, **`rounding`** is the direction
+it snaps.
+
+| Intent                       | `precision` | `rounding`  | `4.3` → | `4.7` → |
+| ---------------------------- | ----------- | ----------- | ------- | ------- |
+| Exact / continuous (default) | `0`         | `'none'`    | `4.3`   | `4.7`   |
+| Round to whole               | `1`         | `'nearest'` | `4`     | `5`     |
+| Floor / truncate             | `1`         | `'down'`    | `4`     | `4`     |
+| Ceil                         | `1`         | `'up'`      | `5`     | `5`     |
+| Half stars                   | `0.5`       | `'nearest'` | `4.5`   | `4.5`   |
+| Half stars, never inflate    | `0.5`       | `'down'`    | `4`     | `4.5`   |
+| Tenths                       | `0.1`       | `'nearest'` | `4.3`   | `4.7`   |
+
+Snapping is **display-only**. A `value` of `4.28` shown as whole stars renders `4`, but is never
+rounded back into your state — the component never calls `onChange` to “correct” a value.
+
+:::note[Never crashes on bad data]
+Out-of-range, `NaN`, and `Infinity` values clamp to `[0, max]` rather than throwing. A display
+component must not crash a page over a data value from an API.
+:::
+
+### Icon count
+
+`max` sets how many icons render (a positive integer, default `5`). It is independent of the value —
+`value={3} max={10}` is three of ten.
+
+```tsx
+<Rating value={7.5} max={10} />
+```
+
+<img src={`${import.meta.env.BASE_URL}img/rating/examples/max10.png`} alt="7.5 out of 10 stars" width="320" />
+
+### Custom icons
+
+Any `ReactNode` is a valid icon: an inline SVG, an emoji string, an `<img>`, or arbitrary JSX. Pass
+`emptyIcon` for a distinct empty/track icon; omit it and the empty layer is the same icon dimmed via
+a filter.
+
+```tsx
+<Rating value={3.5} icon={<HeartFilled />} emptyIcon={<HeartOutline />} />
+```
+
+An `icon` (or `emptyIcon`) can also be a **function** that receives per-icon state and returns a
+node — useful for conditional rendering per position:
+
+```tsx live
+<Rating
+  value={2.5}
+  style={{ fontSize: '1.75rem' }}
+  icon={(s) => <span>{s.partial ? '◐' : s.filled ? '●' : '○'}</span>}
+/>
+```
+
+The state object is `{ index, fill, filled, empty, partial, active }`. See
+[Custom icons](/components/rating/about) for the full pattern and the emoji color-font caveat.
+
+### Sizing
+
+Size is a single custom property, in any unit, set wherever is convenient:
+
+```tsx
+<Rating value={3.7} style={{ ['--rfs-size' as string]: '2.5rem' }} />
+```
+
+More visual knobs — colors, gap, the empty-layer filter — are in [Styling](/components/rating/about).
+
+## Taking a rating
+
+Providing `onChange` makes the component interactive. Nothing else changes about how you use it.
+**Try it — click, or focus it and use the arrow keys:**
+
+```tsx live
+function Feedback() {
+  const [score, setScore] = useState(0)
+  return (
+    <div style={{ fontSize: '2rem' }}>
+      <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+      <p style={{ fontSize: '1rem' }}>Selected: {score}</p>
+    </div>
+  )
+}
+```
+
+Hovering previews the value; clicking commits it:
+
+<img src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-half.gif`} alt="Hovering and clicking a half-star rating" width="240" />
+
+Internally this renders a `radiogroup` of visually-hidden **native radio inputs**, so arrow-key
+navigation, form participation, focus-visible, and screen-reader announcements all come from the
+platform rather than from hand-rolled JavaScript.
+
+`onChange` receives a **`number`** — the newly selected value — not a DOM event. (That is what makes
+it pair cleanly with form libraries; see [Forms](/components/rating/about).)
+
+### Precision in interactive mode
+
+Interactive mode requires **`precision >= 0.5`**. Half and whole steps are selectable; continuous
+input is not — a radiogroup has discrete options, so a continuous _input_ has no discrete steps to
+offer. Continuous _display_ is fully supported at any precision.
+
+```tsx
+<Rating value={score} onChange={setScore} precision={1} />    // whole-star input
+<Rating value={score} onChange={setScore} precision={0.5} />  // half-star input
+```
+
+### Keyboard
+
+| Key                    | Action                                   |
+| ---------------------- | ---------------------------------------- |
+| `←` / `→` (`↑` / `↓`)  | Move the selection by one step           |
+| Digit keys             | Jump directly to that value              |
+| `Backspace` / `Delete` | Clear the selection                      |
+| `Tab`                  | Moves to the next control (one tab stop) |
+
+Each rating is a **single tab stop**, including before anything is selected. Arrow direction follows
+text direction, so it stays intuitive in RTL.
+
+Arrow keys walking up the scale, then `Backspace` to clear:
+
+<img src={`${import.meta.env.BASE_URL}img/rating/examples/interactive-keyboard.gif`} alt="Selecting a rating with the arrow keys, then clearing with Backspace" width="240" />
+
+### Hover preview
+
+`onHoverChange` reports the value currently previewed by pointer or keyboard, and `null` when the
+preview ends. Use it to mirror the score in nearby UI:
+
+```tsx
+const [hover, setHover] = useState<number | null>(null)
+
+<Rating value={score} onChange={setScore} onHoverChange={setHover} precision={0.5} />
+<p>{hover ?? score} / 5</p>
+```
+
+Touch pointers are ignored for hover preview — on touch there is no hover, and a fake one would fight
+the tap.
+
+### Clearing
+
+When interactive, re-selecting the current value clears it back to `0` (`allowClear`, on by default).
+Set `allowClear={false}` to make a rating mandatory once set.
+
+### Disabled vs. read-only
+
+- **`disabled`** keeps the element a _disabled radiogroup_ — still announced, still discoverable,
+  just not operable. Use it for a control that is temporarily unavailable.
+- **`readOnly`** (or simply omitting `onChange`) renders the `role="img"` display. Use it to show a
+  score that was never meant to be edited.
+
+```tsx
+<Rating value={3} onChange={setScore} disabled />   // disabled input
+<Rating value={3} readOnly />                        // display
+```
+
+### Fully custom rendering
+
+If you want to render the whole thing yourself, `useRating` exposes the state machine — value, hover
+preview, focus, group blur, fills, and steps — in ~900 B. See the [API reference](/components/rating/api).

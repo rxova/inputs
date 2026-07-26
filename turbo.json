@@ -6,11 +6,10 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      // NOT .docusaurus/**: it's Docusaurus's regenerable internal cache, tied to
-      // the installed theme/plugins. Caching+restoring it across contexts breaks
-      // webpack module resolution (stale @theme/Debug* refs). Only build/** (the
-      // static site) and dist/** (library builds) are real, portable outputs.
-      // The docs package overrides this with build/** in its local config.
+      // NOT .astro/**: it's Astro's regenerable internal cache. Caching and
+      // restoring a tool's own scratch directory across contexts is how you get
+      // stale-module resolution failures. Only dist/** — the library builds and
+      // the built docs site — is a portable output.
       "outputs": ["dist/**"],
       // A library build only reads src + build config. Excluding e2e/tests/demo/
       // docs-adjacent files keeps editing them from busting the build cache

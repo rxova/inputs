@@ -1,0 +1,38 @@
+/**
+ * A small mark beside each component in the sidebar.
+ *
+ * Starlight's sidebar entries take a label and an optional badge, but no icon,
+ * so this is drawn on the group's summary. Inlined as data URIs because CSS
+ * url() is never prefixed with the site's base path — a /img/... reference here
+ * would break the moment these docs are mounted under /packages/react-inputs/.
+ */
+
+.sidebar-content ul.top-level > li:nth-child(3) > details > summary .group-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 0.55rem;
+  vertical-align: -0.35rem;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgY29sb3I9IiMyNjg0ZDkiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+QHJ4b3ZhL3JlYWN0LWludGwtY3VycmVuY3ktaW5wdXQgbG9nbzwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cmVjdCB4PSI2IiB5PSIxNyIgd2lkdGg9IjUyIiBoZWlnaHQ9IjMwIiByeD0iNyIgc3Ryb2tlLXdpZHRoPSI0IiAvPgogICAgPHBhdGggZD0iTTIxLjUgMjcuNWMtLjktMS4yLTIuMS0xLjgtMy42LTEuOC0yIDAtMy40IDEtMy40IDIuNiAwIDMuOSA3LjUgMiA3LjUgNS45IDAgMS42LTEuNCAyLjYtMy41IDIuNi0xLjYgMC0zLS42LTQtMS43TTE4LjMgMjR2MTYiIHN0cm9rZS13aWR0aD0iMi43IiAvPgogICAgPHBhdGggZD0iTTMxIDI4aDE4TTMxIDM2aDEyIiBzdHJva2Utd2lkdGg9IjMuNSIgLz4KICA8L2c+Cjwvc3ZnPg==') center / contain no-repeat;
+}
+
+.sidebar-content ul.top-level > li:nth-child(4) > details > summary .group-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 0.55rem;
+  vertical-align: -0.35rem;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgY29sb3I9IiNmNWE2MjMiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+QHJ4b3ZhL3JlYWN0LXJhdGluZy1pbnB1dCBsb2dvPC90aXRsZT4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik01My44IDQyLjFBMjQgMjQgMCAxIDEgNTMuOCAyMS45IiBzdHJva2Utd2lkdGg9IjQiIC8+CiAgICA8cGF0aCBkPSJtNDQuMzUgMTcuNyA5LjQ1IDQuMi0xLTEwLjQiIHN0cm9rZS13aWR0aD0iNCIgLz4KICAgIDxwYXRoIGQ9Im0zMiAxOCA0LjMgOC43IDkuNyAxLjQtNyA2LjggMS43IDkuNi04LjctNC42LTguNyA0LjYgMS43LTkuNi03LTYuOCA5LjctMS40WiIgc3Ryb2tlLXdpZHRoPSIzLjUiIC8+CiAgPC9nPgo8L3N2Zz4=') center / contain no-repeat;
+}
+
+.sidebar-content ul.top-level > li:nth-child(5) > details > summary .group-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 0.55rem;
+  vertical-align: -0.35rem;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgY29sb3I9IiM1YTQ1ZDYiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+cmVhY3Qtb3RwLXNsb3RzIGxvZ288L3RpdGxlPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPGcgc3Ryb2tlLXdpZHRoPSI0Ij4KICAgICAgPHJlY3QgeD0iNiIgeT0iMTciIHdpZHRoPSIyMiIgaGVpZ2h0PSIzMCIgcng9IjciIC8+CiAgICAgIDxyZWN0IHg9IjM2IiB5PSIxNyIgd2lkdGg9IjIyIiBoZWlnaHQ9IjMwIiByeD0iNyIgLz4KICAgIDwvZz4KICAgIDxwYXRoIGQ9Ik0xNyAyNmMtMi40IDAtMy43IDIuMi0zLjcgNnMxLjMgNiAzLjcgNiAzLjctMi4yIDMuNy02LTEuMy02LTMuNy02WiIgc3Ryb2tlLXdpZHRoPSIyLjciIC8+CiAgICA8cGF0aCBkPSJtNDQuNSAyOCAyLjUtMnYxMm0tMi41IDBoNSIgc3Ryb2tlLXdpZHRoPSIyLjciIC8+CiAgPC9nPgo8L3N2Zz4=') center / contain no-repeat;
+}

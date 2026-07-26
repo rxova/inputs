@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="#f5a623" role="img" aria-labelledby="title">
+  <title id="title">@rxova/react-rating-input logo</title>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M53.8 42.1A24 24 0 1 1 53.8 21.9" stroke-width="4" />
+    <path d="m44.35 17.7 9.45 4.2-1-10.4" stroke-width="4" />
+    <path d="m32 18 4.3 8.7 9.7 1.4-7 6.8 1.7 9.6-8.7-4.6-8.7 4.6 1.7-9.6-7-6.8 9.7-1.4Z" stroke-width="3.5" />
+  </g>
+</svg>
