@@ -105,11 +105,13 @@
     "e2e": {
       "cache": false
     },
+    // No `start` task. It was the Docusaurus-era name for the docs dev server,
+    // and after the Starlight migration no package declared it — so
+    // `turbo run start` matched nothing, printed "No tasks were executed" and
+    // exited 0. The root `docs:dev` script pointed at it, which meant
+    // `pnpm run docs` silently did nothing instead of starting Astro. Both are
+    // gone; `dev` below is the one dev-server task.
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "start": {
       "cache": false,
       "persistent": true
     }

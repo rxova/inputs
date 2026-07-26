@@ -1,5 +1,15 @@
 name: Setup pnpm
-description: Enable Corepack, pin pnpm, and configure Node.js with dependency caching.
+description: Install pnpm (version from the packageManager field) and Node.js with pnpm caching.
+
+# Replaces the corepack enable / corepack prepare pnpm@<version> / setup-node
+# block this action used to carry. That pinned the pnpm version a second time,
+# next to `packageManager` in package.json, so every pnpm bump was a two-file
+# change and a silent drift risk if you forgot the second one. pnpm/action-setup
+# reads `packageManager` itself.
+#
+# It also collapses the two mutually-exclusive setup-node steps: a composite
+# action cannot conditionally omit a single `with:` key, but an empty
+# registry-url is simply ignored, so one step covers both cases.
 
 inputs:
   node-version:
@@ -7,38 +17,25 @@ inputs:
     required: false
     default: '24'
   registry-url:
-    description: Package registry URL. Set only on publishing jobs.
+    description: >-
+      npm registry to configure auth against. Only the publishing jobs need
+      this — it is what writes the .npmrc that Trusted Publishing authenticates
+      with.
     required: false
     default: ''
 
 runs:
   using: composite
   steps:
-    - name: Enable Corepack
-      shell: bash
-      run: corepack enable
-
-    - name: Pin pnpm
-      shell: bash
-      # Pinned to the packageManager field so CI and local installs agree.
-      run: corepack prepare pnpm@11.9.0 --activate
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
 
     - name: Setup Node
-      if: ${{ inputs['registry-url'] == '' }}
-      uses: actions/setup-node@v7
+      uses: actions/setup-node@v6
       with:
-        node-version: ${{ inputs['node-version'] }}
+        node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.registry-url }}
         cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
-
-    - name: Setup Node with registry
-      if: ${{ inputs['registry-url'] != '' }}
-      uses: actions/setup-node@v7
-      with:
-        node-version: ${{ inputs['node-version'] }}
-        registry-url: ${{ inputs['registry-url'] }}
-        cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
 
     - name: Report versions
       shell: bash
