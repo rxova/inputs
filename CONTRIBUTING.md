@@ -18,7 +18,7 @@ docs site.
 | `packages/*/src/__tests__/`           | `*.test.ts(x)` run in node, `*.browser.test.tsx` run in Chromium.                    |
 | `packages/*/e2e/`                     | Playwright specs, per package, against the built shared playground.                  |
 | `apps/playground/`                    | `@rxova/playground` — Vite app for manual QA and the E2E target.                     |
-| `apps/docs/`                          | `@rxova/docs` — Docusaurus site for the whole suite.                                 |
+| `apps/docs/`                          | `@rxova/docs` — Astro Starlight site for the whole suite.                            |
 
 Each component package follows the same shape: pure logic modules with no React, a headless
 `use*` hook holding state, a thin rendering component, a `types.ts` public prop surface, and
