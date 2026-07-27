@@ -175,7 +175,7 @@ packages/
   utils                       release gate + repo checks (private)
 apps/
   playground                  shared Vite playground
-  docs                        Docusaurus site, published as part of rxova.org
+  docs                        Astro Starlight site, published as part of rxova.org
 ```
 
 - **Turborepo** — task pipeline and caching (`turbo.json`)
