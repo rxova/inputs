@@ -6,6 +6,7 @@ import starlightLinksValidator from 'starlight-links-validator'
 import { sharedStarlightConfig } from '@rxova/brand'
 import remarkLiveCode from './src/plugins/remark-live-code.mjs'
 import remarkBaseLinks from './src/plugins/remark-base-links.mjs'
+import { withBase } from './src/lib/base-url.mjs'
 
 /**
  * Defaults keep the standalone build working; the rxova.org aggregator sets
@@ -15,9 +16,22 @@ const site = process.env.DOCS_URL ?? 'https://rxova.org'
 const base = process.env.DOCS_BASE_URL ?? '/'
 
 /**
+ * The component list, used for the TypeDoc instances, the sidebar and the
+ * redirects below. Adding a component is one entry here.
+ *
+ * `dir` is both the content directory and the URL segment; `label` is the
+ * sidebar entry, which is not always the directory capitalised (OTP).
+ */
+const COMPONENTS = [
+  { dir: 'currency', label: 'Currency', pkg: 'react-intl-currency-input' },
+  { dir: 'rating', label: 'Rating', pkg: 'react-rating-input' },
+  { dir: 'otp', label: 'OTP', pkg: 'react-otp-input' },
+]
+
+/**
  * One TypeDoc instance per component, matching the Docusaurus setup. A single
- * instance with three entry points would flip TypeDoc into multi-module mode
- * and rewrite every API URL.
+ * instance with every package as an entry point would flip TypeDoc into
+ * multi-module mode and rewrite every API URL.
  */
 const typeDocDefaults = {
   typeDoc: {
@@ -35,8 +49,8 @@ const typeDocDefaults = {
 /**
  * One plugin instance per component, each with its OWN sidebar group.
  *
- * The shared `typeDocSidebarGroup` export is a single group object — with three
- * instances registered against it, only one component's API ends up in the
+ * The shared `typeDocSidebarGroup` export is a single group object — with every
+ * component registered against it, only one component's API ends up in the
  * sidebar. createStarlightTypeDocPlugin() hands back an independent
  * plugin/group pair, so each component's reference can be nested under that
  * component instead of collected into one top-level pile.
@@ -55,13 +69,63 @@ const component = (name, pkg) => {
   })
 }
 
-const currencyPlugin = component('currency', 'react-intl-currency-input')
-const ratingPlugin = component('rating', 'react-rating-input')
-const otpPlugin = component('otp', 'react-otp-input')
+const typeDocPlugins = COMPONENTS.map(({ dir, pkg }) => component(dir, pkg))
+
+/**
+ * A component's landing page. Starlight only emits routes for files that exist,
+ * and a component directory holds no page of its own, so `/components/otp/`
+ * — the shape people type and link — 404s while `/components/otp/introduction/`
+ * works. Every redirect target goes through here.
+ *
+ * withBase is required: Astro writes the redirect destination verbatim (see
+ * core/routing/3xx.js), so under the aggregator an unprefixed `/components/...`
+ * would point one directory above where the docs are mounted. The route KEYS
+ * must stay unprefixed — build output paths are relative to dist/, which is
+ * what gets mounted at base.
+ */
+const introduction = (dir) => withBase(`/components/${dir}/introduction/`, base)
+const migrating = (dir) => withBase(`/components/${dir}/migrating/`, base)
+
+/**
+ * The Docusaurus-era routes, which the restructure to per-component pages
+ * removed (see scripts/restructure-components.mjs). These are not dead history:
+ * they are still in the READMEs of every version already published to npm, and
+ * those cannot be edited. Without redirects, "Documentation →" from a package
+ * page is a 404 for anyone not on the latest release.
+ */
+const legacyRedirects = {
+  // The cross-cutting guides were split into each component's About page,
+  // so no single component is the honest successor. Overview links out to all
+  // of them; an arbitrary component's About would be worse than a shelf.
+  '/guides/accessibility': withBase('/overview/', base),
+  '/guides/styling': withBase('/overview/', base),
+  '/guides/form-libraries': withBase('/overview/', base),
+  // Per-source migration pages, now sections of the component's Migrating page.
+  '/migrating/from-input-otp': migrating('otp'),
+  '/migrating/from-react-otp-input': migrating('otp'),
+  '/migrating/from-react-rating': migrating('rating'),
+  '/migrating/from-react-stars': migrating('rating'),
+  '/migrating/from-radio-buttons': migrating('rating'),
+  '/migrating/from-react-currency-input-field': migrating('currency'),
+}
 
 export default defineConfig({
   site,
   base,
+
+  // Static redirects: Astro emits one meta-refresh index.html per entry, which
+  // the aggregator publishes verbatim like any other file — the ingest contract
+  // in .github/workflows/docs.yml is untouched.
+  redirects: {
+    ...Object.fromEntries(
+      COMPONENTS.flatMap(({ dir }) => [
+        [`/components/${dir}`, introduction(dir)],
+        // The pre-restructure landing route, e.g. /otp.
+        [`/${dir}`, introduction(dir)],
+      ]),
+    ),
+    ...legacyRedirects,
+  },
 
   markdown: {
     // Turns ```tsx live fences into the react-live island. Docusaurus had
@@ -86,20 +150,20 @@ export default defineConfig({
         // Components sit LAST and are the destination, not a preamble:
         // getting-started is a one-time read, the component list is what you
         // come back to. Each component is one clickable entry whose five
-        // sections are identical across all three, so the shape is learned once.
+        // sections are identical, so the shape is learned once.
         sidebar: [
           { label: 'Overview', link: '/overview' },
           { label: 'Getting started', items: [{ autogenerate: { directory: 'getting-started' } }] },
-          // The three components sit at the top level rather than inside a
+          // The components sit at the top level rather than inside a
           // "Components" group: wrapping them added an accordion you had to open
           // before you could see the thing the site is about. The "Components"
           // heading above them is a static section label drawn in CSS
           // (src/styles/sidebar.css) — Starlight's sidebar has no non-collapsible
           // group type, so it cannot be expressed here.
-          ...['currency', 'rating', 'otp'].map((name, i) => ({
-            label: ['Currency', 'Rating', 'OTP'][i],
-            // Closed by default: three components each with five sections is a
-            // long sidebar if they all start open. Starlight keeps the group
+          ...COMPONENTS.map(({ dir: name, label }) => ({
+            label,
+            // Closed by default: each component carries five sections, which is
+            // a long sidebar if they all start open. Starlight keeps the group
             // containing the current page expanded regardless.
             collapsed: true,
             items: [
@@ -123,12 +187,7 @@ export default defineConfig({
       // Applies `base` to the hero action links, which live in frontmatter and
       // so never reach the remark pipeline. See the middleware for why.
       routeMiddleware: './src/route-middleware.mjs',
-      plugins: [
-        currencyPlugin,
-        ratingPlugin,
-        otpPlugin,
-        starlightLinksValidator({ errorOnRelativeLinks: false }),
-      ],
+      plugins: [...typeDocPlugins, starlightLinksValidator({ errorOnRelativeLinks: false })],
     }),
   ],
 })

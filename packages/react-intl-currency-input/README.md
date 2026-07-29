@@ -25,7 +25,7 @@ npm install @rxova/react-intl-currency-input
 Requires React and React DOM 18 or newer. Both are peer dependencies; there are no bundled runtime
 dependencies and no stylesheet to import.
 
-📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/currency)** — the
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/components/currency/introduction/)** — the
 locale matrix, formatting options, form recipes, and migration, with live editable examples you can
 change in the browser: locales, currencies, precision, digits, negatives and keyboard stepping.
 
@@ -155,7 +155,7 @@ CSS Modules, CSS-in-JS, or utility classes. The `invalid` prop supplies both the
 }
 ```
 
-See the **[complete styling guide](https://rxova.org/packages/react-inputs/guides/styling)**
+See the **[complete styling guide](https://rxova.org/packages/react-inputs/components/currency/about/#styling)**
 for labeled fields, CSS Modules, Tailwind, wrapper adornments, design-system variants, and RTL-safe
 layout.
 
@@ -183,7 +183,7 @@ function MuiPrice() {
 }
 ```
 
-See the **[styling guide](https://rxova.org/packages/react-inputs/guides/styling)** for shadcn/ui,
+See the **[styling guide](https://rxova.org/packages/react-inputs/components/currency/about/#styling)** for shadcn/ui,
 Radix Themes, MUI, Chakra UI, Mantine and Ant Design.
 
 ### `currencyForCountry(code)`
@@ -193,17 +193,17 @@ Best-effort ISO-3166 → ISO-4217 lookup for convenience. Prefer passing `curren
 ## Forms
 
 `onValueChange` emits a `number`, so use a controlled adapter (RHF `Controller`, Formik `useField`,
-etc.). See the [form-library guide](https://rxova.org/packages/react-inputs/guides/form-libraries)
+etc.). See the
+[form-library guide](https://rxova.org/packages/react-inputs/components/currency/about/#form-libraries)
 for React Hook Form, Formik, React Final Form and TanStack Form.
 
 ## Part of rxova
 
-One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
-[currency](https://rxova.org/packages/react-inputs/currency),
-[rating](https://rxova.org/packages/react-inputs/rating) and
-[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
-[`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or the full generated
-[API reference](https://rxova.org/packages/react-inputs/components/currency/api) for this package.
+Part of the [rxova headless React inputs](https://rxova.org/packages/react-inputs/overview) suite —
+install the whole set from
+[`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or read the full
+generated [API reference](https://rxova.org/packages/react-inputs/components/currency/api) for this
+package.
 
 ## License
 

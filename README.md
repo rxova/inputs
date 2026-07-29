@@ -128,16 +128,14 @@ when you want the value to submit natively from a plain `<form>`.
 Full guides, live editable examples and the generated API reference for Rxova React Inputs:
 **[rxova.org/packages/react-inputs](https://rxova.org/packages/react-inputs/)**
 
-| Component | Guide                                                               | API reference                                                          |
-| --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Currency  | [Getting started](https://rxova.org/packages/react-inputs/currency) | [API](https://rxova.org/packages/react-inputs/components/currency/api) |
-| Rating    | [Getting started](https://rxova.org/packages/react-inputs/rating)   | [API](https://rxova.org/packages/react-inputs/components/rating/api)   |
-| OTP       | [Getting started](https://rxova.org/packages/react-inputs/otp)      | [API](https://rxova.org/packages/react-inputs/components/otp/api)      |
+| Component | Guide                                                                                        | API reference                                                          |
+| --------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Currency  | [Getting started](https://rxova.org/packages/react-inputs/components/currency/introduction/) | [API](https://rxova.org/packages/react-inputs/components/currency/api) |
+| Rating    | [Getting started](https://rxova.org/packages/react-inputs/components/rating/introduction/)   | [API](https://rxova.org/packages/react-inputs/components/rating/api)   |
+| OTP       | [Getting started](https://rxova.org/packages/react-inputs/components/otp/introduction/)      | [API](https://rxova.org/packages/react-inputs/components/otp/api)      |
 
-Cross-cutting guides:
-[Accessibility](https://rxova.org/packages/react-inputs/guides/accessibility) ·
-[Styling](https://rxova.org/packages/react-inputs/guides/styling) ·
-[Form libraries](https://rxova.org/packages/react-inputs/guides/form-libraries)
+Accessibility, styling and form-library guidance lives on each component's About page — for example
+[Currency › About](https://rxova.org/packages/react-inputs/components/currency/about/).
 
 ## Migrating
 

@@ -97,7 +97,7 @@ const x = (
     expect(out).not.toContain('placeholderChar')
     // Slot fields that carry over untouched.
     expect(out).toContain('@rxova/react-otp-input:')
-    expect(out).toContain('migrating/from-input-otp')
+    expect(out).toContain('components/otp/migrating/')
   })
 
   it('adds no banner when there is no render prop', () => {
