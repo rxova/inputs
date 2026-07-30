@@ -3,6 +3,11 @@
   "version": "0.1.2",
   "type": "module",
   "description": "A headless, accessible one-time-code input for React.",
+  "rxova": {
+    "slug": "otp",
+    "label": "OTP",
+    "title": "OTP input"
+  },
   "keywords": [
     "react",
     "otp",

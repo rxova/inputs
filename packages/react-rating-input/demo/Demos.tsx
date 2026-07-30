@@ -152,7 +152,7 @@ function TanstackFormDemo() {
   )
 }
 
-export function RatingDemos({ dir }: { dir: 'ltr' | 'rtl' }) {
+export function RatingDemos({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
   return (
     <main dir={dir}>
       <div className="grid">
@@ -215,3 +215,6 @@ export function RatingDemos({ dir }: { dir: 'ltr' | 'rtl' }) {
     </main>
   )
 }
+
+// See the note in the currency demo: the playground resolves the default.
+export default RatingDemos

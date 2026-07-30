@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -14,14 +14,44 @@ import process from 'node:process'
  * check-changeset.test.ts, which spawns it against a throwaway git repo.
  */
 
-/** Directory prefixes of packages that are published to npm. */
-const publishedPackageDirs = [
-  'packages/react-intl-currency-input/',
-  'packages/react-otp-input/',
-  'packages/react-rating-input/',
-  'packages/react-inputs/',
-  'packages/codemod/',
-]
+/**
+ * Directory prefixes of packages that are published to npm, read from the
+ * workspace rather than listed.
+ *
+ * This was the one constant that had to be edited per repo, and getting it
+ * wrong is quiet: a package missing from the list is treated as unpublished, so
+ * a README-only change to it skips the changeset gate and ships to npm with no
+ * version bump. `private` in the manifest is the same signal npm and changesets
+ * already use, so there is nothing new to keep in sync — and deriving it makes
+ * this file *more* diffable across the sibling repos, not less, because the
+ * per-repo difference disappears.
+ *
+ * Relative to the working directory on purpose: the whole script already
+ * assumes it runs from the repo root (git and the changeset reads do too).
+ */
+const publishedPackageDirs = ((): readonly string[] => {
+  let entries: readonly { name: string; isDirectory: () => boolean }[]
+  try {
+    entries = readdirSync('packages', { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) => {
+      try {
+        const manifest = JSON.parse(
+          readFileSync(path.join('packages', entry.name, 'package.json'), 'utf8'),
+        ) as { private?: boolean }
+
+        return manifest.private === true ? [] : [`packages/${entry.name}/`]
+      } catch {
+        // No manifest, or unparseable: not a package this gate can reason about.
+        return []
+      }
+    })
+})()
 
 /**
  * Files that never require a changeset when they are the whole diff.

@@ -68,6 +68,27 @@ jobs:
         if: github.event_name == 'push'
         run: pnpm exec commitlint --last --verbose
 
+  # The component list, read from the packages that declare themselves rather
+  # than repeated in every matrix below. A new input used to need an edit in two
+  # places here, and forgetting either was silent: the job simply never ran for
+  # that package and CI stayed green.
+  #
+  # No pnpm install — component-packages.mjs is dependency-free by design, so
+  # this is a checkout and a node call.
+  discover:
+    name: discover packages
+    needs: [commitlint]
+    runs-on: ubuntu-latest
+    outputs:
+      # JSON array for `matrix`, space-separated for shell loops. Same source.
+      dirs: ${{ steps.list.outputs.dirs }}
+      dirs_list: ${{ steps.list.outputs.dirs_list }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: list
+        run: |
+          node packages/utils/print-component-packages.mjs | tee -a "$GITHUB_OUTPUT"
+
   checks:
     name: lint · format · types · docs
     needs: [commitlint]
@@ -126,7 +147,7 @@ jobs:
 
   test:
     name: unit (node ${{ matrix.node }})
-    needs: [commitlint]
+    needs: [commitlint, discover]
     # The changesets version PR only edits version numbers and changelogs, so
     # the source-level suites add no signal on it.
     if: github.head_ref != 'changeset-release/main'
@@ -164,7 +185,7 @@ jobs:
       - name: Unit suites (pure logic, no DOM)
         run: |
           set -e
-          for dir in react-intl-currency-input react-rating-input react-otp-input; do
+          for dir in ${{ needs.discover.outputs.dirs_list }}; do
             echo "::group::$dir (unit)"
             (cd "packages/$dir" && ./node_modules/.bin/vitest run --project unit)
             echo "::endgroup::"
@@ -203,7 +224,7 @@ jobs:
 
   react-minimum:
     name: react 18 (${{ matrix.pkg }})
-    needs: [commitlint]
+    needs: [commitlint, discover]
     # The peer range allows React 18, but the lockfile only ever installs 19, so
     # without this the minimum supported version is an untested claim. Separate
     # from the matrix because it rewrites the React version, which
@@ -214,7 +235,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [react-intl-currency-input, react-rating-input, react-otp-input]
+        pkg: ${{ fromJSON(needs.discover.outputs.dirs) }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-pnpm

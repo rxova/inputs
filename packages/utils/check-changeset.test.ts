@@ -75,6 +75,20 @@ const writeSource = async (root: string, relativePath: string) => {
   await writeFile(join(root, relativePath), 'export const changed = true\n', 'utf8')
 }
 
+/**
+ * A package the gate has to classify. `private` is the only field it reads —
+ * the same signal npm and changesets use to decide whether something publishes.
+ */
+const writePackage = async (root: string, dir: string, { isPrivate = false } = {}) => {
+  const manifest = { name: `@rxova/${dir}`, version: '0.0.0', ...(isPrivate && { private: true }) }
+  await mkdir(join(root, 'packages', dir), { recursive: true })
+  await writeFile(
+    join(root, 'packages', dir, 'package.json'),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    'utf8',
+  )
+}
+
 const env = (baseSha: string, headSha: string, overrides: Record<string, string> = {}) => ({
   BASE_SHA: baseSha,
   HEAD_SHA: headSha,
@@ -132,6 +146,36 @@ describe('check-changeset', () => {
     const result = runScript(tempRoot, env(baseSha, headSha))
     expect(result.code).toBe(1)
     expect(result.output).toContain('No changeset found')
+  })
+
+  // The published-package list is discovered from the workspace. These two pin
+  // the discovery, because the failure is silent in the direction that matters:
+  // a package the gate does not recognise gets its README changes waved through
+  // and republished with no version bump.
+  it('requires a changeset for a README-only change to a published package', async () => {
+    const { tempRoot } = await initRepo()
+    await writePackage(tempRoot, 'react-new-input')
+    const baseSha = commitAll(tempRoot, 'add the package')
+
+    await writeFile(join(tempRoot, 'packages/react-new-input/README.md'), 'docs\n', 'utf8')
+    const headSha = commitAll(tempRoot, 'docs: reword')
+
+    const result = runScript(tempRoot, env(baseSha, headSha))
+    expect(result.code).toBe(1)
+    expect(result.output).toContain('No changeset found')
+  })
+
+  it('waves through the same change to a private package', async () => {
+    const { tempRoot } = await initRepo()
+    await writePackage(tempRoot, 'demo-kit', { isPrivate: true })
+    const baseSha = commitAll(tempRoot, 'add the package')
+
+    await writeFile(join(tempRoot, 'packages/demo-kit/README.md'), 'docs\n', 'utf8')
+    const headSha = commitAll(tempRoot, 'docs: reword')
+
+    const result = runScript(tempRoot, env(baseSha, headSha))
+    expect(result.code).toBe(0)
+    expect(result.output).toContain('Docs/CI/config-only')
   })
 
   it('skips when [skip-changeset] is in the PR title', async () => {

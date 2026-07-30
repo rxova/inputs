@@ -7,6 +7,7 @@ import { sharedStarlightConfig } from '@rxova/brand'
 import remarkLiveCode from './src/plugins/remark-live-code.mjs'
 import remarkBaseLinks from './src/plugins/remark-base-links.mjs'
 import { withBase } from './src/lib/base-url.mjs'
+import { componentPackages } from '../../packages/utils/component-packages.mjs'
 
 /**
  * Defaults keep the standalone build working; the rxova.org aggregator sets
@@ -16,17 +17,14 @@ const site = process.env.DOCS_URL ?? 'https://rxova.org'
 const base = process.env.DOCS_BASE_URL ?? '/'
 
 /**
- * The component list, used for the TypeDoc instances, the sidebar and the
- * redirects below. Adding a component is one entry here.
+ * The components, discovered from the packages that declare themselves (see
+ * packages/utils/component-packages.mjs). Drives the TypeDoc instances, the
+ * sidebar and the redirects below — a new input needs no edit here.
  *
- * `dir` is both the content directory and the URL segment; `label` is the
- * sidebar entry, which is not always the directory capitalised (OTP).
+ * `slug` is the content directory and the URL segment; `label` is the sidebar
+ * entry, which is not always the slug capitalised (OTP).
  */
-const COMPONENTS = [
-  { dir: 'currency', label: 'Currency', pkg: 'react-intl-currency-input' },
-  { dir: 'rating', label: 'Rating', pkg: 'react-rating-input' },
-  { dir: 'otp', label: 'OTP', pkg: 'react-otp-input' },
-]
+const COMPONENTS = componentPackages()
 
 /**
  * One TypeDoc instance per component, matching the Docusaurus setup. A single
@@ -69,7 +67,7 @@ const component = (name, pkg) => {
   })
 }
 
-const typeDocPlugins = COMPONENTS.map(({ dir, pkg }) => component(dir, pkg))
+const typeDocPlugins = COMPONENTS.map(({ slug, dir }) => component(slug, dir))
 
 /**
  * A component's landing page. Starlight only emits routes for files that exist,
@@ -118,10 +116,10 @@ export default defineConfig({
   // in .github/workflows/docs.yml is untouched.
   redirects: {
     ...Object.fromEntries(
-      COMPONENTS.flatMap(({ dir }) => [
-        [`/components/${dir}`, introduction(dir)],
+      COMPONENTS.flatMap(({ slug }) => [
+        [`/components/${slug}`, introduction(slug)],
         // The pre-restructure landing route, e.g. /otp.
-        [`/${dir}`, introduction(dir)],
+        [`/${slug}`, introduction(slug)],
       ]),
     ),
     ...legacyRedirects,
@@ -160,7 +158,7 @@ export default defineConfig({
           // heading above them is a static section label drawn in CSS
           // (src/styles/sidebar.css) — Starlight's sidebar has no non-collapsible
           // group type, so it cannot be expressed here.
-          ...COMPONENTS.map(({ dir: name, label }) => ({
+          ...COMPONENTS.map(({ slug: name, label }) => ({
             label,
             // Closed by default: each component carries five sections, which is
             // a long sidebar if they all start open. Starlight keeps the group
