@@ -16,18 +16,24 @@
  * misses the section is the same broken promise in a quieter form.
  *
  * Offline: reads files only.
+ *
+ * Usage: `node ./scripts/check-readme-links.mjs [repoRoot] [distDir]`. Both
+ * arguments default to this repo's layout; they exist so the test suite can
+ * point the checker at a fixture tree instead of the real one.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 
 const docsRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
-const repoRoot = resolve(docsRoot, '../..')
-const dist = join(docsRoot, 'dist')
+
+export const DEFAULT_REPO_ROOT = resolve(docsRoot, '../..')
+export const DEFAULT_DIST = join(docsRoot, 'dist')
 
 /** Where the aggregator mounts this site; dist paths are relative to it. */
-const MOUNT = '/packages/react-inputs'
-const SITE = `https://rxova.org${MOUNT}`
+export const MOUNT = '/packages/react-inputs'
+export const SITE = `https://rxova.org${MOUNT}`
 
 const SKIP_DIRS = new Set([
   'node_modules',
@@ -53,14 +59,15 @@ function* walk(dir) {
   }
 }
 
-/** Every rxova.org docs URL in the repo, with the file it came from. */
-function collectLinks() {
+/** Every rxova.org docs URL under `repoRoot`, with the file it came from. */
+export function collectLinks(repoRoot) {
   const found = []
   for (const file of walk(repoRoot)) {
     const text = readFileSync(file, 'utf8')
     for (const [url] of text.matchAll(
       /https:\/\/rxova\.org\/packages\/react-inputs[^\s)"'`<>\]]*/g,
     )) {
+      // Prose runs a link into the sentence's punctuation: `…/introduction/.`
       found.push({ url: url.replace(/[.,]$/, ''), file: relative(repoRoot, file) })
     }
   }
@@ -76,46 +83,74 @@ const readIfFile = (path) => {
 }
 
 /** The emitted HTML for a route, or null if the site has no such route. */
-function resolveRoute(pathname) {
+export function resolveRoute(dist, pathname) {
   const clean = pathname.replace(/^\/+|\/+$/g, '')
   // build.format: 'directory' — a route is <route>/index.html. The bare .html
   // fallback covers anything emitted flat.
   return readIfFile(join(dist, clean, 'index.html')) ?? readIfFile(join(dist, `${clean}.html`))
 }
 
-const failures = []
+const isRedirectStub = (html) => /http-equiv="refresh"/i.test(html)
 
-for (const { url, file } of collectLinks()) {
-  const { pathname, hash } = new URL(url)
-  if (!pathname.startsWith(MOUNT)) continue
+/**
+ * Every link in `repoRoot` that `dist` does not answer.
+ *
+ * Returns `{ file, url, reason }` rather than formatted strings so the caller
+ * decides how to present them — and so the tests can assert on the verdict
+ * instead of on prose.
+ */
+export function checkReadmeLinks({ repoRoot = DEFAULT_REPO_ROOT, dist = DEFAULT_DIST } = {}) {
+  const failures = []
 
-  const route = pathname.slice(MOUNT.length) || '/'
-  const html = resolveRoute(route)
+  for (const { url, file } of collectLinks(repoRoot)) {
+    const { pathname, hash } = new URL(url)
+    // Boundary, not prefix: a sibling project mounted at /packages/react-inputs-suite
+    // shares this prefix, and treating its URLs as routes here would report
+    // failures for a site this build knows nothing about.
+    if (pathname !== MOUNT && !pathname.startsWith(`${MOUNT}/`)) continue
 
-  if (html === null) {
-    failures.push(`${file}\n  ${url}\n  → no page or redirect at ${route}`)
-    continue
+    const route = pathname.slice(MOUNT.length) || '/'
+    const html = resolveRoute(dist, route)
+
+    if (html === null) {
+      failures.push({ file, url, reason: `no page or redirect at ${route}` })
+      continue
+    }
+
+    // A redirect stub has no content of its own, so its anchors live on the
+    // destination. Following it here would test the same thing twice; the
+    // destination is checked on its own whenever something links to it directly.
+    if (!hash || isRedirectStub(html)) continue
+
+    const id = hash.slice(1)
+    if (!html.includes(`id="${id}"`)) {
+      failures.push({ file, url, reason: `${route} exists but has no #${id}` })
+    }
   }
 
-  // A redirect stub has no content of its own, so its anchors live on the
-  // destination. Following it here would test the same thing twice; the
-  // destination is checked on its own whenever something links to it directly.
-  const isRedirect = /http-equiv="refresh"/i.test(html)
-  if (!hash || isRedirect) continue
-
-  const id = hash.slice(1)
-  if (!html.includes(`id="${id}"`)) {
-    failures.push(`${file}\n  ${url}\n  → ${route} exists but has no #${id}`)
-  }
+  return failures
 }
 
-if (failures.length) {
-  console.error(
-    `\n${failures.length} broken ${SITE} link(s):\n\n${failures.join('\n\n')}\n\n` +
-      'Either fix the link, or add a redirect in apps/docs/astro.config.mjs if the\n' +
-      'route is one that already shipped in a published README.\n',
+export function formatFailures(failures) {
+  const details = failures.map(({ file, url, reason }) => `${file}\n  ${url}\n  → ${reason}`)
+  return (
+    `\n${failures.length} broken ${SITE} link(s):\n\n${details.join('\n\n')}\n\n` +
+    'Either fix the link, or add a redirect in apps/docs/astro.config.mjs if the\n' +
+    'route is one that already shipped in a published README.\n'
   )
-  process.exit(1)
 }
 
-console.log(`✓ every ${SITE} link in the repo resolves`)
+const invokedDirectly =
+  process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+
+if (invokedDirectly) {
+  const [repoRoot = DEFAULT_REPO_ROOT, dist = DEFAULT_DIST] = process.argv.slice(2)
+  const failures = checkReadmeLinks({ repoRoot, dist })
+
+  if (failures.length > 0) {
+    console.error(formatFailures(failures))
+    process.exit(1)
+  }
+
+  console.log(`✓ every ${SITE} link in the repo resolves`)
+}
