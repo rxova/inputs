@@ -1,5 +1,14 @@
 # @rxova/react-otp-input
 
+## 0.1.2
+
+### Patch Changes
+
+- [#13](https://github.com/rxova/react-inputs/pull/13) [`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba) - Point the README and `homepage` at the routes the docs site actually serves.
+  The Docusaurus-era `/packages/react-inputs/otp` landing route and the shared
+  `/guides/*` pages were removed when the docs were restructured per component,
+  so every documentation link on the npm page 404'd.
+
 ## 0.1.1
 
 ### Patch Changes

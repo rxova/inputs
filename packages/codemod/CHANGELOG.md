@@ -1,5 +1,13 @@
 # @rxova/codemod
 
+## 0.1.2
+
+### Patch Changes
+
+- [#13](https://github.com/rxova/react-inputs/pull/13) [`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba) - Point the `input-otp-to-otp` banner and the README at the OTP migration guide's
+  current URL. The old `/migrating/from-input-otp` route no longer exists, so the
+  comment the codemod writes into migrated source led to a 404.
+
 ## 0.1.1
 
 ### Patch Changes
