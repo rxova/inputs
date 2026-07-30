@@ -1,5 +1,16 @@
 # @rxova/react-inputs
 
+## 0.1.3
+
+### Patch Changes
+
+- [#13](https://github.com/rxova/react-inputs/pull/13) [`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba) - Fix the README links to the per-component documentation pages, which 404'd
+  after the docs site was restructured.
+- Updated dependencies [[`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba), [`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba), [`efc7bba`](https://github.com/rxova/react-inputs/commit/efc7bba37136fc1ec7e4dd5af0070870bc0d29ba)]:
+  - @rxova/react-intl-currency-input@0.1.3
+  - @rxova/react-otp-input@0.1.2
+  - @rxova/react-rating-input@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes
