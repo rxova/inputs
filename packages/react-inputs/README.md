@@ -22,7 +22,7 @@
 <p align="center">
   <a href="https://rxova.org/packages/react-inputs/"><strong>Documentation</strong></a> ·
   <a href="https://rxova.org/packages/react-inputs/getting-started/quick-start">Quick start</a> ·
-  <a href="https://rxova.org/packages/react-inputs/overview">Why these three</a>
+  <a href="https://rxova.org/packages/react-inputs/overview">Why rxova</a>
 </p>
 
 The complete [rxova](https://github.com/rxova/react-inputs) suite of headless, accessible React
@@ -57,11 +57,11 @@ This is a meta-package that re-exports the individual components. Because every 
 `sideEffects: false`, your bundler drops whatever you don't import — a single-component import from
 here costs the same as installing that package directly.
 
-| Exports                                                                       | Package                                                                                              | Docs                                                         |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `CurrencyInput`, `useCurrencyInput`, `currencyForCountry`                     | [`@rxova/react-intl-currency-input`](https://www.npmjs.com/package/@rxova/react-intl-currency-input) | [Currency](https://rxova.org/packages/react-inputs/currency) |
-| `Rating`, `useRating`                                                         | [`@rxova/react-rating-input`](https://www.npmjs.com/package/@rxova/react-rating-input)               | [Rating](https://rxova.org/packages/react-inputs/rating)     |
-| `OtpInput`, `OtpGroup`, `OtpSlot`, `OtpSeparator`, `useOtpInput`, `useWebOTP` | [`@rxova/react-otp-input`](https://www.npmjs.com/package/@rxova/react-otp-input)                     | [OTP](https://rxova.org/packages/react-inputs/otp)           |
+| Exports                                                                       | Package                                                                                              | Docs                                                                                  |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `CurrencyInput`, `useCurrencyInput`, `currencyForCountry`                     | [`@rxova/react-intl-currency-input`](https://www.npmjs.com/package/@rxova/react-intl-currency-input) | [Currency](https://rxova.org/packages/react-inputs/components/currency/introduction/) |
+| `Rating`, `useRating`                                                         | [`@rxova/react-rating-input`](https://www.npmjs.com/package/@rxova/react-rating-input)               | [Rating](https://rxova.org/packages/react-inputs/components/rating/introduction/)     |
+| `OtpInput`, `OtpGroup`, `OtpSlot`, `OtpSeparator`, `useOtpInput`, `useWebOTP` | [`@rxova/react-otp-input`](https://www.npmjs.com/package/@rxova/react-otp-input)                     | [OTP](https://rxova.org/packages/react-inputs/components/otp/introduction/)           |
 
 Prefer the narrowest dependency surface? Install the standalone packages instead — the import paths
 are otherwise identical.
@@ -73,9 +73,8 @@ ESM/CJS builds with types for both, published with npm provenance.
 
 Guides, live editable examples and the generated API reference live at
 **[rxova.org/packages/react-inputs](https://rxova.org/packages/react-inputs/)** —
-including [Accessibility](https://rxova.org/packages/react-inputs/guides/accessibility),
-[Styling](https://rxova.org/packages/react-inputs/guides/styling) and
-[Form libraries](https://rxova.org/packages/react-inputs/guides/form-libraries).
+accessibility, styling and form-library guidance sit on each component's About page, for example
+[Currency › About](https://rxova.org/packages/react-inputs/components/currency/about/).
 
 ## License
 

@@ -239,7 +239,7 @@ jobs:
 
       # `turbo run e2e` builds each package's demo (the cached `demo:build`
       # task) and runs its Playwright suite against its own preview port. The
-      # three packages run concurrently; unchanged suites replay from the
+      # packages run concurrently; unchanged suites replay from the
       # `.turbo` cache restored above.
       - run: pnpm run e2e
       - name: Upload Playwright reports

@@ -127,14 +127,14 @@
       ],
       "outputLogs": "new-only"
     },
-    // Now cacheable. It was `cache: false` — safe but wasteful, re-running all
-    // three suites even when nothing they touch changed. Correctness comes from
+    // Now cacheable. It was `cache: false` — safe but wasteful, re-running
+    // every suite even when nothing they touch changed. Correctness comes from
     // the hash: `dependsOn: demo:build` folds in everything the served page is
     // built from (src, demo, demo-kit), and `inputs` adds the only other things
     // that change a run's outcome — the specs and the Playwright config. A
     // failing run is never cached, so red always re-runs; a green run replays.
-    // Per-package hashing means a change in one package leaves the other two
-    // suites replaying from cache.
+    // Per-package hashing means a change in one package leaves every other
+    // suite replaying from cache.
     "e2e": {
       "dependsOn": ["demo:build"],
       "inputs": ["e2e/**", "playwright.config.ts"],

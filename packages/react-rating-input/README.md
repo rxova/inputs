@@ -21,7 +21,7 @@
 npm install @rxova/react-rating-input
 ```
 
-📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/rating)** — guides,
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/components/rating/introduction/)** — guides,
 form recipes, theming, and migration from `react-rating` / `react-stars`.
 
 - **Bring your own icon** — SVG, emoji, image, arbitrary JSX
@@ -280,17 +280,15 @@ Also handled: visible focus ring that the fill layer's `overflow: hidden` cannot
 
 ## Part of rxova
 
-One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
-[currency](https://rxova.org/packages/react-inputs/currency),
-[rating](https://rxova.org/packages/react-inputs/rating) and
-[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
+Part of the [rxova headless React inputs](https://rxova.org/packages/react-inputs/overview) suite —
+install the whole set from
 [`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or read the full
 generated [API reference](https://rxova.org/packages/react-inputs/components/rating/api) for this
 package.
 
-Migrating from [`react-rating`](https://rxova.org/packages/react-inputs/migrating/from-react-rating),
-[`react-stars`](https://rxova.org/packages/react-inputs/migrating/from-react-stars) or
-[plain radio buttons](https://rxova.org/packages/react-inputs/migrating/from-radio-buttons)?
+Migrating from `react-rating`, `react-stars` or plain radio buttons? The
+[migration guide](https://rxova.org/packages/react-inputs/components/rating/migrating/) has a
+section for each.
 
 ## License
 

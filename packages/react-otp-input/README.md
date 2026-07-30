@@ -22,7 +22,7 @@ top — including the **tap-to-edit any slot** that the incumbent can't do.
 npm install @rxova/react-otp-input
 ```
 
-📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/otp)** — guides, form
+📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/components/otp/introduction/)** — guides, form
 recipes, theming, WebOTP, and migration guides from other OTP libraries.
 
 - **One real `<input>`** — paste, SMS autofill, IME, undo, native `<form>` submission and screen-reader
@@ -142,7 +142,7 @@ adapter:
 ```
 
 Full recipes for React Hook Form, Formik, React Final Form, TanStack Form and native forms are in
-the [form-library guide](https://rxova.org/packages/react-inputs/guides/form-libraries).
+the [form-library guide](https://rxova.org/packages/react-inputs/components/otp/about/#form-libraries).
 
 ## Styling
 
@@ -175,17 +175,16 @@ repeated. Slots are `aria-hidden` decoration. `label` / `aria-label` name the fi
 
 ## Part of rxova
 
-One of [three headless React inputs](https://rxova.org/packages/react-inputs/overview) —
-[currency](https://rxova.org/packages/react-inputs/currency),
-[rating](https://rxova.org/packages/react-inputs/rating) and
-[OTP](https://rxova.org/packages/react-inputs/otp). Install all three from
+Part of the [rxova headless React inputs](https://rxova.org/packages/react-inputs/overview) suite —
+install the whole set from
 [`@rxova/react-inputs`](https://www.npmjs.com/package/@rxova/react-inputs), or read the full
 generated [API reference](https://rxova.org/packages/react-inputs/components/otp/api) for this
 package.
 
 Migrating? `npx @rxova/codemod input-otp-to-otp --dry ./src` handles most of the move from
-[`input-otp`](https://rxova.org/packages/react-inputs/migrating/from-input-otp); there is also a
-guide for [`react-otp-input`](https://rxova.org/packages/react-inputs/migrating/from-react-otp-input).
+`input-otp`; the
+[migration guide](https://rxova.org/packages/react-inputs/components/otp/migrating/) covers that and
+`react-otp-input`.
 
 ## License
 
