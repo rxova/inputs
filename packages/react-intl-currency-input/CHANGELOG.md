@@ -1,5 +1,13 @@
 # @rxova/react-intl-currency-input
 
+## 0.1.4
+
+### Patch Changes
+
+- [#15](https://github.com/rxova/react-inputs/pull/15) [`7fc9910`](https://github.com/rxova/react-inputs/commit/7fc9910538a95983882f95324d7aaa2fdb75a7d9) - Declare the package in its own manifest (`rxova.slug`, `label`, `title`) so
+  the docs sidebar, the CI matrices and the playground discover it instead of
+  repeating it in a list each. No runtime change.
+
 ## 0.1.3
 
 ### Patch Changes
