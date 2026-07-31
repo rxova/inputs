@@ -156,7 +156,7 @@ jobs:
       # Then switch to the Node under test and invoke each package's Vitest
       # binary directly, bypassing pnpm (which would crash on Node 20). Vitest
       # itself supports ^20 || ^22 || >=24.
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - name: Confirm the Node under test
