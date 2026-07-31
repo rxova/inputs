@@ -291,7 +291,7 @@ function TanstackFormDemo() {
   )
 }
 
-export function OtpDemos({ dir }: { dir: 'ltr' | 'rtl' }) {
+export function OtpDemos({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
   return (
     <main dir={dir}>
       <div className="grid">
@@ -361,3 +361,6 @@ export function OtpDemos({ dir }: { dir: 'ltr' | 'rtl' }) {
     </main>
   )
 }
+
+// See the note in the currency demo: the playground resolves the default.
+export default OtpDemos

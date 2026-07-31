@@ -381,9 +381,9 @@ function StressLab() {
   )
 }
 
-export function CurrencyDemos() {
+export function CurrencyDemos({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' } = {}) {
   return (
-    <main>
+    <main dir={dir}>
       <Playground />
       <TrickyGrid />
       <FormDemo />
@@ -391,3 +391,7 @@ export function CurrencyDemos() {
     </main>
   )
 }
+
+// Default export is the playground contract: it discovers demos by module,
+// not by name. The named export stays for this package.
+export default CurrencyDemos

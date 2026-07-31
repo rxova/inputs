@@ -12,24 +12,20 @@ export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   plugins: [react()],
   resolve: {
+    // Subpaths first: alias entries are tried in order, and the bare-specifier
+    // rule below would otherwise swallow `@rxova/demo-kit/styles.css`.
     alias: [
-      {
-        find: '@rxova/react-intl-currency-input',
-        replacement: src('../../packages/react-intl-currency-input/src/index.ts'),
-      },
-      {
-        find: '@rxova/react-rating-input',
-        replacement: src('../../packages/react-rating-input/src/index.ts'),
-      },
-      {
-        find: '@rxova/react-otp-input',
-        replacement: src('../../packages/react-otp-input/src/index.ts'),
-      },
       {
         find: '@rxova/demo-kit/styles.css',
         replacement: src('../../packages/demo-kit/src/styles.css'),
       },
-      { find: /^@rxova\/demo-kit$/, replacement: src('../../packages/demo-kit/src/index.ts') },
+      // Every workspace package resolves to its source, by convention rather
+      // than by enumeration: `@rxova/<name>` lives in `packages/<name>`, so one
+      // rule covers the inputs, demo-kit, and every input added later.
+      {
+        find: /^@rxova\/([^/]+)$/,
+        replacement: src('../../packages/$1/src/index.ts'),
+      },
     ],
   },
   build: { outDir: 'dist', emptyOutDir: true },
