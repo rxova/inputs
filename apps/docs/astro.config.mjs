@@ -139,11 +139,13 @@ export default defineConfig({
     starlight({
       ...sharedStarlightConfig({
         project: 'react-inputs',
+        components: { Footer: './src/components/PageFooter.astro' },
         customCss: [
           './src/styles/live.css',
           './src/styles/sidebar.css',
           './src/styles/logos.css',
           './src/styles/content.css',
+          './src/styles/page-component.css',
         ],
         // Components sit LAST and are the destination, not a preamble:
         // getting-started is a one-time read, the component list is what you
@@ -151,7 +153,10 @@ export default defineConfig({
         // sections are identical, so the shape is learned once.
         sidebar: [
           { label: 'Overview', link: '/overview' },
-          { label: 'Getting started', items: [{ autogenerate: { directory: 'getting-started' } }] },
+          {
+            label: 'Getting started',
+            items: [{ autogenerate: { directory: 'getting-started' } }],
+          },
           // The components sit at the top level rather than inside a
           // "Components" group: wrapping them added an accordion you had to open
           // before you could see the thing the site is about. The "Components"
