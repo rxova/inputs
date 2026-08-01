@@ -81,7 +81,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "final-form": "^5.0.1",
     "formik": "^2.4.9",
-    "playwright": "^1.61.1",
+    "playwright": "^1.62.0",
     "publint": "^0.3.21",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
