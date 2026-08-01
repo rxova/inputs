@@ -41,7 +41,7 @@
     "@playwright/test": "1.61.1",
     "@types/node": "^26.1.1",
     "axe-core": "^4.12.1",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "eslint-plugin-astro": "^3.0.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
