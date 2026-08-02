@@ -1,0 +1,81 @@
+name: Storybook
+
+# The storybook workshop is published at rxova.org/storybook/react-inputs/ by
+# the rxova/rxova-website aggregator, the same pipeline docs.yml feeds. Every
+# project's workshop nests under /storybook/ — this one claims only its own
+# subtree, so use-everywhere or any later project can publish alongside it.
+# Unlike the docs it goes as schema 1: Storybook is a self-contained SPA with
+# its own chrome, so the aggregator mounts the dist verbatim instead of
+# composing it into the website shell. No base-path build flag is needed —
+# Storybook emits `./` relative asset URLs, so the same dist works at any mount.
+#
+# Requires secret AGGREGATOR_DISPATCH_TOKEN (fine-grained PAT with Contents:
+# write on rxova/rxova-website) — already present for docs.yml.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Serialised rather than cancelled, for the same reason as docs.yml: the
+# dispatch is the point, and two quick merges racing could notify the
+# aggregator for builds that finished out of order.
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/turbo-cache
+      - run: pnpm install --frozen-lockfile
+      # A Turbo task: builds the component packages the stories import, then
+      # runs `storybook build` in apps/storybook.
+      - run: pnpm run storybook:build
+
+      # `docs-dist` is the fixed artifact name in the ingest contract —
+      # rxova-website's ingest.yml downloads it by that name from this run.
+      # Pointing `path` at the dist itself keeps index.html at the artifact
+      # root, which gate 2b checks.
+      - name: Upload docs-dist
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-dist
+          path: apps/storybook/dist
+          if-no-files-found: error
+
+  # Gate 1 of the ingest contract (rxova/rxova-website docs/INPUTS-CONTRACT.md):
+  # tell rxova.org this run holds a dist for /storybook/react-inputs/. The
+  # aggregator validates, persists, and republishes; a rejection leaves the
+  # live site untouched.
+  notify-website:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch storybook ingest to rxova.org
+        env:
+          GH_TOKEN: ${{ secrets.AGGREGATOR_DISPATCH_TOKEN }}
+        # `-F` only for schema, which the receiver compares as the number 1;
+        # everything else goes through `-f` so it stays a string, and an
+        # all-digit ref or sha cannot arrive as a number.
+        #
+        # `project` is storybook-react-inputs — the id in the aggregator's
+        # sources.json, a `kind: storybook` surface mounted at
+        # /storybook/react-inputs/.
+        run: |
+          gh api repos/rxova/rxova-website/dispatches \
+            -f event_type=docs \
+            -F 'client_payload[schema]=1' \
+            -f 'client_payload[project]=storybook-react-inputs' \
+            -f "client_payload[ref]=${GITHUB_REF_NAME}" \
+            -f "client_payload[sha]=${GITHUB_SHA}" \
+            -f "client_payload[run_id]=${GITHUB_RUN_ID}" \
+            -f 'client_payload[base]=/storybook/react-inputs/' \
+            -f 'client_payload[framework]=storybook'
