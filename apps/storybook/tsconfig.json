@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"],
+    // Mirrors the single alias rule in vite.config.ts: `@rxova/<name>` is
+    // `packages/<name>`, so adding an input needs no entry here.
+    "paths": {
+      "@rxova/*": ["../../packages/*/src/index.ts"]
+    }
+  },
+  "include": [
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
+    "stories/**/*.ts",
+    "stories/**/*.tsx",
+    "vite.config.ts"
+  ]
+}

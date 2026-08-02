@@ -53,6 +53,7 @@ export default defineConfig(
       'packages/*/src/**/*.{ts,tsx}',
       'packages/*/demo/**/*.{ts,tsx}',
       'apps/playground/**/*.{ts,tsx}',
+      'apps/storybook/**/*.{ts,tsx}',
     ],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
