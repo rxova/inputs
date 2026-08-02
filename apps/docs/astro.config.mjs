@@ -139,13 +139,19 @@ export default defineConfig({
     starlight({
       ...sharedStarlightConfig({
         project: 'react-inputs',
-        components: { Footer: './src/components/PageFooter.astro' },
+        // These docs ship as a page component: rxova.org composes each rendered
+        // body into its own header and footer, so this build must not draw the
+        // umbrella footer itself. It was doing that by overriding Starlight's
+        // `Footer` with a local wrapper around the default, and reconciling the
+        // two sticky headers in a `page-component.css` of its own — both copies
+        // of what @rxova/brand ships behind this flag since 0.9.0. One flag now
+        // says what the build is, and the theme owns how that looks.
+        pageComponent: true,
         customCss: [
           './src/styles/live.css',
           './src/styles/sidebar.css',
           './src/styles/logos.css',
           './src/styles/content.css',
-          './src/styles/page-component.css',
         ],
         // Components sit LAST and are the destination, not a preamble:
         // getting-started is a one-time read, the component list is what you
