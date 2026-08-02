@@ -1,0 +1,30 @@
+{
+  "name": "@rxova/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Component workshop: Storybook stories for every rxova input, driven from package source.",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build -o dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rxova/react-intl-currency-input": "workspace:*",
+    "@rxova/react-otp-input": "workspace:*",
+    "@rxova/react-rating-input": "workspace:*",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5",
+    "@storybook/react-vite": "^10.5.5",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "storybook": "^10.5.5",
+    "typescript": "6.0.3",
+    "vite": "^8.2.0"
+  }
+}
