@@ -471,6 +471,137 @@ describe('pointer focus', () => {
   })
 })
 
+describe('click-to-slot geometry', () => {
+  /** Wait for the spatial layout, then click the input at a point inside `slot`. */
+  async function clickAt(
+    container: HTMLElement,
+    slotIndex: number,
+    at: 'top-border' | 'right-edge' | 'center',
+  ) {
+    await vi.waitFor(() => {
+      expect(parseFloat(input().style.letterSpacing)).toBeGreaterThan(0)
+    })
+    const slots = [...container.querySelectorAll('[data-otp-slot]')]
+    const inputBox = input().getBoundingClientRect()
+    const slotBox = slots[slotIndex]!.getBoundingClientRect()
+    const x =
+      at === 'right-edge'
+        ? slotBox.x + slotBox.width - 2 - inputBox.x
+        : slotBox.x + slotBox.width / 2 - inputBox.x
+    const y =
+      at === 'top-border' ? slotBox.y + 1 - inputBox.y : slotBox.y + slotBox.height / 2 - inputBox.y
+    await userEvent.click(input(), { position: { x, y } })
+  }
+
+  function activeIndex(container: HTMLElement): number {
+    const slots = [...container.querySelectorAll('[data-otp-slot]')]
+    return slots.findIndex((s) => s.hasAttribute('data-active'))
+  }
+
+  it('a click on a slot border of a full field activates that slot, not the first', async () => {
+    // The invisible text's line box covers only part of the overlay's height;
+    // the browser maps a press above it to caret 0. The geometric placement
+    // must land the pressed slot regardless.
+    const { container } = await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('482913')
+    await clickAt(container, 3, 'top-border')
+    await vi.waitFor(() => {
+      expect(activeIndex(container)).toBe(3)
+      expect([input().selectionStart, input().selectionEnd]).toEqual([3, 4])
+    })
+  })
+
+  it('a click near a slot right edge of a full field stays in that slot', async () => {
+    // Once full, the field scrolls by the trailing letter-spacing, which used
+    // to shift edge clicks into the next slot.
+    const { container } = await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('482913')
+    await clickAt(container, 1, 'right-edge')
+    await vi.waitFor(() => {
+      expect(activeIndex(container)).toBe(1)
+    })
+  })
+
+  it('a click lands the pressed slot across a separator', async () => {
+    // A separator shifts the second group off the uniform glyph pitch; the
+    // slot rects are the ground truth.
+    const { container } = await render(
+      <Controlled length={6}>
+        <OtpGroup>
+          <OtpSlot index={0} />
+          <OtpSlot index={1} />
+          <OtpSlot index={2} />
+        </OtpGroup>
+        <OtpSeparator>–</OtpSeparator>
+        <OtpGroup>
+          <OtpSlot index={3} />
+          <OtpSlot index={4} />
+          <OtpSlot index={5} />
+        </OtpGroup>
+      </Controlled>,
+    )
+    await input().focus()
+    await userEvent.keyboard('482913')
+    await clickAt(container, 4, 'center')
+    await vi.waitFor(() => {
+      expect(activeIndex(container)).toBe(4)
+      expect([input().selectionStart, input().selectionEnd]).toEqual([4, 5])
+    })
+  })
+
+  it('falls back to the browser caret when the renderer paints no slot ids', async () => {
+    // A custom `render` prop draws its own cells — there are no
+    // `${baseId}-slot-i` elements to measure, so clicks keep the native
+    // mapping and focus still works.
+    await render(
+      <Controlled
+        length={4}
+        render={({ slots }) => (
+          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+            {slots.map((slot) => (
+              <span key={slot.index} style={{ minWidth: '1.5rem' }}>
+                {slot.char ?? '·'}
+              </span>
+            ))}
+          </div>
+        )}
+      />,
+    )
+    await userEvent.click(input())
+    await userEvent.keyboard('1234')
+    expect(input().value).toBe('1234')
+    await userEvent.click(input())
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(input())
+    })
+  })
+
+  it('a programmatic click does not move the caret geometrically', async () => {
+    await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('482913')
+    input().setSelectionRange(2, 3)
+    // el.click() carries no pointer coordinates (detail 0) — the caret must
+    // not snap to whatever slot sits nearest to clientX 0.
+    input().click()
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    expect([input().selectionStart, input().selectionEnd]).toEqual([2, 3])
+  })
+
+  it('a border click past the filled prefix parks the caret at the first empty slot', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('48')
+    await clickAt(container, 5, 'top-border')
+    await vi.waitFor(() => {
+      expect(activeIndex(container)).toBe(2)
+      expect([input().selectionStart, input().selectionEnd]).toEqual([2, 2])
+    })
+  })
+})
+
 describe('spatial vs crush layout', () => {
   it('spreads the glyphs to the slot pitch in spatial mode', async () => {
     await render(<OtpInput length={6} value="123456" label="Code" slotInteraction="spatial" />)

@@ -274,6 +274,10 @@ export const Rating = /* @__PURE__ */ forwardRef<HTMLSpanElement, RatingProps>(
     return (
       <span
         {...shared}
+        // The same cursor the per-step labels show, so crossing the gap
+        // between two icons doesn't flicker the pointer back to the default.
+        // Consumer style still wins: `shared.style` spreads after it.
+        style={{ cursor: disabled ? 'not-allowed' : 'pointer', ...shared.style }}
         role="radiogroup"
         aria-label={accessibleName}
         aria-required={required ? true : undefined}

@@ -4,6 +4,7 @@ import type {
   ChangeEventHandler,
   KeyboardEventHandler,
   InputHTMLAttributes,
+  SyntheticEvent,
 } from 'react'
 
 /**
@@ -95,6 +96,7 @@ export interface CurrencyInputElementProps {
   onFocus: FocusEventHandler<HTMLInputElement>
   onBlur: FocusEventHandler<HTMLInputElement>
   onKeyDown: KeyboardEventHandler<HTMLInputElement>
+  onBeforeInput: (event: SyntheticEvent<HTMLInputElement>) => void
 }
 
 /** Return value of {@link useCurrencyInput}. */

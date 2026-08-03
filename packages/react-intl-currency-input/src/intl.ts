@@ -56,6 +56,14 @@ export interface CurrencyFormatter {
   readonly editPlain: (raw: EditRaw) => string
   /** Digits and the decimal separator count for caret math; grouping does not. */
   readonly isSignificantChar: (ch: string) => boolean
+  /**
+   * Whether inserting `data` could contribute anything to the edited amount:
+   * a digit (ASCII or the locale's native ones), an allowed sign, or a decimal
+   * separator where one can still go (`hasDecimal` says the field already has
+   * one). An insertion that contributes nothing should be rejected before it
+   * mutates the field — reformatting would only discard it and move the caret.
+   */
+  readonly insertionHasEditableChar: (data: string, hasDecimal: boolean) => boolean
   readonly locale: string
   readonly currency: string
   readonly decimalSeparator: string
@@ -403,6 +411,18 @@ export function createCurrencyFormatter(options: CreateFormatterOptions): Curren
     return parts.map((p) => p.value).join('')
   }
 
+  function insertionHasEditableChar(data: string, hasDecimal: boolean): boolean {
+    const s = mapDigits(data)
+    for (const ch of s) {
+      if (ch >= '0' && ch <= '9') return true
+      if ((ch === '-' || ch === '−') && allowNegative) return true
+      if (isDecimalChar(ch) && ch !== groupSeparator && resolvedMaxFraction > 0 && !hasDecimal) {
+        return true
+      }
+    }
+    return false
+  }
+
   function format(value: number | null): string {
     if (value == null || !Number.isFinite(value)) return ''
     return nf.format(value)
@@ -418,6 +438,7 @@ export function createCurrencyFormatter(options: CreateFormatterOptions): Curren
     editValue,
     editPlain,
     isSignificantChar,
+    insertionHasEditableChar,
     locale: resolvedLocale,
     currency,
     decimalSeparator,

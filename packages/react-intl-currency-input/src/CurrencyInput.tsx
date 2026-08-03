@@ -37,6 +37,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
       onBlur,
       onChange,
       onKeyDown,
+      onBeforeInput,
       className,
       style,
       ...rest
@@ -98,6 +99,10 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
         onKeyDown={(event) => {
           inputProps.onKeyDown(event)
           onKeyDown?.(event)
+        }}
+        onBeforeInput={(event) => {
+          inputProps.onBeforeInput(event)
+          onBeforeInput?.(event)
         }}
       />
     )
