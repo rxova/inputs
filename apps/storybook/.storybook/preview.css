@@ -4,7 +4,10 @@
  * grid), which would fight Storybook's own docs layout. */
 
 :root {
-  color-scheme: light dark;
+  /* The manager theme is pinned to light (manager.ts), so the preview must be
+   * too: `light dark` let a dark-mode OS flip the UA's form-control rendering —
+   * white text and carets — inside a canvas Storybook keeps white. */
+  color-scheme: light;
 
   /* Rating (react-rating-input) tokens. */
   --rfs-size: 1.6rem;
