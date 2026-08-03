@@ -30,6 +30,7 @@
     "@astrojs/check": "^0.9.10",
     "@rxova/react-intl-currency-input": "workspace:*",
     "@rxova/react-otp-input": "workspace:*",
+    "@rxova/react-password-input": "workspace:*",
     "@rxova/react-rating-input": "workspace:*",
     "@types/react": "^19.2.18",
     "typescript": "^6.0.3",

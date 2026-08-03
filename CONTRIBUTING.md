@@ -12,6 +12,7 @@ docs site.
 | `packages/react-intl-currency-input/` | `@rxova/react-intl-currency-input` — locale-aware currency input.                    |
 | `packages/react-rating-input/`        | `@rxova/react-rating-input` — rating input (stars / any icon).                       |
 | `packages/react-otp-input/`           | `@rxova/react-otp-input` — OTP / one-time-code input.                                |
+| `packages/react-password-input/`      | `@rxova/react-password-input` — password input with reveal, Caps Lock and strength.  |
 | `packages/react-inputs/`              | `@rxova/react-inputs` — meta-package that re-exports the whole suite.                |
 | `packages/codemod/`                   | `@rxova/codemod` — jscodeshift codemods (one transform per migration) for the suite. |
 | `packages/utils/`                     | `@rxova/utils` — private tooling (release gate, doc-snippet checks, capture, etc.).  |

@@ -52,6 +52,15 @@
 
 .sidebar-content
   ul.top-level
+  > li:has(a[href*='/components/password/'])
+  > details
+  > summary
+  .group-label::before {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgY29sb3I9IiMyZjllNmUiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+QHJ4b3ZhL3JlYWN0LXBhc3N3b3JkLWlucHV0IGxvZ288L3RpdGxlPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogICAgPHJlY3QgeD0iMTIiIHk9IjI4IiB3aWR0aD0iNDAiIGhlaWdodD0iMjciIHJ4PSI3IiBzdHJva2Utd2lkdGg9IjQiIC8+CiAgICA8cGF0aCBkPSJNMjIgMjh2LTZhMTAgMTAgMCAwIDEgMjAgMHY2IiBzdHJva2Utd2lkdGg9IjQiIC8+CiAgICA8cGF0aCBkPSJNMzIgMzh2NyIgc3Ryb2tlLXdpZHRoPSIzLjUiIC8+CiAgPC9nPgo8L3N2Zz4=');
+}
+
+.sidebar-content
+  ul.top-level
   > li:has(a[href*='/components/rating/'])
   > details
   > summary
