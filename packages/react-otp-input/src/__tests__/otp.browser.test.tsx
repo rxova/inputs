@@ -337,6 +337,55 @@ describe('disabled & readonly', () => {
   })
 })
 
+describe('pointer focus', () => {
+  it('clicking an unfocused field at a middle slot never flashes another slot active', async () => {
+    const { container } = await render(<OtpInput length={6} defaultValue="482913" label="Code" />)
+    await expect.element(page.getByRole('textbox')).toBeInTheDocument()
+    // Spatial layout must be applied so the click maps to a mid-field caret.
+    await vi.waitFor(() => {
+      expect(parseFloat(input().style.letterSpacing)).toBeGreaterThan(0)
+    })
+    expect(document.activeElement).not.toBe(input())
+
+    // Record every slot whose data-active attribute ever changes — a transient
+    // flash on the wrong slot is a mutation even if it is gone by the end.
+    const touched = new Set<Element>()
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) touched.add(m.target as Element)
+    })
+    observer.observe(container, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-active'],
+    })
+
+    // The transparent input overlays the slots, so click at the fourth slot's
+    // coordinates. Engines round the caret to either side of the glyph, so the
+    // assertion is about which slots activated, not the exact index.
+    const slots = [...container.querySelectorAll('[data-otp-slot]')]
+    const inputBox = input().getBoundingClientRect()
+    const slotBox = slots[3]!.getBoundingClientRect()
+    await userEvent.click(input(), {
+      position: {
+        x: slotBox.x + slotBox.width / 2 - inputBox.x,
+        y: slotBox.y + slotBox.height / 2 - inputBox.y,
+      },
+    })
+    await vi.waitFor(() => {
+      expect(container.querySelector('[data-active]')).toBeTruthy()
+    })
+    for (const m of observer.takeRecords()) touched.add(m.target as Element)
+    observer.disconnect()
+
+    // The caret landed mid-field, and the only slot that ever activated is the
+    // one that is active now — nothing flashed on the way.
+    const active = container.querySelector('[data-active]')!
+    expect(slots.indexOf(active)).toBeGreaterThanOrEqual(2)
+    expect(slots.indexOf(active)).toBeLessThanOrEqual(4)
+    expect([...touched]).toEqual([active])
+  })
+})
+
 describe('spatial vs crush layout', () => {
   it('spreads the glyphs to the slot pitch in spatial mode', async () => {
     await render(<OtpInput length={6} value="123456" label="Code" slotInteraction="spatial" />)

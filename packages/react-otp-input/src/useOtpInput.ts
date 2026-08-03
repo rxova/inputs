@@ -167,6 +167,9 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
   const lastCompleteRef = useRef<string | null>(null)
   // True between compositionstart and compositionend (IME entry in progress).
   const isComposingRef = useRef(false)
+  // Set on pointerdown, consumed by the focus handler: a press dispatches
+  // `focus` before the browser has moved the caret under the pointer.
+  const isPointerFocusRef = useRef(false)
 
   const setRef = useCallback<RefCallback<HTMLInputElement>>(
     (node) => {
@@ -352,10 +355,29 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
           props.onCompositionEnd?.(event)
           handleCompositionEnd(event)
         },
+        onPointerDown: (event) => {
+          props.onPointerDown?.(event)
+          isPointerFocusRef.current = true
+        },
         onFocus: (event) => {
           props.onFocus?.(event)
-          setIsFocused(true)
-          syncSelection(event.currentTarget)
+          const el = event.currentTarget
+          if (isPointerFocusRef.current) {
+            isPointerFocusRef.current = false
+            // On a pointer press the selection read here is still the previous
+            // one (the caret lands after the focus event), so committing now
+            // would flash a stale slot active before the pressed one. Wait a
+            // frame for the caret, then commit focus + selection in one render.
+            requestAnimationFrame(() => {
+              /* v8 ignore next -- only when the press is followed by an immediate blur or unmount */
+              if (inputRef.current !== el || document.activeElement !== el) return
+              setIsFocused(true)
+              syncSelection(el)
+            })
+          } else {
+            setIsFocused(true)
+            syncSelection(el)
+          }
         },
         onBlur: (event) => {
           props.onBlur?.(event)
@@ -372,6 +394,9 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
         },
         onClick: (event) => {
           props.onClick?.(event)
+          // A press on an already-focused field fires no focus event; drop the
+          // pointer flag here so a later keyboard focus stays synchronous.
+          isPointerFocusRef.current = false
           syncSelection(event.currentTarget)
         },
       }
