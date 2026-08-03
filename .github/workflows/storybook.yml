@@ -78,4 +78,4 @@ jobs:
             -f "client_payload[sha]=${GITHUB_SHA}" \
             -f "client_payload[run_id]=${GITHUB_RUN_ID}" \
             -f 'client_payload[base]=/storybook/react-inputs/' \
-            -f 'client_payload[framework]=storybook'
+            -f 'client_payload[framework]=other'
