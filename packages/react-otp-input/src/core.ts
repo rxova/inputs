@@ -110,6 +110,42 @@ export function isComplete(value: string, length: number): boolean {
   return length > 0 && value.length === length
 }
 
+export interface SelectionRange {
+  start: number
+  end: number
+}
+
+/**
+ * When the value is full, a collapsed caret has nowhere to insert — the
+ * input's `maxLength` silently drops every keystroke — so typing on a focused
+ * mid slot would be dead. Decide the one-character range the caret should
+ * cover instead, so the next key natively *replaces* that character
+ * (input-otp lineage). Returns `null` when the selection must be left alone:
+ * a real range, a field with room to insert, or a caret parked at the very
+ * end without `clampEnd` (continuous overflow typing stays ignored rather
+ * than eating the last slot; a pointer press on the last slot passes
+ * `clampEnd` so a deliberate tap still overwrites it).
+ *
+ * `prev` is the selection before this move: a caret collapsing onto the start
+ * of the previous one-slot range is an arrow-left step, so the overwrite
+ * target advances one slot further left.
+ */
+export function expandOverwriteRange(
+  start: number,
+  end: number,
+  valueLength: number,
+  length: number,
+  prev: SelectionRange | null,
+  clampEnd: boolean,
+): SelectionRange | null {
+  if (start !== end || valueLength < length) return null
+  if (start >= length && !clampEnd) return null
+  const caret = Math.min(start, length - 1)
+  const movedBack = prev !== null && prev.start !== prev.end && caret === prev.start && caret > 0
+  const slot = movedBack ? caret - 1 : caret
+  return { start: slot, end: slot + 1 }
+}
+
 interface BuildSlotsInput {
   value: string
   length: number

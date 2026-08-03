@@ -80,6 +80,77 @@ describe('typing', () => {
   })
 })
 
+describe('typing over a full code', () => {
+  it('arrowing back into a full code selects the slot and typing overwrites it', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    await userEvent.keyboard('123456')
+    await userEvent.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}')
+    // The caret expanded into a one-character selection over the fourth slot.
+    expect([el.selectionStart, el.selectionEnd]).toEqual([3, 4])
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('[data-otp-slot]')[3]?.hasAttribute('data-active')).toBe(
+        true,
+      )
+    })
+    // Each keystroke replaces a character and hands the selection to the next
+    // slot, so a full code can be retyped straight through from the middle.
+    await userEvent.keyboard('987')
+    expect(input().value).toBe('123987')
+    expect(slotChars(container)).toEqual(['1', '2', '3', '9', '8', '7'])
+  })
+
+  it('still ignores overflow typing at the end of a full code', async () => {
+    await render(<Controlled length={4} />)
+    await input().focus()
+    await userEvent.keyboard('12345')
+    expect(input().value).toBe('1234')
+  })
+
+  it('drops a disallowed key over a full code instead of eating the digit', async () => {
+    await render(<Controlled length={6} />)
+    await input().focus()
+    await userEvent.keyboard('123456')
+    await userEvent.keyboard('{ArrowLeft}')
+    await userEvent.keyboard('a')
+    expect(input().value).toBe('123456')
+  })
+})
+
+describe('keyboard refocus', () => {
+  it('parks the caret on the first empty slot, not the first slot', async () => {
+    const { container } = await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    await userEvent.keyboard('123')
+    el.blur()
+    await el.focus()
+    // The caret resumes at the first empty slot...
+    expect([el.selectionStart, el.selectionEnd]).toEqual([3, 3])
+    await vi.waitFor(() => {
+      expect(container.querySelectorAll('[data-otp-slot]')[3]?.hasAttribute('data-active')).toBe(
+        true,
+      )
+    })
+    // ...so typing continues the code instead of mangling its head.
+    await userEvent.keyboard('456')
+    expect(input().value).toBe('123456')
+  })
+
+  it('selects the last character when refocusing a full code', async () => {
+    await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    await userEvent.keyboard('123456')
+    el.blur()
+    await el.focus()
+    expect([el.selectionStart, el.selectionEnd]).toEqual([5, 6])
+    await userEvent.keyboard('9')
+    expect(input().value).toBe('123459')
+  })
+})
+
 describe('paste', () => {
   it('strips separators from a formatted code and distributes it', async () => {
     const { container } = await render(<Controlled length={6} />)
@@ -154,6 +225,20 @@ describe('IME composition', () => {
     // Plain typing after composition works as usual.
     await userEvent.keyboard('23')
     expect(slotChars(container).slice(0, 3)).toEqual(['1', '2', '3'])
+  })
+
+  it('leaves the caret collapsed mid-composition even when the code is full', async () => {
+    await render(<Controlled length={6} />)
+    const el = input()
+    await el.focus()
+    await userEvent.keyboard('123456')
+    el.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))
+    // A selection sync arriving while the IME composes must not expand the
+    // caret into a range — moving the selection would cancel the composition.
+    el.setSelectionRange(2, 2)
+    el.dispatchEvent(new Event('select', { bubbles: true }))
+    expect([el.selectionStart, el.selectionEnd]).toEqual([2, 2])
+    el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))
   })
 })
 

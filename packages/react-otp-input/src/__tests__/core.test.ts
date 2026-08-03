@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildSlots,
   defaultPasteTransform,
+  expandOverwriteRange,
   inputModeFor,
   isComplete,
   normalizeLength,
@@ -138,6 +139,56 @@ describe('spliceValue', () => {
 
   it('tolerates reversed/out-of-range selection bounds', () => {
     expect(spliceValue('12', 5, -1, 'ab', 6)).toEqual({ value: 'ab', caret: 2 })
+  })
+})
+
+describe('expandOverwriteRange', () => {
+  it('expands a collapsed caret over its slot when the value is full', () => {
+    expect(expandOverwriteRange(2, 2, 6, 6, null, false)).toEqual({ start: 2, end: 3 })
+  })
+
+  it('leaves a real range selection alone', () => {
+    expect(expandOverwriteRange(1, 3, 6, 6, null, false)).toBeNull()
+  })
+
+  it('leaves the caret alone while the field still has room', () => {
+    expect(expandOverwriteRange(2, 2, 5, 6, null, false)).toBeNull()
+  })
+
+  it('ignores the end-of-field caret so overflow typing stays dropped', () => {
+    expect(expandOverwriteRange(6, 6, 6, 6, null, false)).toBeNull()
+  })
+
+  it('clamps an end-of-field caret onto the last slot when asked (pointer press)', () => {
+    expect(expandOverwriteRange(6, 6, 6, 6, null, true)).toEqual({ start: 5, end: 6 })
+  })
+
+  it('steps one slot further left when the caret collapsed onto the previous range start', () => {
+    expect(expandOverwriteRange(2, 2, 6, 6, { start: 2, end: 3 }, false)).toEqual({
+      start: 1,
+      end: 2,
+    })
+  })
+
+  it('does not step left past the first slot', () => {
+    expect(expandOverwriteRange(0, 0, 6, 6, { start: 0, end: 1 }, false)).toEqual({
+      start: 0,
+      end: 1,
+    })
+  })
+
+  it('treats a collapse onto the previous range end as a forward step', () => {
+    expect(expandOverwriteRange(3, 3, 6, 6, { start: 2, end: 3 }, false)).toEqual({
+      start: 3,
+      end: 4,
+    })
+  })
+
+  it('never steps left off a previously collapsed caret', () => {
+    expect(expandOverwriteRange(5, 5, 6, 6, { start: 6, end: 6 }, false)).toEqual({
+      start: 5,
+      end: 6,
+    })
   })
 })
 

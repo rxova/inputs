@@ -47,7 +47,14 @@ const inputOverlayStyle: CSSProperties = {
 const CARET_KEYFRAMES = 'otp-slots-blink'
 const CARET_STYLE_ID = 'otp-slots-caret-style'
 
-/** Inject the caret blink keyframes once per document (CSP-noncable). Reduced motion is honoured in the CSS itself. */
+/**
+ * Inject the caret blink keyframes once per document (CSP-noncable). Reduced
+ * motion is honoured in the CSS itself. Also hides the input's `::selection`:
+ * a full field keeps a one-character selection under the caret (that's what
+ * makes type-to-overwrite work), and the native highlight would otherwise
+ * paint a box over the transparent overlay. iOS cannot fully hide it — which
+ * is exactly why that platform is forced onto the 'crush' interaction.
+ */
 function injectCaretStyles(nonce: string | undefined): void {
   /* v8 ignore next -- SSR guard; the injector only runs in a layout effect (client) */
   if (typeof document === 'undefined') return
@@ -58,7 +65,8 @@ function injectCaretStyles(nonce: string | undefined): void {
   el.textContent =
     `@keyframes ${CARET_KEYFRAMES}{0%,49%{opacity:1}50%,100%{opacity:0}}` +
     `.${CARET_CLASS}{animation:${CARET_KEYFRAMES} 1s steps(1) infinite}` +
-    `@media (prefers-reduced-motion:reduce){.${CARET_CLASS}{animation:none}}`
+    `@media (prefers-reduced-motion:reduce){.${CARET_CLASS}{animation:none}}` +
+    `[data-otp-input]::selection{background:transparent;color:transparent}`
   document.head.appendChild(el)
 }
 
