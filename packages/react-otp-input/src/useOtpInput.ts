@@ -173,6 +173,8 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
   // Set on pointerdown, consumed by the focus handler: a press dispatches
   // `focus` before the browser has moved the caret under the pointer.
   const isPointerFocusRef = useRef(false)
+  // Where the last press landed, for the geometric caret placement below.
+  const pointerDownXRef = useRef<number | null>(null)
   // The selection as of the previous sync — the overwrite expansion needs it
   // to tell an arrow-left collapse from an arrow-right one.
   const prevSelectionRef = useRef<SelectionRange | null>(null)
@@ -212,6 +214,74 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
       setSelection((prev) => (prev.start === start && prev.end === end ? prev : { start, end }))
     },
     [length],
+  )
+
+  // The slot under (or nearest to) a viewport x, read from the rendered slot
+  // rects. The browser's own click-to-caret mapping cannot be trusted here:
+  // the invisible text's line box only covers part of the overlay's height
+  // (a press on a slot's border maps to caret 0), the field scrolls a few
+  // pixels once full (the trailing letter-spacing overflows), and separators
+  // shift later slots off the uniform glyph pitch. The painted slots are the
+  // ground truth the user is actually aiming at. Returns null when the
+  // renderer doesn't use getSlotProps (no slot ids) — then the browser's
+  // guess is all there is.
+  const slotFromPointerX = useCallback(
+    (clientX: number): number | null => {
+      let nearest: number | null = null
+      let nearestDistance = Infinity
+      for (let i = 0; i < length; i++) {
+        const slot = document.getElementById(`${baseId}-slot-${String(i)}`)
+        if (!slot) return null
+        const rect = slot.getBoundingClientRect()
+        /* v8 ignore next -- a rendered slot always has layout */
+        if (rect.width <= 0) return null
+        const distance = Math.max(rect.left - clientX, clientX - rect.right, 0)
+        if (distance === 0) return i
+        if (distance < nearestDistance) {
+          nearestDistance = distance
+          nearest = i
+        }
+      }
+      return nearest
+    },
+    [baseId, length],
+  )
+
+  // Park the caret in `slot`: collapsed at its position (clamped to the value
+  // end, so a press past the filled prefix lands on the first empty slot),
+  // then let the overwrite expansion turn it into a one-character selection
+  // when the field is full.
+  const placeCaretAtSlot = useCallback(
+    (el: HTMLInputElement, slot: number) => {
+      const caret = Math.min(slot, Array.from(el.value).length)
+      el.setSelectionRange(caret, caret)
+      // A geometric placement is not an arrow-key step: without this, a caret
+      // parked at the start of the selection the click itself just produced
+      // reads as an arrow-left collapse and overwrites one slot further left.
+      prevSelectionRef.current = null
+      syncSelection(el, true)
+    },
+    [syncSelection],
+  )
+
+  // A frame after a press or click, place the caret from the pointer's x —
+  // the browser's own guess is wrong at the slot borders (the invisible line
+  // box doesn't cover the overlay's height), off by the field's scroll once
+  // full, and Chrome may still collapse the selection after the click event
+  // without firing `select`. `focusing` also commits the focus state, and
+  // falls back to the browser caret when the renderer paints no slot ids.
+  const settleFromPointer = useCallback(
+    (el: HTMLInputElement, x: number, focusing: boolean) => {
+      requestAnimationFrame(() => {
+        /* v8 ignore next -- only when the press is followed by an immediate blur or unmount */
+        if (inputRef.current !== el || document.activeElement !== el) return
+        if (focusing) setIsFocused(true)
+        const slot = slotFromPointerX(x)
+        if (slot !== null) placeCaretAtSlot(el, slot)
+        else if (focusing) syncSelection(el, true)
+      })
+    },
+    [slotFromPointerX, placeCaretAtSlot, syncSelection],
   )
 
   const commit = useCallback(
@@ -408,6 +478,7 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
         onPointerDown: (event) => {
           props.onPointerDown?.(event)
           isPointerFocusRef.current = true
+          pointerDownXRef.current = event.clientX
           // A press moves the caret somewhere unrelated to the previous
           // selection; forget it so the overwrite expansion can't mistake the
           // landing for an arrow-key step.
@@ -421,13 +492,10 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
             // On a pointer press the selection read here is still the previous
             // one (the caret lands after the focus event), so committing now
             // would flash a stale slot active before the pressed one. Wait a
-            // frame for the caret, then commit focus + selection in one render.
-            requestAnimationFrame(() => {
-              /* v8 ignore next -- only when the press is followed by an immediate blur or unmount */
-              if (inputRef.current !== el || document.activeElement !== el) return
-              setIsFocused(true)
-              syncSelection(el, true)
-            })
+            // frame for the caret, then commit focus + selection in one render
+            // — placed from the press's own x, not the browser's guess.
+            /* v8 ignore next -- pointerdown always records its x before focus can see the flag */
+            settleFromPointer(el, pointerDownXRef.current ?? 0, true)
           } else {
             // Keyboard/programmatic focus: browsers land the caret wherever
             // they please (select-all, a restored range, position 0). Park it
@@ -457,7 +525,14 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
           // A press on an already-focused field fires no focus event; drop the
           // pointer flag here so a later keyboard focus stays synchronous.
           isPointerFocusRef.current = false
-          syncSelection(event.currentTarget, true)
+          const el = event.currentTarget
+          syncSelection(el, true)
+          // Only a genuine click settles geometrically: detail is 0 for a
+          // programmatic el.click() (no pointer to trust), and a press that
+          // travelled is a drag selection that must stay untouched.
+          const downX = pointerDownXRef.current
+          if (event.detail === 0 || downX === null || Math.abs(event.clientX - downX) > 5) return
+          settleFromPointer(el, event.clientX, false)
         },
       }
     },
@@ -485,6 +560,7 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
       handleCompositionStart,
       handleCompositionEnd,
       syncSelection,
+      settleFromPointer,
       onBlur,
     ],
   )
