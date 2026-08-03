@@ -8,10 +8,12 @@ import type {
   InputHTMLAttributes,
   Ref,
   RefCallback,
+  SyntheticEvent,
 } from 'react'
 import {
   buildSlots,
   defaultPasteTransform,
+  expandOverwriteRange,
   inputModeFor,
   isComplete as computeComplete,
   normalizeLength,
@@ -20,6 +22,7 @@ import {
   sanitize,
   spliceValue,
 } from './core'
+import type { SelectionRange } from './core'
 import type { OtpMode, OtpSlotState } from './types'
 
 export interface UseOtpInputOptions {
@@ -170,6 +173,9 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
   // Set on pointerdown, consumed by the focus handler: a press dispatches
   // `focus` before the browser has moved the caret under the pointer.
   const isPointerFocusRef = useRef(false)
+  // The selection as of the previous sync — the overwrite expansion needs it
+  // to tell an arrow-left collapse from an arrow-right one.
+  const prevSelectionRef = useRef<SelectionRange | null>(null)
 
   const setRef = useCallback<RefCallback<HTMLInputElement>>(
     (node) => {
@@ -179,12 +185,34 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
     [externalInputRef],
   )
 
-  const syncSelection = useCallback((el: HTMLInputElement) => {
-    /* v8 ignore next 2 -- a text input always reports numeric selection offsets */
-    const start = el.selectionStart ?? el.value.length
-    const end = el.selectionEnd ?? start
-    setSelection((prev) => (prev.start === start && prev.end === end ? prev : { start, end }))
-  }, [])
+  const syncSelection = useCallback(
+    (el: HTMLInputElement, clampEnd = false) => {
+      /* v8 ignore next 2 -- a text input always reports numeric selection offsets */
+      let start = el.selectionStart ?? el.value.length
+      let end = el.selectionEnd ?? start
+      // A full field leaves a collapsed caret with nowhere to insert, so turn
+      // it into a one-character selection over its slot and let the next key
+      // replace that character natively. Never while composing — moving the
+      // selection under an IME cancels the composition.
+      if (!isComposingRef.current) {
+        const range = expandOverwriteRange(
+          start,
+          end,
+          Array.from(el.value).length,
+          length,
+          prevSelectionRef.current,
+          clampEnd,
+        )
+        if (range) {
+          el.setSelectionRange(range.start, range.end)
+          ;({ start, end } = range)
+        }
+      }
+      prevSelectionRef.current = { start, end }
+      setSelection((prev) => (prev.start === start && prev.end === end ? prev : { start, end }))
+    },
+    [length],
+  )
 
   const commit = useCallback(
     (next: string) => {
@@ -215,8 +243,8 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
     /* v8 ignore next -- input is mounted by the time a paste sets a pending caret */
     if (!el) return
     el.setSelectionRange(caret, caret)
-    setSelection({ start: caret, end: caret })
-  }, [value])
+    syncSelection(el)
+  }, [value, syncSelection])
 
   const handleChange = useCallback(
     (event: { currentTarget: HTMLInputElement }) => {
@@ -242,6 +270,24 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
       syncSelection(event.currentTarget)
     },
     [commit, syncSelection],
+  )
+
+  // A disallowed key typed over a selection would natively replace the
+  // selected character and then be sanitized to nothing — a stray letter
+  // deleting a digit. Drop an insertion none of whose characters survive the
+  // filter before it can mutate the field. (React synthesizes `data` onto the
+  // synthetic event across both of its beforeinput polyfill paths.)
+  const handleBeforeInput = useCallback(
+    (event: SyntheticEvent<HTMLInputElement>) => {
+      /* v8 ignore next -- IME insertions surface as composition events, not a plain beforeinput, in a desktop browser */
+      if (isComposingRef.current) return
+      const data = (event as unknown as { data?: unknown }).data
+      /* v8 ignore next -- deletions and history steps carry no data; React's polyfill only routes insertions here */
+      if (typeof data !== 'string' || data === '') return
+      for (const char of data) if (isAllowed(char)) return
+      event.preventDefault()
+    },
+    [isAllowed],
   )
 
   const handlePaste = useCallback(
@@ -343,6 +389,10 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
           props.onChange?.(event)
           handleChange(event)
         },
+        onBeforeInput: (event) => {
+          props.onBeforeInput?.(event)
+          handleBeforeInput(event)
+        },
         onPaste: (event) => {
           props.onPaste?.(event)
           handlePaste(event)
@@ -358,6 +408,10 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
         onPointerDown: (event) => {
           props.onPointerDown?.(event)
           isPointerFocusRef.current = true
+          // A press moves the caret somewhere unrelated to the previous
+          // selection; forget it so the overwrite expansion can't mistake the
+          // landing for an arrow-key step.
+          prevSelectionRef.current = null
         },
         onFocus: (event) => {
           props.onFocus?.(event)
@@ -372,9 +426,15 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
               /* v8 ignore next -- only when the press is followed by an immediate blur or unmount */
               if (inputRef.current !== el || document.activeElement !== el) return
               setIsFocused(true)
-              syncSelection(el)
+              syncSelection(el, true)
             })
           } else {
+            // Keyboard/programmatic focus: browsers land the caret wherever
+            // they please (select-all, a restored range, position 0). Park it
+            // deterministically at the first empty slot — or over the last
+            // character when the code is full, so typing overwrites it.
+            const valueEnd = el.value.length
+            el.setSelectionRange(Math.min(valueEnd, length - 1), valueEnd)
             setIsFocused(true)
             syncSelection(el)
           }
@@ -397,7 +457,7 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
           // A press on an already-focused field fires no focus event; drop the
           // pointer flag here so a later keyboard focus stays synchronous.
           isPointerFocusRef.current = false
-          syncSelection(event.currentTarget)
+          syncSelection(event.currentTarget, true)
         },
       }
     },
@@ -420,6 +480,7 @@ export function useOtpInput(options: UseOtpInputOptions = {}): UseOtpInputResult
       invalid,
       describedBy,
       handleChange,
+      handleBeforeInput,
       handlePaste,
       handleCompositionStart,
       handleCompositionEnd,

@@ -158,6 +158,7 @@ describe('useOtpInput option & handler branches', () => {
     const onKeyUp = vi.fn()
     const onCompositionStart = vi.fn()
     const onCompositionEnd = vi.fn()
+    const onBeforeInput = vi.fn()
     function Live() {
       const otp = useOtpInput({ length: 4, label: 'Code' })
       return (
@@ -167,6 +168,7 @@ describe('useOtpInput option & handler branches', () => {
               onClick,
               onSelect,
               onKeyUp,
+              onBeforeInput,
               onCompositionStart,
               onCompositionEnd,
             })}
@@ -186,6 +188,7 @@ describe('useOtpInput option & handler branches', () => {
     expect(onKeyUp).toHaveBeenCalled()
     expect(onClick).toHaveBeenCalled()
     expect(onSelect).toHaveBeenCalled()
+    expect(onBeforeInput).toHaveBeenCalled()
     expect(onCompositionStart).toHaveBeenCalled()
     expect(onCompositionEnd).toHaveBeenCalled()
   })
