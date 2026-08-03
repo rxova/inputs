@@ -121,6 +121,20 @@ export const CustomIcons: Story = {
 /** Any positive integer `max` works; the radios and labels scale with it. */
 export const TenScale: Story = {
   args: { max: 10, value: 7 },
+  // Wired like Playground: without writing the clicked value back into args,
+  // the controlled `value: 7` would pin the rating to the seventh icon.
+  render: function TenScale(args) {
+    const [, updateArgs] = useArgs()
+    return (
+      <Rating
+        {...args}
+        onChange={(value) => {
+          args.onChange?.(value)
+          updateArgs({ value })
+        }}
+      />
+    )
+  },
 }
 
 /** Disabled: exposed to assistive tech, not interactive. */
