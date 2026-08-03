@@ -1,5 +1,11 @@
 # react-feedback-stars
 
+## 0.2.4
+
+### Patch Changes
+
+- [#42](https://github.com/rxova/react-inputs/pull/42) [`8eb69b6`](https://github.com/rxova/react-inputs/commit/8eb69b6d122a6ae72699a16165c598789bb24625) - The pointer no longer flickers back to the default cursor in the gaps between icons: the interactive root now carries the same cursor as the per-step labels (`pointer`, or `not-allowed` when disabled). Read-only ratings are unchanged.
+
 ## 0.2.3
 
 ### Patch Changes
