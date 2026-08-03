@@ -1,5 +1,11 @@
 # @rxova/react-otp-input
 
+## 0.1.4
+
+### Patch Changes
+
+- [#36](https://github.com/rxova/react-inputs/pull/36) [`7fc0751`](https://github.com/rxova/react-inputs/commit/7fc07514431fb245ac2468c4cd683fd2293d7478) - Focusing the field with a pointer press no longer flashes a stale slot active before the pressed one: the focus state now commits after the browser has placed the caret, in a single render.
+
 ## 0.1.3
 
 ### Patch Changes
