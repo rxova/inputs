@@ -308,6 +308,39 @@ describe('keyboard', () => {
   })
 })
 
+describe('cursor consistency', () => {
+  /** Computed cursor at the midpoint of the gap between the first two icons. */
+  function gapCursor(container: HTMLElement): string {
+    const items = container.querySelectorAll<HTMLElement>('[data-rfs-item]')
+    const first = items[0]!.getBoundingClientRect()
+    const second = items[1]!.getBoundingClientRect()
+    const el = document.elementFromPoint(
+      (first.right + second.left) / 2,
+      first.y + first.height / 2,
+    )
+    if (!el) throw new Error('nothing at the gap point')
+    return getComputedStyle(el).cursor
+  }
+
+  it('shows the pointer in the gap between icons, same as on an icon', async () => {
+    const { container } = await render(<Rating value={2} onChange={() => undefined} />)
+    await expect.element(page.getByRole('radiogroup')).toBeInTheDocument()
+    expect(gapCursor(container)).toBe('pointer')
+  })
+
+  it('shows not-allowed in the gap when disabled', async () => {
+    const { container } = await render(<Rating value={2} onChange={() => undefined} disabled />)
+    await expect.element(page.getByRole('radiogroup')).toBeInTheDocument()
+    expect(gapCursor(container)).toBe('not-allowed')
+  })
+
+  it('keeps the default cursor when read-only', async () => {
+    const { container } = await render(<Rating value={2} />)
+    await expect.element(page.getByRole('img')).toBeInTheDocument()
+    expect(gapCursor(container)).toBe('auto')
+  })
+})
+
 describe('uncovered API surface', () => {
   it('accepts a render function for icon and gets per-icon state', async () => {
     const seen: { index: number; fill: number; partial: boolean }[] = []
