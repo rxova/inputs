@@ -1,5 +1,11 @@
 # @rxova/react-otp-input
 
+## 0.1.5
+
+### Patch Changes
+
+- [#40](https://github.com/rxova/react-inputs/pull/40) [`1b1872e`](https://github.com/rxova/react-inputs/commit/1b1872e55bb7ccc262fddbf9c93830d56bf557e2) - Typing over a full code now works: a collapsed caret inside a complete value expands into a one-character selection over its slot (arrow keys walk it, pointer presses land it), so the next key replaces that character instead of being swallowed by `maxLength`. Keyboard focus now also parks the caret deterministically — on the first empty slot, or over the last character when the code is full — instead of wherever the browser drops it, and a disallowed key can no longer delete the character it was typed over.
+
 ## 0.1.4
 
 ### Patch Changes
