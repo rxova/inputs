@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent, FocusEvent, KeyboardEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ChangeEvent, FocusEvent, KeyboardEvent, SyntheticEvent } from 'react'
 import { flushSync } from 'react-dom'
 import { createCurrencyFormatter, resolveLocale } from './intl'
 import type { UseCurrencyInputOptions, UseCurrencyInputResult } from './types'
@@ -80,6 +80,17 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
 
   const inputRef = useRef<HTMLInputElement | null>(null)
 
+  // A controlled host may echo an emitted value back asynchronously (state
+  // libraries, async stores, Storybook args). Until the echo lands, the value
+  // prop still holds the amount a keystroke already replaced; falling back to
+  // formatting it would rewrite the field with stale text and throw the caret
+  // to the end — mid-word keystrokes even get dropped. Track what was emitted
+  // and which prop value the editing text was last reconciled against, so the
+  // in-flight window keeps showing the user's text and only a genuine external
+  // change reformats.
+  const pendingEmitsRef = useRef<(number | null)[]>([])
+  const reconciledValueRef = useRef<number | null>(null)
+
   // Set the caret imperatively while the field is focused. Called only from the
   // focused change/keydown paths, right after a synchronous (flushSync) reformat
   // so the DOM already holds `next`. No-op when the ref is not attached.
@@ -88,6 +99,7 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
     if (!el) return
     // React skips a no-op controlled update after a rejected keystroke, so force
     // the DOM value back in sync before positioning the caret.
+    /* v8 ignore next -- beforeinput now rejects the keystrokes that used to leave the DOM diverged */
     if (el.value !== next) el.value = next
     el.setSelectionRange(caret, caret)
   }, [])
@@ -142,6 +154,9 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
       const nextDisplay = formatter.formatEditing(raw)
       const nextValue = formatter.editValue(raw)
       const nextCaret = caretForSignificant(nextDisplay, significantBefore)
+      // Register the emit before the flush: the reconciliation effect runs
+      // inside it and must see this keystroke as in flight, not external.
+      pendingEmitsRef.current.push(nextValue)
       // Commit synchronously so the DOM is reformatted before we set the caret.
       flushSync(() => {
         setEditingText(nextDisplay)
@@ -168,12 +183,36 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
       // Commit the editable representation before the browser continues its
       // focus action. Select-all/fill, autofill, and password-manager flows can
       // otherwise compute a selection against the previous string.
+      pendingEmitsRef.current = []
+      reconciledValueRef.current = value
       flushSync(() => {
         setEditingText(mode === 'live' ? formatter.format(value) : formatter.toEditable(value))
       })
       event.currentTarget.select()
     },
     [mode, formatter, value],
+  )
+
+  // Drop an insertion that could not contribute anything to the amount — a
+  // letter, a group separator, or a second decimal separator. Letting it
+  // through would mutate the field only for the reformat to discard it, and a
+  // lagging controlled host can turn that no-op round trip into a caret jump.
+  const handleBeforeInput = useCallback(
+    (event: SyntheticEvent<HTMLInputElement>) => {
+      if (mode !== 'live') return
+      const data = (event as unknown as { data?: unknown }).data
+      if (typeof data !== 'string') return
+      /* v8 ignore next -- an insertion event never carries empty data */
+      if (data === '') return
+      const el = event.currentTarget
+      /* v8 ignore next 2 -- a text input always reports numeric selection offsets */
+      const start = el.selectionStart ?? el.value.length
+      const end = el.selectionEnd ?? start
+      const remaining = el.value.slice(0, start) + el.value.slice(end)
+      const hasDecimal = remaining.includes(formatter.decimalSeparator)
+      if (!formatter.insertionHasEditableChar(data, hasDecimal)) event.preventDefault()
+    },
+    [mode, formatter],
   )
 
   const handleChange = useCallback(
@@ -185,8 +224,9 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
       }
       const raw = transformRawValue?.(event.target.value) ?? event.target.value
       const text = formatter.sanitize(raw)
-      setEditingText(text)
       const next = formatter.parse(text)
+      pendingEmitsRef.current.push(next)
+      setEditingText(text)
       if (!isControlled) setInternalValue(next)
       emit(next, text)
     },
@@ -231,6 +271,7 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
       const stepped = allowNegative ? candidate : Math.max(0, candidate)
       const next = formatter.parse(formatter.sanitize(formatter.toEditable(stepped)))
       const nextText = mode === 'live' ? formatter.format(next) : formatter.toEditable(next)
+      pendingEmitsRef.current.push(next)
       // A keydown reaches here only while the field is focused, so it is always
       // in editing mode — set the text unconditionally.
       flushSync(() => {
@@ -262,6 +303,7 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
 
   const handleBlur = useCallback(() => {
     // Leave editing mode; the display reverts to the formatted value.
+    pendingEmitsRef.current = []
     setEditingText(null)
   }, [])
 
@@ -278,17 +320,39 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
     [isControlled, editingText, formatter, mode],
   )
 
-  // Preserve meaningful in-progress text (e.g. a trailing `5,`) when it parses
-  // to the current value, but derive fresh text for a genuine external value,
-  // locale, or currency change.
-  const display =
-    editingText === null
-      ? formatter.format(value)
-      : Object.is(formatter.parse(editingText), value)
-        ? editingText
-        : mode === 'live'
-          ? formatter.format(value)
-          : formatter.toEditable(value)
+  // While editing, the text state is what the user sees; when not editing the
+  // display is derived from the value. Reconciling the text against a changed
+  // value (or formatter) happens in the effect below, where refs are legal.
+  const display = editingText ?? formatter.format(value)
+
+  // Reconcile the in-progress text against the value prop after each commit.
+  // Preserve meaningful text (a trailing `5,`) when it parses to the current
+  // value or the value is merely lagging behind an emit, but derive fresh text
+  // for a genuine external value, locale, or currency change.
+  useEffect(() => {
+    if (editingText === null) return
+    if (Object.is(formatter.parse(editingText), value)) {
+      reconciledValueRef.current = value
+      pendingEmitsRef.current = []
+      return
+    }
+    const echoIndex = pendingEmitsRef.current.findIndex((v) => Object.is(v, value))
+    if (echoIndex !== -1) {
+      // The echo of an older keystroke: newer emits are still in flight.
+      pendingEmitsRef.current.splice(0, echoIndex + 1)
+      reconciledValueRef.current = value
+      return
+    }
+    if (Object.is(reconciledValueRef.current, value) && pendingEmitsRef.current.length > 0) {
+      // In-flight window: the prop still holds the value a keystroke already
+      // replaced. Keep the user's text; the echo will land.
+      return
+    }
+    // External value / locale / currency change while focused.
+    reconciledValueRef.current = value
+    pendingEmitsRef.current = []
+    setEditingText(mode === 'live' ? formatter.format(value) : formatter.toEditable(value))
+  }, [editingText, value, formatter, mode])
 
   return {
     inputProps: {
@@ -300,6 +364,7 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
       onFocus: handleFocus,
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
+      onBeforeInput: handleBeforeInput,
     },
     ref: inputRef,
     value,

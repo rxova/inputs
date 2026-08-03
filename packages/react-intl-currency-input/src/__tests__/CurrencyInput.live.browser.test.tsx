@@ -161,6 +161,107 @@ describe('caret preservation', () => {
     await expect.poll(() => inputEl().selectionStart).toBe(2)
   })
 
+  it('an invalid character typed mid-string leaves the value and caret untouched', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '123456')
+    await expect.poll(() => inputEl().value).toBe('$123,456')
+    // "$123,|456" — park mid-string and type a letter.
+    inputEl().setSelectionRange(5, 5)
+    await userEvent.keyboard('x')
+    await expect.poll(() => inputEl().value).toBe('$123,456')
+    expect([inputEl().selectionStart, inputEl().selectionEnd]).toEqual([5, 5])
+  })
+
+  it('a second decimal separator is rejected instead of moving the decimal', async () => {
+    // "1.234,56 €" (de-DE): a ',' typed mid-integer used to *reinterpret* the
+    // amount as 12,34 and throw the caret to the end.
+    await render(<Controlled locale="de-DE" currency="EUR" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '1234,56')
+    await expect.poll(() => inputEl().value).toBe('1.234,56 €')
+    inputEl().setSelectionRange(3, 3)
+    await userEvent.keyboard(',')
+    await expect.poll(() => inputEl().value).toBe('1.234,56 €')
+    expect([inputEl().selectionStart, inputEl().selectionEnd]).toEqual([3, 3])
+  })
+
+  it('a decimal separator is still accepted once the existing one is gone', async () => {
+    await render(<Controlled locale="en-US" currency="USD" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '12.5')
+    await expect.poll(() => inputEl().value).toBe('$12.5')
+    await userEvent.keyboard('{Backspace}{Backspace}') // back to "$12"
+    await expect.poll(() => inputEl().value).toBe('$12')
+    await userEvent.keyboard('.7')
+    await expect.poll(() => inputEl().value).toBe('$12.7')
+  })
+
+  it('keystrokes survive a controlled host that echoes the value asynchronously', async () => {
+    // A host that round-trips onValueChange through a later task (async store,
+    // Storybook args) leaves the value prop one keystroke behind. The stale
+    // echo used to rewrite the field mid-typing — dropping digits and throwing
+    // the caret to the end.
+    function AsyncControlled() {
+      const [value, setValue] = useState<number | null>(null)
+      return (
+        <CurrencyInput
+          locale="en-US"
+          currency="USD"
+          value={value}
+          onValueChange={(next) => {
+            setTimeout(() => {
+              setValue(next)
+            }, 40)
+          }}
+          aria-label="amount"
+        />
+      )
+    }
+    await render(<AsyncControlled />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '123456')
+    await expect.poll(() => inputEl().value).toBe('$123,456')
+    // And the echo settling later must not rewrite the field either.
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    expect(inputEl().value).toBe('$123,456')
+    expect(inputEl().selectionStart).toBe(8)
+  })
+
+  it('blur mode still accepts keystrokes untouched by the live guard', async () => {
+    await render(<Controlled locale="en-US" currency="USD" formatMode="blur" />)
+    await userEvent.click(box())
+    await userEvent.type(box(), '12a34')
+    await expect.poll(() => inputEl().value).toBe('1234')
+  })
+
+  it('an external value set while focused reformats the field (live)', async () => {
+    function WithExternalSet() {
+      const [value, setValue] = useState<number | null>(5)
+      return (
+        <CurrencyInput
+          locale="en-US"
+          currency="USD"
+          value={value}
+          onValueChange={setValue}
+          onFocus={() => {
+            // An external set landing mid-edit (server push, another widget)
+            // must reformat the field rather than being ignored.
+            setTimeout(() => {
+              setValue(777)
+            }, 30)
+          }}
+          aria-label="amount"
+        />
+      )
+    }
+    await render(<WithExternalSet />)
+    await userEvent.click(box())
+    await expect.poll(() => inputEl().value).toBe('$5')
+    await expect.poll(() => inputEl().value).toBe('$777')
+    expect(document.activeElement).toBe(inputEl())
+  })
+
   it('Backspace onto a group separator deletes the digit, not the separator', async () => {
     await render(<Controlled locale="en-US" currency="USD" />)
     await userEvent.click(box())
