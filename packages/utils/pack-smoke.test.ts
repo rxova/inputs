@@ -61,6 +61,7 @@ const makePackage = async (options: {
   const files: Record<string, string> = {
     'README.md': '# fixture\n',
     LICENSE: 'MIT\n',
+    'llms.txt': '# pack-smoke-fixture\n',
     'dist/index.mjs': `${options.clientDirective === false ? '' : "'use client'\n"}export const value = 1\n`,
     'dist/index.cjs': "'use strict'\nexports.value = 1\n",
     'dist/index.d.mts': 'export declare const value: number\n',
@@ -81,7 +82,10 @@ const makePackage = async (options: {
         name: 'pack-smoke-fixture',
         version: '0.0.0',
         type: 'module',
-        files: options.includeSrc ? ['dist', 'src'] : ['dist'],
+        // llms.txt is listed explicitly: npm auto-includes README and LICENSE
+        // but not this, so the fixture has to publish it the same way the real
+        // manifests do.
+        files: options.includeSrc ? ['dist', 'src', 'llms.txt'] : ['dist', 'llms.txt'],
         exports: {
           '.': {
             import: { types: './dist/index.d.mts', default: './dist/index.mjs' },
@@ -117,6 +121,16 @@ describe('pack-smoke', () => {
 
     expect(result.code).toBe(1)
     expect(result.output).toContain('missing from tarball')
+  }, 120_000)
+
+  // Without this case the new REQUIRED entry is untested: every other fixture
+  // now writes llms.txt, so nothing would notice if the requirement were dropped.
+  it('fails when llms.txt is missing from the tarball', async () => {
+    const root = await makePackage({ omit: ['llms.txt'] })
+    const result = runScript(root)
+
+    expect(result.code).toBe(1)
+    expect(result.output).toContain('package/llms.txt')
   }, 120_000)
 
   it('fails when LICENSE is absent from the package directory', async () => {

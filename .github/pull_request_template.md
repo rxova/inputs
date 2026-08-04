@@ -13,6 +13,7 @@
 - [ ] Not needed
 - [ ] Updated `README.md`
 - [ ] Updated the TSDoc in `src/types.ts` for any prop change
+- [ ] Updated the package's `llms.txt` for any prop change (it ships in the tarball)
 
 ## Checklist
 

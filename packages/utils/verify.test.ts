@@ -93,6 +93,13 @@ describe('verify gate', () => {
     expect(steps[0]?.script).toBe('audit:check')
   })
 
+  // The packaged llms.txt files are read by nobody in this repo, so a step that
+  // silently fell out of the gate would go unnoticed until a published tarball
+  // documented an API that no longer exists.
+  it('checks the packaged llms.txt files', () => {
+    expect(steps.some((step) => step.script === 'check:llms')).toBe(true)
+  })
+
   it('keeps e2e out of the gate', () => {
     const ids = steps
       .flatMap((step) => (step.turbo !== undefined ? [...step.turbo] : [step.script]))

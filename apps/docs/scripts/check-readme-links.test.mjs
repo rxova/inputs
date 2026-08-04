@@ -153,7 +153,20 @@ describe('collectLinks', () => {
     ])
   })
 
-  it('ignores files that are neither markdown nor package.json', async () => {
+  // llms.txt ships in every package tarball and links to this site, so a moved
+  // route breaks it the same way it breaks a README — and its readers are less
+  // likely than a human to work around a 404.
+  it('finds links in a package llms.txt', async () => {
+    const { repoRoot } = await fixture({
+      repo: { 'packages/otp/llms.txt': link('/components/otp/usage/') },
+    })
+
+    expect(collectLinks(repoRoot).map((found) => found.url)).toEqual([
+      'https://rxova.org/packages/react-inputs/components/otp/usage/',
+    ])
+  })
+
+  it('ignores files that are neither markdown, package.json nor llms.txt', async () => {
     const { repoRoot } = await fixture({
       repo: { 'src/index.ts': `const url = '${link('/gone/')}'`, 'notes.txt': link('/gone/') },
     })

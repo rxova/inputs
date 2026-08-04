@@ -33,6 +33,10 @@ const REQUIRED = [
   'package/package.json',
   'package/README.md',
   'package/LICENSE',
+  // The agent-facing summary. Unlike README and LICENSE, npm does NOT include
+  // this automatically — it ships only because each manifest lists it in `files`,
+  // which is exactly the kind of one-line omission nothing else would catch.
+  'package/llms.txt',
 ]
 
 // Shipping these would leak the whole source tree to every consumer.
