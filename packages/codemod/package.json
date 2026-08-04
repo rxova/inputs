@@ -1,6 +1,6 @@
 {
   "name": "@rxova/codemod",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "jscodeshift codemods for migrating onto the rxova input suite. Run `npx @rxova/codemod <transform> <path>`.",
   "keywords": [

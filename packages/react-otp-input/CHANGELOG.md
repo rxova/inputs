@@ -1,5 +1,11 @@
 # @rxova/react-otp-input
 
+## 0.1.7
+
+### Patch Changes
+
+- [#53](https://github.com/rxova/react-inputs/pull/53) [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda) - Ship an `llms.txt` in the package. Coding agents read `node_modules` after an install, so this puts the install line, a working example, the full prop table, the CSS custom properties and the `data-*` hooks where they will actually be found — along with the three mistakes this component attracts, chief among them rendering one `<input>` per slot, which is the pattern it exists to avoid.
+
 ## 0.1.6
 
 ### Patch Changes

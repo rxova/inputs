@@ -1,5 +1,11 @@
 # @rxova/codemod
 
+## 0.1.3
+
+### Patch Changes
+
+- [#53](https://github.com/rxova/react-inputs/pull/53) [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda) - Ship an `llms.txt` in the package. An agent asked to migrate off another OTP library should find the executable path rather than rewrite call sites by hand — and should know that unmapped imports are left in place with a `TODO`, so a green build does not mean the migration finished.
+
 ## 0.1.2
 
 ### Patch Changes
