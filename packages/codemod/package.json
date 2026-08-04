@@ -16,7 +16,8 @@
     "rxova-codemod": "./dist/bin.cjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "exports": {
     "./transforms/*": {

@@ -1,0 +1,99 @@
+# @rxova/react-rating-input
+
+> A headless, accessible rating input for React. Any icon, any precision — whole,
+> half or continuous fills. Interactive it is a real `radiogroup` of real radios,
+> so keyboard, focus, form submission and screen-reader announcements come from
+> the browser; read-only it is an image with a label. Zero runtime dependencies.
+> No stylesheet to import.
+
+## Install
+
+    npm install @rxova/react-rating-input
+
+`react >= 18` is the only peer dependency.
+
+## Minimal working example
+
+```tsx
+import { useState } from 'react'
+import { Rating } from '@rxova/react-rating-input'
+
+export function Feedback() {
+  const [score, setScore] = useState(0)
+
+  return <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+}
+```
+
+Passing `onChange` is what makes it interactive. Without it the component renders
+a read-only score, and that is the intended way to show one.
+
+## Props
+
+`<Rating>` — the full surface is `RatingProps` in the published types.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `value` | `number` | — | Controlled score. Clamped to `[0, max]`; NaN/Infinity become 0. |
+| `defaultValue` | `number` | — | Uncontrolled initial score. Ignored when `value` is set. |
+| `max` | `number` | `5` | Number of icons. Positive integer. |
+| `precision` | `number` | `0` | Quantization grid: `1` whole, `0.5` halves, `0` continuous. |
+| `rounding` | `'nearest' \| 'down' \| 'up' \| 'none'` | `'nearest'` | Direction of the snap onto the grid. |
+| `icon` | `ReactNode \| ((state: RatingIconState) => ReactNode)` | a built-in star | A function receives per-icon state. |
+| `emptyIcon` | `ReactNode \| ((state: RatingIconState) => ReactNode)` | same as `icon`, dimmed | Track icon. |
+| `onChange` | `(value: number) => void` | — | **Providing this is what makes the component interactive.** |
+| `onHoverChange` | `(value: number \| null) => void` | — | Hover/keyboard preview; `null` when the preview ends. |
+| `readOnly` | `boolean` | `!onChange` | Force read-only even with `onChange` present. |
+| `disabled` | `boolean` | `false` | |
+| `allowClear` | `boolean` | `true` when interactive | Re-selecting the current value clears to 0. |
+| `name` | `string` | — | Radio group name; also emits a value a native `<form>` can read. |
+| `required` | `boolean` | `false` | |
+| `invalid` | `boolean` | `false` | Sets `aria-invalid` and `data-invalid` on the group. |
+| `onBlur` | `(event: FocusEvent<HTMLElement>) => void` | — | Fires when focus leaves the group, not when moving between icons. |
+| `label` | `string` | — | Accessible name for the group. |
+| `formatLabel` | `(value: number, max: number) => string` | `` `${value} out of ${max}` `` | Formats the default accessible name. |
+| `formatOptionLabel` | `(value: number, max: number) => string` | — | Accessible name for one option. |
+| `aria-describedby` | `string` | — | ids of external error/help text. |
+| `id` | `string` | — | Base id; options derive `${id}-1`, `${id}-2`, … |
+| `dir` | `'ltr' \| 'rtl'` | inherited | Flips the fill origin. |
+| `className` | `string` | — | |
+| `style` | `CSSProperties` | — | |
+| `onWarn` | `(warning: RatingWarning) => void` | `console.warn` | Development-only notice that a prop was coerced. Stripped from production builds. |
+
+Also exported: the `useRating` hook, for building your own markup.
+
+## Styling
+
+There is no stylesheet. Set CSS custom properties on any ancestor:
+
+`--rfs-size`, `--rfs-gap`, `--rfs-color-filled`, `--rfs-color-empty`,
+`--rfs-color-hover`, `--rfs-empty-filter`, `--rfs-focus-ring`,
+`--rfs-focus-ring-offset`, `--rfs-focus-ring-radius`, `--rfs-transition`.
+
+Or target the `data-*` attributes, which are public API covered by semver:
+`data-rfs-root`, `data-rfs-item`, `data-rfs-layer`, plus the state hooks
+`data-state`, `data-fill`, `data-active`, `data-disabled`, `data-readonly`,
+`data-invalid`, `data-idx`.
+
+## Three mistakes to avoid
+
+1. **Adding `readOnly` to get a display-only score.** Omitting `onChange` already
+   does that, and it is the better route: the component then renders as an image
+   with a label rather than as a disabled form control, which is what a screen
+   reader should hear for a score that is being reported rather than collected.
+2. **Importing a stylesheet.** There is none. Colour and size are CSS custom
+   properties — a `Rating` that renders invisible is almost always
+   `--rfs-color-filled` inheriting a background-coloured value, not a bug.
+3. **Assuming `precision` rounds the value you pass in.** `precision` is the grid
+   the *user's* input snaps to. A `value` you supply is displayed as given, at
+   whatever fractional fill it implies — that is what makes a 3.7-star average
+   render honestly.
+
+## Docs
+
+- Introduction: https://rxova.org/packages/react-inputs/components/rating/introduction/
+- Usage: https://rxova.org/packages/react-inputs/components/rating/usage/
+- Everything else (forms, theming, custom icons, SSR): https://rxova.org/packages/react-inputs/components/rating/about/
+- Migrating from another rating library: https://rxova.org/packages/react-inputs/components/rating/migrating/
+- Generated API reference: https://rxova.org/packages/react-inputs/components/rating/api/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt

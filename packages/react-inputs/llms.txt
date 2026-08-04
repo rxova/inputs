@@ -1,0 +1,69 @@
+# @rxova/react-inputs
+
+> The whole Rxova input suite from one install: locale-aware currency, fractional
+> ratings, and one-time codes. Headless, accessible, zero runtime dependencies,
+> no stylesheet to import. `sideEffects: false`, so your bundler drops whatever
+> you do not import — this package and the individual ones are equivalent.
+
+## Install
+
+    npm install @rxova/react-inputs
+
+`react >= 18` and `react-dom >= 18` are the peer dependencies.
+
+## Minimal working example
+
+```tsx
+import { useState } from 'react'
+import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
+
+export function Checkout() {
+  const [price, setPrice] = useState<number | null>(null)
+  const [score, setScore] = useState(0)
+  const [code, setCode] = useState('')
+
+  return (
+    <>
+      <CurrencyInput locale="en-US" currency="USD" value={price} onValueChange={setPrice} />
+      <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
+      <OtpInput length={6} value={code} onChange={setCode} label="One-time code" />
+    </>
+  )
+}
+```
+
+## What it re-exports
+
+This package adds no API of its own. It re-exports each component package
+verbatim, so the props, the CSS custom properties and the `data-*` attributes are
+documented with the package that owns them — and each of those packages ships its
+own `llms.txt` with a full prop table.
+
+| Component | Package | What it is for |
+| --- | --- | --- |
+| `CurrencyInput`, `useCurrencyInput`, `currencyForCountry` | `@rxova/react-intl-currency-input` | Money entry that is correct in every locale, with no caret jumps. |
+| `Rating`, `useRating` | `@rxova/react-rating-input` | Any icon, any precision. A real `radiogroup` when interactive. |
+| `OtpInput`, `OtpGroup`, `OtpSlot`, `OtpSeparator`, `useOtpInput`, `useWebOTP` | `@rxova/react-otp-input` | One-time codes over one real `<input>`, with paste and SMS autofill intact. |
+
+Every type is re-exported too — `CurrencyInputProps`, `RatingProps`,
+`OtpInputProps` and the rest.
+
+## Three mistakes to avoid
+
+1. **Installing the individual packages to "keep the bundle small".** It makes no
+   difference: `sideEffects: false` means an unused component never reaches your
+   bundle either way. Install whichever suits the project; they are equivalent.
+2. **Importing a stylesheet.** There is none in any of these packages. Everything
+   visual is a CSS custom property or a `data-*` hook.
+3. **Assuming the three components share a value convention.** They do not, on
+   purpose, because their values are different things: `CurrencyInput` emits
+   `number | null` via `onValueChange`, `Rating` emits `number` via `onChange`,
+   and `OtpInput` emits `string` via `onChange`. Check the component's own
+   `llms.txt` before wiring a form.
+
+## Docs
+
+- Overview: https://rxova.org/packages/react-inputs/overview/
+- Installation: https://rxova.org/packages/react-inputs/getting-started/installation/
+- Quick start: https://rxova.org/packages/react-inputs/getting-started/quick-start/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt
