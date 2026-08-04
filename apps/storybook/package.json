@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build -o dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run"
   },
   "dependencies": {
     "@rxova/react-intl-currency-input": "workspace:*",
@@ -26,6 +28,7 @@
     "remark-gfm": "^4.0.1",
     "storybook": "^10.5.5",
     "typescript": "6.0.3",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   }
 }
