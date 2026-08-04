@@ -1,5 +1,16 @@
 # @rxova/react-inputs
 
+## 0.1.4
+
+### Patch Changes
+
+- [#53](https://github.com/rxova/react-inputs/pull/53) [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda) - Ship an `llms.txt` in the package, pointing at each component's own. Coding agents read `node_modules` after an install, so this is where to say that the meta-package and the individual packages are equivalent under `sideEffects: false`, and that the three components deliberately do not share a value convention — `number | null`, `number` and `string` respectively.
+
+- Updated dependencies [[`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda), [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda), [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda)]:
+  - @rxova/react-intl-currency-input@0.1.6
+  - @rxova/react-otp-input@0.1.7
+  - @rxova/react-rating-input@0.2.5
+
 ## 0.1.3
 
 ### Patch Changes

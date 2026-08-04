@@ -1,5 +1,11 @@
 # react-feedback-stars
 
+## 0.2.5
+
+### Patch Changes
+
+- [#53](https://github.com/rxova/react-inputs/pull/53) [`8ee31e1`](https://github.com/rxova/react-inputs/commit/8ee31e1ce842c93c0e171a1926822695122a4fda) - Ship an `llms.txt` in the package. Coding agents read `node_modules` after an install, so this puts the install line, a working example, the full prop table, the CSS custom properties and the `data-*` hooks where they will actually be found — including that omitting `onChange` is how you get a read-only score, and that `precision` is the grid the user's input snaps to, not a rounding rule applied to a value you supply.
+
 ## 0.2.4
 
 ### Patch Changes
