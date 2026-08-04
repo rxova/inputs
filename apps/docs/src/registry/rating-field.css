@@ -1,0 +1,51 @@
+/**
+ * Theming for @rxova/react-rating-input.
+ *
+ * The component ships no stylesheet: everything visual is a CSS custom property.
+ * This file is the bridge from those to your design tokens — no utility classes,
+ * no framework. Every value falls back, so it renders correctly in a project that
+ * has never heard of shadcn and improves automatically in one that has.
+ *
+ * `--rfs-color-filled` is the one that matters: a Rating that renders invisible
+ * is almost always this inheriting a background-coloured value.
+ */
+
+.rx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  /* --- the component's own knobs ------------------------------------------ */
+  --rfs-size: 1.5rem;
+  --rfs-gap: 0.25rem;
+  --rfs-color-filled: hsl(var(--primary, 222 47% 11%));
+  --rfs-color-empty: hsl(var(--muted, 210 40% 96%));
+  --rfs-color-hover: hsl(var(--primary, 222 47% 11%) / 0.8);
+  --rfs-focus-ring: 2px solid hsl(var(--ring, 222 47% 11%));
+  --rfs-focus-ring-offset: 2px;
+  --rfs-focus-ring-radius: var(--radius, 0.25rem);
+  --rfs-transition: 150ms ease;
+}
+
+.rx-field[data-invalid] {
+  --rfs-color-empty: hsl(var(--destructive, 0 84% 60%) / 0.25);
+  --rfs-focus-ring: 2px solid hsl(var(--destructive, 0 84% 60%));
+}
+
+.rx-field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.rx-field__description {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground, 215 16% 47%));
+}
+
+.rx-field__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--destructive, 0 84% 60%));
+}

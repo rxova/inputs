@@ -84,7 +84,7 @@ export function groupPages(pages, components) {
  * link from here wants the content, not the chrome — and sending it to HTML when a
  * markdown twin exists wastes the fetch this file exists to save.
  */
-export function llmsIndex(pages, components) {
+export function llmsIndex(pages, components, origin) {
   const { groups, optional } = groupPages(pages, components)
 
   const lines = [
@@ -94,6 +94,20 @@ export function llmsIndex(pages, components) {
     '',
     'Every link below is raw markdown. The human page is the same URL without the',
     '`.md` suffix. `llms-full.txt` beside this file inlines all of it in one fetch.',
+    '',
+    '## Install',
+    '',
+    'Either install the package and import it:',
+    '',
+    '    npm install @rxova/react-inputs',
+    '',
+    'or copy a pre-wired field component in, with `shadcn`:',
+    '',
+    `    npx shadcn@latest add ${origin}/r/otp-field.json`,
+    '',
+    `Registry index: ${origin}/r/registry.json — currency-field, otp-field,`,
+    'rating-field. Each copies a label/description/error wrapper plus a stylesheet',
+    'into your project and keeps the component itself as an npm dependency.',
     '',
   ]
 
