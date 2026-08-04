@@ -68,6 +68,10 @@ export const steps: readonly VerifyStep[] = [
   // snippets from scratch. It is a sub-second parse pass, so there is nothing
   // to save by caching it here.
   { name: 'Check doc snippets', script: 'check:docs' },
+  // Next to check:docs, and for the same reason: both read the authored prose
+  // that ships in the tarball, and both are sub-second parse passes worth doing
+  // before anything expensive runs.
+  { name: 'Check agent llms.txt files', script: 'check:llms' },
   { name: 'Check e2e browser list', script: 'check:browsers' },
   { name: 'Lint', script: 'lint' },
   // One Turbo invocation instead of four sequential `pnpm run`s. Turbo already

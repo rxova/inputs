@@ -55,7 +55,13 @@ function* walk(dir) {
     // CHANGELOGs are a historical record — the URLs in them were correct when
     // that version shipped and rewriting them would be a lie.
     if (entry.name === 'CHANGELOG.md') continue
-    if (entry.name.endsWith('.md') || entry.name === 'package.json') yield join(dir, entry.name)
+    // llms.txt alongside the markdown: it ships in every package tarball and
+    // links to this site, so a route that moved breaks it exactly the way it
+    // breaks a README — and it is read by agents, which are less likely than a
+    // human to work around a 404.
+    if (entry.name.endsWith('.md') || entry.name === 'package.json' || entry.name === 'llms.txt') {
+      yield join(dir, entry.name)
+    }
   }
 }
 

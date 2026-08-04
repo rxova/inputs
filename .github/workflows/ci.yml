@@ -99,11 +99,16 @@ jobs:
       - uses: ./.github/actions/turbo-cache
       - run: pnpm install --frozen-lockfile
       - run: pnpm run format:check
-      # Type-checks every fenced snippet in the root README and each package
-      # README, so a copy-pasteable example cannot rot into something that does
-      # not parse. Invoked through Turbo (a `//#check:docs` root task) so it
-      # replays from cache when no README changed.
+      # Type-checks every fenced snippet in the root README, each package README
+      # and each package llms.txt, so a copy-pasteable example cannot rot into
+      # something that does not parse. Invoked through Turbo (a `//#check:docs`
+      # root task) so it replays from cache when none of them changed.
       - run: pnpm exec turbo run check:docs
+      # The packaged llms.txt files are what a coding agent reads out of
+      # node_modules, and nothing else in the repo looks at them — so a prop
+      # renamed in types.ts would leave the table describing an API that no
+      # longer exists with every other check still green.
+      - run: pnpm exec turbo run check:llms
       - run: pnpm run lint
       - run: pnpm run typecheck
 
