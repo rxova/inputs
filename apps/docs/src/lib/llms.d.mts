@@ -13,5 +13,9 @@ export declare function groupPages(
   components: ComponentRef[],
 ): { groups: PageGroup[]; optional: DocsPage[] }
 
-export declare function llmsIndex(pages: DocsPage[], components: ComponentRef[]): string
+export declare function llmsIndex(
+  pages: DocsPage[],
+  components: ComponentRef[],
+  origin: string,
+): string
 export declare function llmsFull(pages: DocsPage[], components: ComponentRef[]): string

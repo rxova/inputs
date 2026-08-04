@@ -1,0 +1,64 @@
+/**
+ * Theming for @rxova/react-intl-currency-input.
+ *
+ * This component renders a plain `<input>` and has no CSS custom properties of
+ * its own — it inherits whatever your input styles are. So unlike the OTP and
+ * rating sheets, this one styles the element directly, and is the file to delete
+ * outright if your design system already styles inputs.
+ *
+ * Every value falls back, so it renders correctly in a project that has never
+ * heard of shadcn and improves automatically in one that has.
+ */
+
+.rx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rx-field input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground, 222 47% 11%));
+  background: hsl(var(--background, 0 0% 100%));
+  border: 1px solid hsl(var(--border, 214 32% 91%));
+  border-radius: var(--radius, 0.5rem);
+  transition: border-color 150ms ease;
+}
+
+.rx-field input:focus-visible {
+  outline: 2px solid hsl(var(--ring, 222 47% 11%));
+  outline-offset: 2px;
+}
+
+/* Both hooks: `data-invalid` is this library's, `aria-invalid` is the platform's
+   and is what a form library will set. Styling only one leaves the other silent. */
+.rx-field input[data-invalid],
+.rx-field input[aria-invalid='true'] {
+  border-color: hsl(var(--destructive, 0 84% 60%));
+}
+
+.rx-field input[data-invalid]:focus-visible,
+.rx-field input[aria-invalid='true']:focus-visible {
+  outline-color: hsl(var(--destructive, 0 84% 60%));
+}
+
+.rx-field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.rx-field__description {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground, 215 16% 47%));
+}
+
+.rx-field__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--destructive, 0 84% 60%));
+}

@@ -39,6 +39,7 @@ const PAGES = [
   page('components/otp/api/interfaces/otpinputprops', 'api:otp', { title: 'OtpInputProps' }),
 ]
 
+const MOUNT = 'https://rxova.org/packages/react-inputs'
 const headings = (doc) => [...doc.matchAll(/^## (.+)$/gm)].map((m) => m[1])
 const links = (doc) => [...doc.matchAll(/^- \[([^\]]*)\]\(([^)]*)\)(?:: (.*))?$/gm)]
 
@@ -98,7 +99,7 @@ describe('groupPages', () => {
 
 describe('llmsIndex', () => {
   it('opens with the H1 and blockquote llmstxt.org specifies', () => {
-    const lines = llmsIndex(PAGES, COMPONENTS).split('\n')
+    const lines = llmsIndex(PAGES, COMPONENTS, MOUNT).split('\n')
     assert.equal(lines[0], '# Rxova React Inputs')
     assert.equal(lines[1], '')
     assert.match(lines[2], /^> /)
@@ -106,33 +107,46 @@ describe('llmsIndex', () => {
 
   // Sending an agent to HTML when a markdown twin exists wastes the fetch.
   it('links every entry to the markdown twin, not the human page', () => {
-    for (const [, , url] of links(llmsIndex(PAGES, COMPONENTS))) {
+    for (const [, , url] of links(llmsIndex(PAGES, COMPONENTS, MOUNT))) {
       assert.match(url, /\.md$/)
       assert.match(url, /^https:\/\/rxova\.org\//)
     }
   })
 
   it('carries a description, so the index says which page answers what', () => {
-    const [, , , note] = links(llmsIndex(PAGES, COMPONENTS))[0]
+    const [, , , note] = links(llmsIndex(PAGES, COMPONENTS, MOUNT))[0]
     assert.equal(note, 'About overview.')
   })
 
   // A TypeDoc page's description restates its title, so it doubles the section
   // for nothing; the one line above the list already says what they all are.
   it('does not repeat a description for every generated reference page', () => {
-    const optional = llmsIndex(PAGES, COMPONENTS).split('## Optional')[1]
+    const optional = llmsIndex(PAGES, COMPONENTS, MOUNT).split('## Optional')[1]
     assert.match(optional, /^- \[OtpInputProps\]\(\S+\)$/m)
   })
 
   it('lists every page exactly once', () => {
-    const urls = links(llmsIndex(PAGES, COMPONENTS)).map((m) => m[2])
+    const urls = links(llmsIndex(PAGES, COMPONENTS, MOUNT)).map((m) => m[2])
     assert.equal(urls.length, PAGES.length)
     assert.equal(new Set(urls).size, PAGES.length)
   })
 
   it('omits the Optional section entirely when there is no generated reference', () => {
-    const doc = llmsIndex([page('overview', 'root')], COMPONENTS)
-    assert.deepEqual(headings(doc), ['About'])
+    const doc = llmsIndex([page('overview', 'root')], COMPONENTS, MOUNT)
+    assert.deepEqual(headings(doc), ['Install', 'About'])
+  })
+
+  // An install path an agent cannot discover is worth nothing, and `shadcn add`
+  // is the verb it will reach for first in a React project.
+  it('gives both install paths, with registry URLs under the mount', () => {
+    const doc = llmsIndex(PAGES, COMPONENTS, MOUNT)
+
+    assert.match(doc, /npm install @rxova\/react-inputs/)
+    assert.match(
+      doc,
+      /npx shadcn@latest add https:\/\/rxova\.org\/packages\/react-inputs\/r\/otp-field\.json/,
+    )
+    assert.match(doc, /https:\/\/rxova\.org\/packages\/react-inputs\/r\/registry\.json/)
   })
 })
 
