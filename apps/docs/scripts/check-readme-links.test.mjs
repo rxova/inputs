@@ -187,6 +187,43 @@ describe('checkReadmeLinks', () => {
     ])
   })
 
+  // A URL with an extension names a file, not a route. Without the extension
+  // branch in resolveRoute these would be looked for at `<url>/index.html` and
+  // reported missing — so every link to the surfaces this site publishes for
+  // agents would fail the build.
+  it('resolves a raw-markdown twin as the file it is', async () => {
+    const { repoRoot, dist } = await fixture({
+      repo: { 'README.md': link('/components/otp/usage.md') },
+      dist: { 'components/otp/usage.md': '# Usage\n' },
+    })
+
+    expect(checkReadmeLinks({ repoRoot, dist })).toEqual([])
+  })
+
+  it('resolves llms.txt as the file it is', async () => {
+    const { repoRoot, dist } = await fixture({
+      repo: { 'README.md': link('/llms.txt') },
+      dist: { 'llms.txt': '# rxova\n' },
+    })
+
+    expect(checkReadmeLinks({ repoRoot, dist })).toEqual([])
+  })
+
+  it('still fails a file link that the build did not emit', async () => {
+    const { repoRoot, dist } = await fixture({
+      repo: { 'README.md': link('/components/otp/usage.md') },
+      dist: { 'components/otp/usage/index.html': page() },
+    })
+
+    expect(checkReadmeLinks({ repoRoot, dist })).toEqual([
+      {
+        file: 'README.md',
+        url: 'https://rxova.org/packages/react-inputs/components/otp/usage.md',
+        reason: 'no page or redirect at /components/otp/usage.md',
+      },
+    ])
+  })
+
   it('accepts a redirect stub as an answer for the route', async () => {
     const { repoRoot, dist } = await fixture({
       repo: { 'README.md': link('/components/otp/') },
