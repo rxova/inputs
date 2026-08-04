@@ -29,6 +29,9 @@ playwright-report/
 .pw-browsers/
 pw-browsers/
 
+# Vendor-specific assistant state, none of which belongs in a public repo. The
+# deliberate exception is AGENTS.md, which is tracked: one vendor-neutral file
+# every tool reads, reviewed like any other doc. Do not add it below.
 .claude/
 .claude.json
 .claude.json.backup
