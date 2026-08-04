@@ -85,6 +85,14 @@ const readIfFile = (path) => {
 /** The emitted HTML for a route, or null if the site has no such route. */
 export function resolveRoute(dist, pathname) {
   const clean = pathname.replace(/^\/+|\/+$/g, '')
+
+  // A URL carrying a file extension names a file, not a route: the raw-markdown
+  // twins (`…/usage.md`) and llms.txt are served as themselves. Without this,
+  // `…/usage.md` would be looked for at `…/usage.md/index.html` and reported
+  // missing — so the checker would fail every link to the surfaces this site
+  // publishes for agents.
+  if (/\.[a-z0-9]+$/i.test(clean)) return readIfFile(join(dist, clean))
+
   // build.format: 'directory' — a route is <route>/index.html. The bare .html
   // fallback covers anything emitted flat.
   return readIfFile(join(dist, clean, 'index.html')) ?? readIfFile(join(dist, `${clean}.html`))

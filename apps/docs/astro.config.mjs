@@ -111,6 +111,20 @@ export default defineConfig({
   site,
   base,
 
+  vite: {
+    define: {
+      // The component list, for the agent-facing endpoints in src/pages.
+      //
+      // They cannot call componentPackages() themselves: it resolves the repo
+      // root from its own import.meta.url, and those modules are bundled into a
+      // prerender chunk under dist/, where that points at a directory which does
+      // not exist. This config is the last point in the build that runs in plain
+      // node, so it is where the list has to be read — keeping one source of
+      // truth rather than a second hardcoded list beside it.
+      __RXOVA_COMPONENTS__: JSON.stringify(COMPONENTS),
+    },
+  },
+
   // Static redirects: Astro emits one meta-refresh index.html per entry, which
   // the aggregator publishes verbatim like any other file — the ingest contract
   // in .github/workflows/docs.yml is untouched.
