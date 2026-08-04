@@ -1,9 +1,11 @@
 # @rxova/react-inputs
 
 > The whole Rxova input suite from one install: locale-aware currency, fractional
-> ratings, and one-time codes. Headless, accessible, zero runtime dependencies,
-> no stylesheet to import. `sideEffects: false`, so your bundler drops whatever
-> you do not import — this package and the individual ones are equivalent.
+> ratings, one-time codes, passwords, international phone numbers, segmented date
+> and time fields, tags and files. Headless, accessible, zero runtime
+> dependencies, no stylesheet to import. `sideEffects: false`, so your bundler
+> drops whatever you do not import — this package and the individual ones are
+> equivalent.
 
 ## Install
 
@@ -44,9 +46,23 @@ own `llms.txt` with a full prop table.
 | `CurrencyInput`, `useCurrencyInput`, `currencyForCountry` | `@rxova/react-intl-currency-input` | Money entry that is correct in every locale, with no caret jumps. |
 | `Rating`, `useRating` | `@rxova/react-rating-input` | Any icon, any precision. A real `radiogroup` when interactive. |
 | `OtpInput`, `OtpGroup`, `OtpSlot`, `OtpSeparator`, `useOtpInput`, `useWebOTP` | `@rxova/react-otp-input` | One-time codes over one real `<input>`, with paste and SMS autofill intact. |
+| `PasswordInput`, `usePasswordInput`, `estimateStrength`, `commonRules` | `@rxova/react-password-input` | Reveal toggle, Caps Lock warning, and a 1 kB strength meter. |
+| `PhoneInput`, `usePhoneInput`, `parsePhone`, `COUNTRIES` | `@rxova/react-phone-input` | International numbers with no metadata blob. E.164 in and out. |
+| `DateInput`, `useDateInput` | `@rxova/react-date-input` | Segmented, locale-ordered date entry. `YYYY-MM-DD`, never a `Date`. |
+| `TimeInput`, `useTimeInput` | `@rxova/react-time-input` | Segmented time entry, 12/24-hour by locale, canonical 24-hour value. |
+| `TagsInput`, `useTagsInput` | `@rxova/react-tags-input` | Tags and tokens with delimiters, paste splitting and a roving tab order. |
+| `FileInput`, `useFileInput` | `@rxova/react-file-input` | Picker and drop zone with accept/size rules, dedupe and managed previews. |
 
 Every type is re-exported too — `CurrencyInputProps`, `RatingProps`,
-`OtpInputProps` and the rest.
+`OtpInputProps`, `PasswordInputProps`, `PhoneInputProps`, `DateInputProps`,
+`TimeInputProps`, `TagsInputProps`, `FileInputProps` and the rest.
+
+Four packages export their components and hooks by name here rather than with a
+star, because their **pure helpers** collide once merged into one namespace:
+`toISO`, `fromISO`, `compareISO` and `withinRange` mean different things in the
+date and time packages, and `attempt` / `attemptAll` mean different things in the
+tags and file packages. The widgets all come through; import those helpers from
+`@rxova/react-date-input` and friends directly.
 
 ## Three mistakes to avoid
 
@@ -55,11 +71,12 @@ Every type is re-exported too — `CurrencyInputProps`, `RatingProps`,
    bundle either way. Install whichever suits the project; they are equivalent.
 2. **Importing a stylesheet.** There is none in any of these packages. Everything
    visual is a CSS custom property or a `data-*` hook.
-3. **Assuming the three components share a value convention.** They do not, on
-   purpose, because their values are different things: `CurrencyInput` emits
-   `number | null` via `onValueChange`, `Rating` emits `number` via `onChange`,
-   and `OtpInput` emits `string` via `onChange`. Check the component's own
-   `llms.txt` before wiring a form.
+3. **Assuming the components share a value convention.** They do not, on purpose,
+   because their values are different things: `CurrencyInput` emits
+   `number | null` via `onValueChange`, `Rating` emits `number`, `OtpInput` and
+   `PhoneInput` emit `string`, `DateInput` and `TimeInput` emit `string | null`,
+   `TagsInput` emits `string[]` and `FileInput` emits `File[]`. Check the
+   component's own `llms.txt` before wiring a form.
 
 ## Docs
 
