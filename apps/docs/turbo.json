@@ -15,6 +15,26 @@
       // rather than on the root task so setting them does not also invalidate
       // the library builds, which never read them.
       "env": ["DOCS_URL", "DOCS_BASE_URL"]
+    },
+    // `astro check` and `astro build` both load astro.config, and loading it
+    // runs the starlight-typedoc plugin — which regenerates
+    // src/content/docs/components/*/api from scratch. Two tasks, one output
+    // directory, and nothing upstream of each other, so turbo is free to run
+    // them at the same time: the build's link validator then reads a directory
+    // typecheck is midway through rewriting, and reports the pages that have
+    // not been written back yet as broken links.
+    //
+    // It fails as a flake rather than a defect. The page count moves between
+    // runs, the broken links differ, and a rerun usually passes — which is the
+    // worst shape a CI failure can take. Sequential builds are perfectly
+    // idempotent; only the overlap breaks.
+    //
+    // Depending on the package's own build is what serialises them. It costs
+    // typecheck the wait for a build that CI runs anyway, and the same idiom is
+    // already used by check:exports and pack:smoke for the same reason: a task
+    // that shares a directory with `build` must not run beside it.
+    "typecheck": {
+      "dependsOn": ["^build", "build"]
     }
   }
 }
