@@ -10,6 +10,13 @@ export default defineConfig(
     '**/dist/',
     'coverage/',
     '**/node_modules/',
+    // Local AI-assistant state, matching the .gitignore block. ESLint does not
+    // read .gitignore, so this has to be repeated here. It matters because
+    // `.claude/worktrees/` can hold whole checkouts of this repo: without this
+    // rule ESLint lints a second copy of the tree against the root tsconfig,
+    // which floods the run with unresolved-type errors and makes `pnpm verify`
+    // fail for reasons that have nothing to do with the working tree.
+    '**/.claude/',
     // The Astro/Starlight docs site owns its own toolchain: `astro check` is its
     // typecheck (wired in as its `typecheck` task), and its TS/MDX sources sit
     // outside this program's tsconfig, so strictTypeChecked cannot see them.
@@ -36,6 +43,19 @@ export default defineConfig(
   // files are not part of the root tsconfig program, so the type-aware rules
   // have nothing to resolve against. `astro check` covers their types.
   ...astro.configs.recommended,
+  {
+    // `astro.configs.recommended` leaves `tsconfigRootDir` unset, so the parser
+    // infers it by scanning for candidate tsconfigs — and errors out when it
+    // finds more than one. A checkout under `.claude/worktrees/` is enough to
+    // trigger that, and ignoring the path does not help: the inference runs
+    // before the ignore list applies. Pinning the root, exactly as the block
+    // below does for .ts/.tsx, makes the parse independent of whatever else
+    // happens to be sitting in the working directory.
+    files: ['**/*.astro'],
+    languageOptions: {
+      parserOptions: { tsconfigRootDir: import.meta.dirname },
+    },
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
