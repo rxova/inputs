@@ -28,3 +28,4 @@ test-results/
 playwright-report/
 .pw-browsers/
 pw-browsers/
+.claude
