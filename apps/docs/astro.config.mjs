@@ -152,6 +152,9 @@ export default defineConfig({
           './src/styles/sidebar.css',
           './src/styles/logos.css',
           './src/styles/content.css',
+          // Last, so the landing's container widening wins over anything above
+          // it that also reaches for .sl-container.
+          './src/styles/home.css',
         ],
         // Components sit LAST and are the destination, not a preamble:
         // getting-started is a one-time read, the component list is what you

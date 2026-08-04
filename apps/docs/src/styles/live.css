@@ -14,7 +14,10 @@
   display: block;
   padding: 0.4rem 0.75rem;
   border-top: 1px solid var(--rx-rule);
-  color: var(--rx-faint);
+  /* --rx-muted rather than --rx-faint: at 0.72rem on the card surface, faint is
+     about 3.4:1 and fails AA. Applies to every live example in the site, not
+     just the landing. */
+  color: var(--rx-muted);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;

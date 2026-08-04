@@ -1,151 +1,262 @@
 ---
-title: rxova
-description: Headless, accessible, zero-dependency React inputs — currency, rating, and one-time-code.
+title: React Inputs
+description: Lightweight, accessible, UX-first React input components with zero runtime dependencies — end-to-end tested in three browsers, axe-scanned against WCAG, and held to bundle budgets enforced in CI.
 template: splash
 hero:
-  tagline: The tricky React inputs, done right.
+  # Copied into src/assets rather than referenced from public/: Starlight's hero
+  # runs it through Astro's <Image>, which only handles assets it can resolve at
+  # build time. The source of truth stays the repo-root assets/logo.svg.
+  image:
+    file: ../../assets/logo.svg
+    alt: ''
+  tagline: >-
+    Lightweight, accessible and UX-first, with zero runtime dependencies. Every
+    release is tested end-to-end in three browsers, scanned against WCAG, and
+    held to a bundle budget CI enforces on every commit.
   actions:
+    # Just the one action here. Storybook and GitHub live in the CTA band
+    # directly below, and repeating all three twice within a screen of each
+    # other split the hero's focus rather than reinforcing it.
     - text: Get started
       link: /getting-started/installation
       icon: right-arrow
       variant: primary
-    - text: Browse the components
-      link: /components/currency/introduction
-      icon: document
-      variant: minimal
-    - text: GitHub
-      link: https://github.com/rxova/react-inputs
-      icon: external
-      variant: minimal
 ---
 
-import { CardGrid, Card } from '@astrojs/starlight/components'
 import LiveExample from '@components/LiveExample.astro'
+import Section from '@components/home/Section.astro'
+import QuickStart from '@components/home/QuickStart.astro'
+import ValueGrid from '@components/home/ValueGrid.astro'
+import ProofStats from '@components/home/ProofStats.astro'
+import SizeTable from '@components/home/SizeTable.astro'
+import CtaBand from '@components/home/CtaBand.astro'
+import {
+  suiteBudget,
+  packageBudgets,
+  coverageFloor,
+  e2eBrowsers,
+  axeTags,
+  license,
+} from '../../lib/proof.mjs'
 
-Most input libraries ship a hundred components and get the hard ones wrong.
-This one ships only the ones that are genuinely hard — and gets them right.
+export const suite = suiteBudget()
+export const budgets = packageBudgets()
+export const floor = coverageFloor()
+export const browsers = e2eBrowsers()
+export const tags = axeTags()
+export const licence = license()
 
-Nothing below is a screenshot. Every example runs in this page, and you can edit
-any of it.
-
-## Money that respects the locale
-
-Grouping, symbol placement, decimal rules and digit systems all come from `Intl`
-— not from a regex. The caret stays where you put it while the value reformats
-underneath you.
-
-<LiveExample
-  code={`function CurrencyDemo() {
-  const [locale, setLocale] = useState('de-DE')
-  const currency = { 'de-DE': 'EUR', 'bg-BG': 'BGN', 'hi-IN': 'INR', 'ar-EG': 'EGP', 'ja-JP': 'JPY' }[locale]
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: 13, opacity: 0.7, marginBottom: 6 }}>
-        Locale
-      </label>
-      <select value={locale} onChange={(e) => setLocale(e.target.value)}>
-        <option value="de-DE">de-DE — German</option>
-        <option value="bg-BG">bg-BG — Bulgarian</option>
-        <option value="hi-IN">hi-IN — Hindi (lakh grouping)</option>
-        <option value="ar-EG">ar-EG — Arabic (native digits)</option>
-        <option value="ja-JP">ja-JP — Japanese (no decimals)</option>
-      </select>
-      <div style={{ marginTop: 14 }}>
-        <CurrencyInput locale={locale} currency={currency} defaultValue={50000} />
-      </div>
-    </div>
-  )
-}`}
+<CtaBand
+  title="Start with one input"
+  lede="Take the whole suite, or just the one package you need today. The bundle budgets, the tests and the accessibility guarantees are the same either way."
+  actions={[
+    {
+      text: 'Star on GitHub',
+      href: 'https://github.com/rxova/react-inputs',
+      variant: 'primary',
+      external: true,
+    },
+    {
+      text: 'Open Storybook',
+      href: 'https://rxova.org/storybook/react-inputs/',
+      external: true,
+    },
+    {
+      text: 'Read the docs',
+      // Explicit BASE_URL, not a bare '/getting-started/…': remark-base-links
+      // only rewrites plain-string href attributes on JSX nodes, and this one
+      // is a value inside an expression, so the plugin never sees it. Under the
+      // aggregator's /packages/react-inputs/ mount a bare path would 404.
+      href: `${import.meta.env.BASE_URL}getting-started/installation`,
+    },
+  ]}
 />
 
-## Ratings at any precision
-
-Whole, half or continuous — with any icon. Interactive, it is a native
-`radiogroup`, so arrow keys, form submission and screen-reader announcements
-come from the browser. Read-only, it is an image with a label.
-
-<LiveExample
-  code={`function RatingDemo() {
-  const [value, setValue] = useState(3.5)
-  const [precision, setPrecision] = useState(0.5)
-  return (
-    <div>
-      <Rating value={value} onChange={setValue} precision={precision} />
-      <p style={{ marginTop: 10, fontSize: 14 }}>
-        value <strong>{value}</strong> · precision {precision}
-      </p>
-      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-        {[1, 0.5, 0.1].map((p) => (
-          <button
-            key={p}
-            onClick={() => setPrecision(p)}
-            style={{
-              padding: '3px 12px',
-              borderRadius: 999,
-              cursor: 'pointer',
-              border: '1px solid var(--rx-rule-strong)',
-              background: p === precision ? 'var(--rx-primary)' : 'transparent',
-              color: p === precision ? '#fff' : 'inherit',
-            }}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}`}
-/>
-
-## One-time codes without the hacks
-
-One native `<input>` behind spatial slots — so paste, SMS autofill, IME and
-password managers keep working. Not six inputs held together with key handlers.
-
-<LiveExample
-  code={`function OtpDemo() {
-  const [code, setCode] = useState('')
-  return (
-    <div>
-      <OtpInput value={code} onChange={setCode} length={6} />
-      <p style={{ marginTop: 12, fontSize: 14 }}>
-        {code.length === 6 ? '✓ complete — ' : ''}value: <strong>{code || '(empty)'}</strong>
-      </p>
-    </div>
-  )
-}`}
-/>
-
-## Why this one
-
-<CardGrid>
-  <Card title="Headless" icon="setting">
-    No stylesheet to import and nothing to override. Style with CSS custom properties and `data-*`
-    hooks, and it inherits whatever your app already looks like.
-  </Card>
-  <Card title="Zero runtime dependencies" icon="rocket">
-    `react` is the only peer. Nothing else reaches your bundle, and everything tree-shakes to what
-    you actually import.
-  </Card>
-  <Card title="Accessible by construction" icon="approve-check">
-    Native platform semantics rather than ARIA sprinkled on top — keyboard, focus, and form
-    behaviour come from the browser. Every build is checked with axe-core.
-  </Card>
-  <Card title="Correct on the seams" icon="puzzle">
-    Bulgarian's space-only-above-9999, Hindi lakh grouping, Arabic-Indic digits, formatted paste,
-    Chrome auto-translate, IME composition, RTL and SSR.
-  </Card>
-</CardGrid>
-
-## Get going
-
-```sh
-npm install @rxova/react-inputs
-```
+<Section
+  title="One import to your first input"
+  lede="No stylesheet to import. No provider to mount. No configuration. Install it and render it."
+>
+  <QuickStart command="npm install @rxova/react-inputs">
 
 ```tsx
-import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
+import { CurrencyInput } from '@rxova/react-inputs'
+
+export function Price({ value, onChange }) {
+  // `name` is all it takes to post with the form.
+  return (
+    <CurrencyInput
+      name="price"
+      locale="de-DE"
+      currency="EUR"
+      value={value}
+      onValueChange={onChange}
+    />
+  )
+}
 ```
 
-Typed, strict, and covered by a test suite that runs in a browser.
-[Start here →](/getting-started/installation)
+  </QuickStart>
+</Section>
+
+<Section
+  eyebrow="Why this one"
+  title="Small on purpose, deep where it counts"
+  lede="A short list of inputs, each taken all the way — formatting, caret behaviour, accessibility and native form support treated as the whole job rather than the last mile."
+>
+  <ValueGrid
+    items={[
+      {
+        icon: 'org',
+        title: 'Maintained, in the open',
+        body: 'Shipped under the Rxova organisation alongside Journey and use-everywhere. Changesets-driven releases, provenance-signed npm publishes, an API reference generated from source.',
+      },
+      {
+        icon: 'weight',
+        title: 'Lightweight, and held to it',
+        body: 'Every package carries a size budget that CI enforces on each build. Exceed it and the build fails — the number on this page is that budget, not an estimate.',
+      },
+      {
+        icon: 'zero',
+        title: 'No dependencies to inherit',
+        body: '<code>react</code> is the only peer. Nothing else reaches your bundle, nothing else can break you, and everything tree-shakes down to what you actually imported.',
+      },
+      {
+        icon: 'a11y',
+        title: 'Accessible by construction',
+        body: 'Native platform semantics do the work — an interactive rating is a real radiogroup, and an OTP field is one real input. Keyboard, focus and form behaviour come from the browser, and every build is checked with axe.',
+      },
+      {
+        icon: 'ux',
+        title: 'UX-first, down to the caret',
+        body: 'The caret stays where you put it while the value reformats underneath. Paste works. Autofill works. So do IME composition, RTL and server rendering.',
+      },
+      {
+        icon: 'seams',
+        title: 'Correct on the seams',
+        body: "Bulgarian's space-only-above-9999 grouping, Hindi lakh grouping, Arabic-Indic digits, formatted paste, Chrome's auto-translate rewriting your DOM. The cases that only show up in production.",
+      },
+    ]}
+  />
+</Section>
+
+<Section
+  accent
+  eyebrow="Proof"
+  title="Numbers you can go and check"
+  lede="Every figure below is read out of the config that enforces it, at the moment this page is built. None of them is typed by hand, so none of them can quietly go stale."
+>
+  <ProofStats
+    stats={[
+      {
+        value: '0',
+        label: 'Runtime dependencies',
+        note: 'react is the only peer, across every package',
+      },
+      {
+        value: `${suite.wholeKb} kB`,
+        label: `Whole suite, ${suite.compression}`,
+        note: `Enforced by size-limit in CI — ${suite.singleKb} kB for a single tree-shaken component`,
+      },
+      {
+        value: `${floor.statements}%`,
+        label: 'Coverage floor, per file',
+        note: 'Per-file thresholds, so a thin module cannot hide behind a well-covered one',
+      },
+      {
+        value: `${browsers.length}`,
+        label: 'Engines under E2E',
+        note: browsers.join(', '),
+      },
+      {
+        value: '0',
+        label: 'Accessibility violations',
+        note: `axe-core against ${tags.join(', ')} — including RTL and error states`,
+      },
+      {
+        value: licence,
+        label: 'Licensed, every package',
+        note: 'Permissive and unchanged since the first release — use it at work without asking anyone',
+      },
+    ]}
+  />
+</Section>
+
+<Section
+  eyebrow="See for yourself"
+  title="This is not a screenshot. Edit it."
+  lede="Switch the locale and watch the grouping, symbol placement, decimal rules and digit system follow — all from Intl, none of it from a regex. Then drag the rating and paste into the code field. The source underneath is editable too."
+>
+{/* No blank lines inside the template literal below: prettier reformats the
+    embedded JSX across them and flattens its indentation, and this string is
+    rendered to the reader verbatim. */}
+
+<LiveExample
+  code={`function PlayWithMe() {
+  // de-DE German · bg-BG space only above 9999 · hi-IN lakh grouping
+  // ar-EG native digits · ja-JP no decimals
+  const CURRENCY = { 'de-DE': 'EUR', 'bg-BG': 'BGN', 'hi-IN': 'INR', 'ar-EG': 'EGP', 'ja-JP': 'JPY' }
+  const [locale, setLocale] = useState('de-DE')
+  const [score, setScore] = useState(3.5)
+  const [code, setCode] = useState('')
+  return (
+    <div style={{ display: 'grid', gap: 24, justifyItems: 'start' }}>
+      <p style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Play with me 👋</p>
+      <label>
+        Locale{' '}
+        <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+          {Object.keys(CURRENCY).map((l) => <option key={l}>{l}</option>)}
+        </select>
+      </label>
+      <CurrencyInput
+        aria-label="Amount"
+        locale={locale}
+        currency={CURRENCY[locale]}
+        defaultValue={5000000}
+      />
+      <Rating value={score} onChange={setScore} precision={0.5} label="Rate it" />
+      <OtpInput value={code} onChange={setCode} length={6} label="One-time code" />
+    </div>
+  )
+}`}
+/>
+
+Every input has a playground like this one on its own page, alongside the full
+prop reference. [See the whole suite →](/overview/)
+
+</Section>
+
+<Section
+  eyebrow="Budgets"
+  title="A ceiling, not an aspiration"
+  lede="Take the whole suite or take one input — either way you know the cost before you install, because the build fails when it moves."
+>
+  <SizeTable
+    compression={suite.compression}
+    caption="Read from each package's size-limit configuration when this page was built. CI checks the same numbers on every commit."
+    rows={budgets.map((budget) => ({
+      pkg: budget.pkg,
+      entry: budget.import,
+      limitKb: budget.limitKb,
+    }))}
+  />
+</Section>
+
+<Section
+  eyebrow="Headless"
+  title="Style it with CSS, not with props"
+  lede="There is no stylesheet to import and no theme object to configure. Every component reads its appearance from custom properties and exposes its state as data attributes, so it inherits whatever your app already looks like."
+>
+
+```css
+.field {
+  --otp-border: 1px solid var(--my-border);
+  --otp-radius: 8px;
+  --otp-active-ring: 2px solid var(--my-brand);
+}
+
+.field [data-filled] {
+  font-weight: 600;
+}
+```
+
+</Section>

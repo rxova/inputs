@@ -1,9 +1,11 @@
 import { defineConfig } from 'vitest/config'
 
 /**
- * Covers the build scripts only. The docs site itself is verified by the build
- * — `astro check`, starlight-links-validator and the link checker all run there
- * — so there is no component suite here to configure.
+ * Covers the build scripts, and the one src module that is not verified by the
+ * build: src/lib/proof.mjs, which feeds the landing page's claims by reading the
+ * configs CI enforces. The rest of the site is verified by the build itself —
+ * `astro check`, starlight-links-validator and the link checker all run there —
+ * so there is still no component suite here to configure.
  *
  * `test` and `test:coverage` are the same command, as in packages/utils: the
  * component packages distinguish them (the latter adds the 95% per-file
@@ -14,7 +16,7 @@ import { defineConfig } from 'vitest/config'
  */
 export default defineConfig({
   test: {
-    include: ['scripts/**/*.test.mjs'],
+    include: ['scripts/**/*.test.mjs', 'src/**/*.test.mjs'],
     environment: 'node',
     // The CLI cases spawn a real process, which is slower than the 5s default
     // on a cold runner.
