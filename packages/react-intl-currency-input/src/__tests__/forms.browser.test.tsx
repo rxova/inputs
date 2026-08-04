@@ -10,7 +10,7 @@ import { CurrencyInput } from '../CurrencyInput'
 /**
  * The whole loop per library: type -> the library's state updates -> submit
  * produces the right *number* -> the field is identifiable for touched/blur.
- * These are the reason `onValueChange`, `onBlur`, `name` and `invalid` exist.
+ * These are the reason `onChange`, `onBlur`, `name` and `invalid` exist.
  */
 
 const typeAmount = async (text: string) => {
@@ -36,7 +36,7 @@ describe('react-hook-form', () => {
               currency="USD"
               aria-label="amount"
               value={field.value ?? null}
-              onValueChange={field.onChange}
+              onChange={field.onChange}
               onBlur={field.onBlur}
               name={field.name}
               ref={field.ref}
@@ -69,7 +69,7 @@ describe('formik', () => {
         currency="EUR"
         aria-label="amount"
         value={field.value ?? null}
-        onValueChange={(v) => void helpers.setValue(v)}
+        onChange={(v) => void helpers.setValue(v)}
         onBlur={field.onBlur}
         name="amount"
       />
@@ -109,7 +109,7 @@ describe('react-final-form', () => {
                   currency="USD"
                   aria-label="amount"
                   value={typeof input.value === 'number' ? input.value : null}
-                  onValueChange={input.onChange}
+                  onChange={input.onChange}
                   onBlur={input.onBlur}
                   name={input.name}
                 />
@@ -154,7 +154,7 @@ describe('tanstack form', () => {
               currency="JPY"
               aria-label="amount"
               value={field.state.value}
-              onValueChange={(v) => {
+              onChange={(v) => {
                 field.handleChange(v ?? 0)
               }}
               onBlur={field.handleBlur}

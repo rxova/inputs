@@ -9,6 +9,7 @@ export type {
   UseCurrencyInputResult,
   CurrencyInputBaseOptions,
   CurrencyInputChange,
+  CurrencyValueChangeHandler,
   CurrencyInputElementProps,
   CurrencyDisplay,
 } from './types'

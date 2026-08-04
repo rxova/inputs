@@ -130,7 +130,7 @@ function Playground() {
           minimumFractionDigits={minFraction}
           allowNegative={allowNegative}
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
         />
       </div>
 
@@ -175,7 +175,7 @@ function TrickyGrid() {
               locale={t.locale}
               currency={t.currency}
               value={values[t.locale] ?? null}
-              onValueChange={(v) => {
+              onChange={(v) => {
                 setValues((prev) => ({ ...prev, [t.locale]: v }))
               }}
             />
@@ -223,7 +223,7 @@ function FormDemo() {
                 locale="de-DE"
                 currency="EUR"
                 value={field.value ?? null}
-                onValueChange={field.onChange}
+                onChange={field.onChange}
                 onBlur={field.onBlur}
                 name={field.name}
                 ref={field.ref}
@@ -278,7 +278,7 @@ function StressLab() {
             locale={stressLocale}
             currency={stressLocale === 'en-US' ? 'USD' : 'EUR'}
             value={controlled}
-            onValueChange={(next, meta) => {
+            onChange={(next, meta) => {
               setControlled(next)
               setLastChange(meta)
             }}
@@ -329,7 +329,7 @@ function StressLab() {
             currency="USD"
             step={0.25}
             value={stepped}
-            onValueChange={setStepped}
+            onChange={setStepped}
           />
           <output data-testid="stress-step-value">{stepped ?? '∅'}</output>
         </div>
@@ -345,7 +345,7 @@ function StressLab() {
             step={0.25}
             allowNegative
             value={negativeStep}
-            onValueChange={setNegativeStep}
+            onChange={setNegativeStep}
           />
           <output data-testid="stress-negative-step-value">{negativeStep ?? '∅'}</output>
         </div>
@@ -359,7 +359,7 @@ function StressLab() {
             locale="en-US"
             currency="USD"
             value={transformed}
-            onValueChange={setTransformed}
+            onChange={setTransformed}
             transformRawValue={(raw) => raw.replaceAll('_', '')}
           />
           <output data-testid="stress-transform-value">{transformed ?? '∅'}</output>

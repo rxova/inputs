@@ -18,4 +18,9 @@ export const TRANSFORMS: CodemodEntry[] = [
     name: 'input-otp-to-otp',
     description: 'Migrate `input-otp` imports and usage to @rxova/react-otp-input.',
   },
+  {
+    name: 'currency-onvaluechange-to-onchange',
+    description:
+      'Migrate @rxova/react-intl-currency-input 0.1.x → 0.2.0: `onValueChange` → `onChange`, native `onChange` → `onNativeChange`.',
+  },
 ]

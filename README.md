@@ -95,7 +95,7 @@ function Checkout() {
 
   return (
     <>
-      <CurrencyInput locale="en-US" currency="USD" value={price} onValueChange={setPrice} />
+      <CurrencyInput locale="en-US" currency="USD" value={price} onChange={setPrice} />
       <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
       <OtpInput length={6} value={code} onChange={setCode} label="One-time code" />
     </>

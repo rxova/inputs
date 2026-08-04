@@ -39,7 +39,7 @@ body:
     attributes:
       label: How is it used?
       options:
-        - Controlled (value + onValueChange)
+        - Controlled (value + onChange)
         - Uncontrolled (defaultValue)
         - Inside a form library
         - The useCurrencyInput hook directly

@@ -10,6 +10,8 @@ const REQUIRED = [
   'package/dist/bin.cjs',
   'package/dist/transforms/input-otp-to-otp.cjs',
   'package/dist/transforms/input-otp-to-otp.d.cts',
+  'package/dist/transforms/currency-onvaluechange-to-onchange.cjs',
+  'package/dist/transforms/currency-onvaluechange-to-onchange.d.cts',
   'package/package.json',
   'package/README.md',
   'package/LICENSE',

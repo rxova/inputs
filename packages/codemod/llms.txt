@@ -36,6 +36,25 @@ Migrates [`input-otp`](https://github.com/guilhermerodz/input-otp) to
 
 `value`, `onChange`, `pattern` and other compatible props are left untouched.
 
+### `currency-onvaluechange-to-onchange`
+
+Migrates `@rxova/react-intl-currency-input` 0.1.x to 0.2.0, where the value
+handler took over the `onChange` name.
+
+| Before | After |
+| --- | --- |
+| `<CurrencyInput onValueChange={setPrice}>` | `<CurrencyInput onChange={setPrice}>` |
+| `<CurrencyInput onChange={handleEvent}>` | `<CurrencyInput onNativeChange={handleEvent}>` |
+| `useCurrencyInput({ onValueChange })` | `useCurrencyInput({ onChange })` |
+
+Both props are renamed in one simultaneous pass, so they never collide. Only
+files importing `CurrencyInput`/`useCurrencyInput` from
+`@rxova/react-intl-currency-input` or `@rxova/react-inputs` are touched —
+`onChange` on a plain `<input>` or `<select>` is left alone. Aliases are
+followed. The hook keeps any existing `onChange` key, since it has no native
+passthrough option. `<CurrencyInput {...props} />` gets a `TODO` banner instead
+of a guess.
+
 ## Programmatic use
 
 Each transform is exported for `jscodeshift -t` directly:
