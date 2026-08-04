@@ -6,6 +6,15 @@ overrides:
   # Scoped to the 5.x line, which is the only one the advisory affects and the
   # only one that resolves here (eslint's minimatch@10). Dev-only, never shipped.
   brace-expansion@5: '>=5.0.8'
+  # GHSA-7p8r-x3mc-p8w7: a backslash authority introducer lets a crafted URI
+  # parse to an unexpected host (host confusion). Reached only through ajv, via
+  # commitlint's config validator and the docs' YAML language server, so it is
+  # dev-only and never shipped. Scoped to 3.x — the only line that resolves
+  # here — so a future 4.x arrival is re-audited rather than silently allowed.
+  # The upper bound is load-bearing: the replacement side is a range, not just
+  # a floor, so a bare '>=3.1.5' resolves to the newest 4.x and silently pushes
+  # ajv across a major.
+  fast-uri@3: '>=3.1.5 <4'
 #
 # No `auditConfig.ignoreGhsas`. The single entry that lived here suppressed
 # GHSA-mh99-v99m-4gvg for one unfixable copy reached through
