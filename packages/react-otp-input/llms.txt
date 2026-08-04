@@ -1,0 +1,113 @@
+# @rxova/react-otp-input
+
+> A headless, accessible one-time-code input for React. One real `<input>` sits
+> under the slots, so paste, SMS autofill, IME, undo, native form submission and
+> screen-reader semantics all come from the platform rather than from JavaScript.
+> Zero runtime dependencies. No stylesheet to import.
+
+## Install
+
+    npm install @rxova/react-otp-input
+
+`react >= 18` is the only peer dependency.
+
+## Minimal working example
+
+```tsx
+import { useState } from 'react'
+import { OtpInput } from '@rxova/react-otp-input'
+
+export function Verify() {
+  const [code, setCode] = useState('')
+
+  return (
+    <OtpInput
+      length={6}
+      value={code}
+      onChange={setCode}
+      onComplete={(final) => verify(final)}
+      label="One-time code"
+    />
+  )
+}
+```
+
+`onChange` receives the sanitized **string**, not an event.
+
+## Props
+
+`<OtpInput>` — the full surface is `OtpInputProps` in the published types.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `length` | `number` | `6` | Number of slots. Positive integer. |
+| `value` | `string` | — | Controlled. Sanitized to allowed chars and clamped to `length`; never throws. |
+| `defaultValue` | `string` | — | Uncontrolled initial value. Ignored when `value` is set. |
+| `onChange` | `(value: string) => void` | — | Emits the sanitized string, not an event. |
+| `onComplete` | `(value: string) => void` | — | Fires once the value reaches `length`. |
+| `mode` | `'numeric' \| 'alphanumeric' \| 'alpha'` | `'numeric'` | Drives `inputMode`, `pattern`, `autoCapitalize`. |
+| `pattern` | `RegExp \| string` | — | Per-character allow test. Beats `mode`. |
+| `transform` | `(value: string) => string` | — | Normalizes each committed value, after `pattern`. |
+| `pasteTransform` | `(pasted: string) => string` | strips whitespace and `- . _` | Cleans pasted text before distributing. |
+| `autoComplete` | `string` | `'one-time-code'` | The attribute that unlocks iOS/Android SMS suggestions. |
+| `webOTP` | `boolean` | `false` | Opt into the WebOTP API (Android Chrome). Layered on top of `autoComplete`, never instead of it. |
+| `slotInteraction` | `'spatial' \| 'crush'` | `'spatial'` | `'spatial'` lets a tap land on any slot; auto-degrades to `'crush'` on iOS. |
+| `mask` | `boolean \| string` | — | Render a mask char instead of the value. `true` → `•`. |
+| `placeholder` | `string` | — | Per-slot placeholder shown while empty. |
+| `disabled` | `boolean` | `false` | |
+| `readOnly` | `boolean` | `false` | |
+| `autoFocus` | `boolean` | `false` | |
+| `blurOnComplete` | `boolean` | `false` | Dismisses the mobile keyboard once complete. |
+| `name` | `string` | — | Posts natively in a `<form>`; the name RHF/Formik bind to. |
+| `required` | `boolean` | `false` | |
+| `invalid` | `boolean` | `false` | Sets `aria-invalid` and `data-invalid`. |
+| `onBlur` | `(event: FocusEvent<HTMLInputElement>) => void` | — | Fires when focus leaves the whole control, never between slots. |
+| `label` | `string` | — | Accessible name for the field. |
+| `aria-label` | `string` | — | |
+| `aria-describedby` | `string` | — | id(s) of external error/help text. |
+| `id` | `string` | — | Base id; slots derive `${id}-slot-0`, … |
+| `inputRef` | `Ref<HTMLInputElement>` | — | Ref to the underlying `<input>`. |
+| `dir` | `'ltr' \| 'rtl'` | inherited | |
+| `nonce` | `string` | — | CSP nonce for any injected style. |
+| `className` | `string` | — | |
+| `style` | `CSSProperties` | — | |
+| `render` | `(ctx: OtpRenderContext) => ReactNode` | — | Escape hatch. Ignored when children are provided. |
+| `children` | `ReactNode` | — | Compose `OtpGroup` / `OtpSlot` / `OtpSeparator` yourself. |
+
+Also exported: `OtpGroup`, `OtpSlot`, `OtpSeparator`, and the hooks `useOtpInput`
+and `useWebOTP` for building your own markup.
+
+## Styling
+
+There is no stylesheet. Set CSS custom properties on any ancestor:
+
+`--otp-slot-size`, `--otp-gap`, `--otp-font`, `--otp-font-size`, `--otp-color`,
+`--otp-bg`, `--otp-border`, `--otp-radius`, `--otp-active-ring`,
+`--otp-caret-color`, `--otp-caret-width`, `--otp-placeholder-color`,
+`--otp-separator-color`, `--otp-transition`.
+
+Or target the `data-*` attributes, which are public API covered by semver:
+`data-otp-root`, `data-otp-input`, `data-otp-group`, `data-otp-slot`,
+`data-otp-separator`, `data-otp-caret`, plus the state hooks `data-state`,
+`data-filled`, `data-active`, `data-disabled`, `data-readonly`, `data-invalid`.
+
+## Three mistakes to avoid
+
+1. **Rendering one `<input>` per slot.** There is exactly one input; the slots are
+   painted on top of it. Per-slot inputs are what break paste, SMS autofill, IME
+   composition and password managers — this component exists to avoid that, so
+   wrapping it in that pattern defeats the whole point.
+2. **Importing a stylesheet.** There is none to import. Everything visual is a CSS
+   custom property or a `data-*` hook.
+3. **Treating `onComplete` as a submit.** It fires when the code is full; it never
+   calls `form.requestSubmit()` for you. Wire your verify/submit call there
+   yourself. And `onChange` gives you a string — not a change event.
+
+## Docs
+
+- Introduction: https://rxova.org/packages/react-inputs/components/otp/introduction/
+- Usage: https://rxova.org/packages/react-inputs/components/otp/usage/
+- Everything else (forms, theming, WebOTP, SSR): https://rxova.org/packages/react-inputs/components/otp/about/
+- Migrating from another OTP library: https://rxova.org/packages/react-inputs/components/otp/migrating/
+- Generated API reference: https://rxova.org/packages/react-inputs/components/otp/api/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt

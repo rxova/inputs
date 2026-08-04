@@ -1,0 +1,93 @@
+# @rxova/react-intl-currency-input
+
+> A headless, accessible currency input for React that is correct in every
+> language, because every locale fact — grouping, symbol placement, decimal rules,
+> digit system — comes from `Intl.NumberFormat` rather than from a regex. The
+> caret stays where you put it while the value reformats underneath. Zero runtime
+> dependencies. No stylesheet to import.
+
+## Install
+
+    npm install @rxova/react-intl-currency-input
+
+`react >= 18` and `react-dom >= 18` are the peer dependencies.
+
+## Minimal working example
+
+```tsx
+import { useState } from 'react'
+import { CurrencyInput } from '@rxova/react-intl-currency-input'
+
+export function PriceField() {
+  const [price, setPrice] = useState<number | null>(null)
+
+  return (
+    <CurrencyInput locale="de-DE" currency="EUR" value={price} onValueChange={setPrice} />
+  )
+}
+```
+
+`onValueChange` receives the parsed **number** (or `null` when empty), plus a
+`meta` object with the formatted and raw strings. `currency` is required.
+
+## Props
+
+`<CurrencyInput>` — `CurrencyInputProps` in the published types. It also accepts
+every native `<input>` attribute except `value`, `defaultValue`, `onChange` and
+`step`, which it defines itself.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `currency` | `string` | — | **Required.** ISO-4217 code, e.g. `'EUR'`, `'BGN'`, `'JPY'`. |
+| `locale` | `string` | runtime default | BCP-47, e.g. `'bg-BG'`. Takes precedence over `language`/`country`. |
+| `language` | `string` | — | Combined into `${language}-${country}` when `locale` is absent. |
+| `country` | `string` | — | Combined into `${language}-${country}` when `locale` is absent. |
+| `value` | `number \| null` | — | Controlled amount. `null`/`undefined` render an empty field, not `"0"`. |
+| `defaultValue` | `number \| null` | — | Uncontrolled initial amount. |
+| `onValueChange` | `(value: number \| null, meta: CurrencyInputChange) => void` | — | Fires on every accepted keystroke. |
+| `onChange` | `ChangeEventHandler<HTMLInputElement>` | — | Forwarded native handler; runs after the internal one. |
+| `formatMode` | `'live' \| 'blur'` | `'live'` | `'live'` formats as you type with a stable caret; `'blur'` shows a plain number while focused. |
+| `maximumFractionDigits` | `number` | the currency's own default | JPY → 0, EUR → 2, KWD → 3. |
+| `minimumFractionDigits` | `number` | `0` | Floor on fraction digits in the formatted value. |
+| `currencyDisplay` | `'symbol' \| 'narrowSymbol' \| 'code' \| 'name'` | `'symbol'` | Passed to `Intl.NumberFormat`. |
+| `numberingSystem` | `string` | locale default | e.g. `'latn'` to force ASCII digits. |
+| `allowNegative` | `boolean` | `false` | For refunds and adjustments. |
+| `step` | `number` | — | Amount added/subtracted by ArrowUp/ArrowDown. Omit to leave arrow keys untouched. |
+| `transformRawValue` | `(raw: string) => string` | — | Transform browser input before locale-aware sanitization. |
+| `invalid` | `boolean` | `false` | Sets `aria-invalid` and `data-invalid`. |
+| `className` | `string` | — | |
+| `style` | `CSSProperties` | — | |
+
+Also exported: the `useCurrencyInput` hook — returns `inputProps` to spread onto
+your own `<input>`, plus `ref`, `value`, `display`, `focused`, `setValue`,
+`format`, `parse`, `decimalSeparator`, `groupSeparator` and `currencySymbol` — and
+the `currencyForCountry` helper.
+
+## Styling
+
+This component renders a plain `<input>` and inherits whatever your input styles
+already are; there are no CSS custom properties to set and no stylesheet to
+import. `data-invalid` is public API, covered by semver.
+
+## Three mistakes to avoid
+
+1. **Reading the amount off `event.target.value`.** That string is localized —
+   `"1.234,56 €"` in de-DE — so parsing it yourself reintroduces exactly the bug
+   this component exists to remove. Use `onValueChange`, which hands you the
+   parsed number.
+2. **Sending `0` for an empty field.** Empty is `null`, deliberately: a price of
+   zero and no price entered are different facts, and collapsing them is how a
+   form ends up submitting a free order.
+3. **Forgetting the hook's `ref`.** If you use `useCurrencyInput` in the default
+   `'live'` mode, `ref` must reach the underlying `<input>` — it is how the caret
+   is held in place while the value reformats. Without it the caret jumps to the
+   end on every keystroke.
+
+## Docs
+
+- Introduction: https://rxova.org/packages/react-inputs/components/currency/introduction/
+- Usage: https://rxova.org/packages/react-inputs/components/currency/usage/
+- Everything else (forms, design systems, theming, SSR): https://rxova.org/packages/react-inputs/components/currency/about/
+- Migrating from another currency input: https://rxova.org/packages/react-inputs/components/currency/migrating/
+- Generated API reference: https://rxova.org/packages/react-inputs/components/currency/api/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt

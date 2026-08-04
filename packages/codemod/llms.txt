@@ -1,0 +1,62 @@
+# @rxova/codemod
+
+> jscodeshift codemods for migrating an existing codebase onto the Rxova input
+> suite. One CLI, one transform per migration. This is the executable path for a
+> migration — prefer it over rewriting call sites by hand.
+
+## Use
+
+    # list available transforms
+    npx @rxova/codemod --help
+
+    # preview without writing
+    npx @rxova/codemod input-otp-to-otp --dry ./src
+
+    # apply
+    npx @rxova/codemod input-otp-to-otp ./src
+
+Parses `.ts`, `.tsx`, `.js`, `.jsx`. Node `>= 20.19`.
+
+## Transforms
+
+### `input-otp-to-otp`
+
+Migrates [`input-otp`](https://github.com/guilhermerodz/input-otp) to
+`@rxova/react-otp-input`.
+
+| Before | After |
+| --- | --- |
+| `import { OTPInput } from 'input-otp'` | `import { OtpInput } from '@rxova/react-otp-input'` |
+| `OTPInputProps` | `OtpInputProps` |
+| `SlotProps` | `OtpSlotState` |
+| `<OTPInput maxLength={6}>` | `<OtpInput length={6}>` |
+| `containerClassName` | `className` |
+| `slot.placeholderChar` | `slot.placeholder` |
+| `pushPasswordManagerStrategy`, `textAlign`, `noScriptCSSFallback` | removed — there is no width hack to configure |
+
+`value`, `onChange`, `pattern` and other compatible props are left untouched.
+
+## Programmatic use
+
+Each transform is exported for `jscodeshift -t` directly:
+
+    npx jscodeshift -t node_modules/@rxova/codemod/dist/transforms/input-otp-to-otp.cjs --parser tsx ./src
+
+## Three mistakes to avoid
+
+1. **Assuming the run is complete.** Imports without a direct equivalent (e.g.
+   `REGEXP_ONLY_DIGITS`) are deliberately left importing from `input-otp` with a
+   `TODO` comment, so the file still resolves. Grep for those afterwards — a green
+   build does not mean the migration finished.
+2. **Expecting the `render` prop to be converted.** It is preserved, not
+   rewritten: the per-slot shape is compatible, so it keeps working. Turning it
+   into the compound `<OtpGroup>` / `<OtpSlot>` API cannot be done reliably by an
+   AST transform and stays a manual step.
+3. **Skipping `--dry` and the formatter.** Always review the diff first, and
+   re-run your formatter after — jscodeshift reprints the nodes it touches.
+
+## Docs
+
+- Migration guides: https://rxova.org/packages/react-inputs/components/otp/migrating/
+- The suite: https://rxova.org/packages/react-inputs/overview/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt
