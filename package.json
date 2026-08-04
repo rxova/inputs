@@ -30,6 +30,7 @@
     "release": "turbo run build && changeset publish",
     "prepare": "husky",
     "check:docs": "node --import tsx ./packages/utils/check-doc-snippets.ts",
+    "check:llms": "node --import tsx ./packages/utils/check-llms.ts",
     "check:browsers": "node --import tsx ./packages/utils/check-browsers.ts",
     "verify": "node --import tsx ./packages/utils/verify.ts"
   },

@@ -61,6 +61,13 @@ const publishedPackageDirs = ((): readonly string[] => {
  * branch could only ever match the bare directory string — never a path
  * beneath it — so those prefixes were dead and files were only skipped when
  * they happened to carry one of the listed extensions.
+ *
+ * Known and accepted: the `.txt` and `.json` extensions mean an edit to a
+ * package's `llms.txt`, or to the `files` array that publishes it, skips the
+ * gate — even though both change what the tarball contains. `README.md` has had
+ * exactly this property since the beginning. Narrowing the pattern to close it
+ * would start failing README-only PRs, which is the worse trade; the
+ * `llms.txt` line in the PR template is the reminder instead.
  */
 const allowedPattern =
   /^((apps|\.github|\.changeset|\.husky|packages\/utils|packages\/demo-kit)\/.*|.*\.(md|txt|yml|yaml|json))$/

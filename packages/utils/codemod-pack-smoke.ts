@@ -13,6 +13,9 @@ const REQUIRED = [
   'package/package.json',
   'package/README.md',
   'package/LICENSE',
+  // See the note on the same entry in pack-smoke.ts: npm does not include this
+  // automatically, so it ships only because the manifest lists it in `files`.
+  'package/llms.txt',
 ]
 const FORBIDDEN = [/^package\/src\//, /\.test\./, /^package\/e2e\//]
 const workdir = mkdtempSync(join(tmpdir(), 'rxova-codemod-pack-'))
