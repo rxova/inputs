@@ -5,6 +5,7 @@ The component workshop: Storybook stories for every rxova input.
 ```sh
 pnpm storybook        # dev server on :6006
 pnpm storybook:build  # static build into apps/storybook/dist
+pnpm --filter @rxova/storybook test   # the docgen check below
 ```
 
 ## How it's wired
@@ -15,6 +16,12 @@ pnpm storybook:build  # static build into apps/storybook/dist
 - **Docgen from source.** `react-docgen-typescript` reads the annotated `*Props`
   interfaces, so the autodocs prop tables carry every prop's JSDoc, type and default.
   Adding/documenting a prop in a package updates its table here with no extra work.
+  Because the components live outside this app, the extractor needs telling twice: an
+  absolute `include` glob in `.storybook/main.ts` (its default is relative to wherever
+  `storybook` was invoked) _and_ `tsconfig.docgen.json`, the project it compiles — this
+  app's own `tsconfig.json` covers only `.storybook` and `stories`. Miss either and the
+  pages still render, minus every description and default. `tests/docgen.test.ts` asserts
+  on the extractor's output so that failure cannot be silent again.
 - **Consumer-side styling only.** The components are headless; `.storybook/preview.css`
   plays the role of a host app's stylesheet using the same tokens as demo-kit, minus the
   demo pages' chrome.

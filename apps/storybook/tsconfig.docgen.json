@@ -1,0 +1,18 @@
+// The TypeScript project the docs prop-table extractor compiles, and nothing
+// else — it is never type-checked (`pnpm typecheck` runs tsconfig.json).
+//
+// react-docgen-typescript needs a program that *contains* the component
+// sources. The app's own tsconfig.json covers only .storybook and stories, so
+// the extractor seeded its program with zero component files and every prop
+// table came out empty. This one names the sources the stories import through
+// the `@rxova/<name>` alias in vite.config.ts.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"]
+  },
+  // Only the authored component sources. Tests and demos would be extracted as
+  // components too, and their own props would land in the tables.
+  "include": ["../../packages/*/src/**/*.ts", "../../packages/*/src/**/*.tsx"],
+  "exclude": ["../../packages/*/src/**/__tests__/**", "../../packages/*/src/**/*.test.*"]
+}
