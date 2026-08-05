@@ -1,5 +1,12 @@
 # @rxova/react-inputs
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [[`e7f4f90`](https://github.com/rxova/react-inputs/commit/e7f4f90477bfb27310102d2c9ab3d92c34a7c4b4)]:
+  - @rxova/react-intl-currency-input@0.2.0
+
 ## 0.1.4
 
 ### Patch Changes
