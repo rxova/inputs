@@ -4,6 +4,32 @@ sidebar:
   order: 4
 ---
 
+## Migrating to 1.0
+
+1.0 renames the two change handlers, so this component reads like the rest of the suite:
+
+| Before               | After            | Carries                            |
+| -------------------- | ---------------- | ---------------------------------- |
+| `onChange={fn}`      | `onNativeChange` | The raw DOM event                  |
+| `onChange` (value)   | —                | Never existed here before 1.0      |
+| `onValueChange={fn}` | `onChange`       | The parsed `number \| null` + meta |
+
+```bash
+npx @rxova/codemod currency-on-change ./src
+```
+
+Do run the codemod rather than a find-and-replace. The two renames have to happen in one pass: doing
+`onValueChange` → `onChange` first and `onChange` → `onNativeChange` second walks the value handler
+through both steps and silently lands it on the native prop.
+
+`onValueChange` still works and still fires — it warns once in development and is scheduled for
+removal in a later major — so a codebase can migrate one call site at a time.
+
+Why: every other input in the suite emits a plain value from `onChange`, and this package's own
+README has said so since before this component existed. It was the only one where `onChange` meant
+the DOM event and the value arrived under a different name, which is the sort of inconsistency that
+costs a reader more than it ever cost us to keep.
+
 ## Migrating from react-currency-input-field
 
 The two libraries solve the same problem differently. `react-currency-input-field` derives a
@@ -18,18 +44,18 @@ upgrading either package.
 
 ### Prop mapping
 
-| `react-currency-input-field`          | `@rxova/react-intl-currency-input`                           |
-| ------------------------------------- | ------------------------------------------------------------ |
-| `intlConfig={{ locale, currency }}`   | `locale` + `currency` (top-level props)                      |
-| `groupSeparator` / `decimalSeparator` | _(derived from the locale — remove them)_                    |
-| `prefix` / `suffix`                   | _(derived from the currency — remove them)_                  |
-| `decimalScale`                        | `maximumFractionDigits`                                      |
-| `fixedDecimalLength`                  | `minimumFractionDigits` + `maximumFractionDigits`            |
-| `allowNegativeValue`                  | `allowNegative`                                              |
-| `step`                                | `step`                                                       |
-| `transformRawValue`                   | `transformRawValue`                                          |
-| `value` (string)                      | `value` (`number \| null`)                                   |
-| `onValueChange(value, name, values)`  | `onValueChange(value, meta)` — `value` is a `number \| null` |
+| `react-currency-input-field`          | `@rxova/react-intl-currency-input`                      |
+| ------------------------------------- | ------------------------------------------------------- |
+| `intlConfig={{ locale, currency }}`   | `locale` + `currency` (top-level props)                 |
+| `groupSeparator` / `decimalSeparator` | _(derived from the locale — remove them)_               |
+| `prefix` / `suffix`                   | _(derived from the currency — remove them)_             |
+| `decimalScale`                        | `maximumFractionDigits`                                 |
+| `fixedDecimalLength`                  | `minimumFractionDigits` + `maximumFractionDigits`       |
+| `allowNegativeValue`                  | `allowNegative`                                         |
+| `step`                                | `step`                                                  |
+| `transformRawValue`                   | `transformRawValue`                                     |
+| `value` (string)                      | `value` (`number \| null`)                              |
+| `onChange(value, name, values)`       | `onChange(value, meta)` — `value` is a `number \| null` |
 
 ### Before
 
@@ -47,7 +73,7 @@ function BeforeMigration() {
       decimalSeparator=","
       decimalScale={2}
       value={value}
-      onValueChange={setValue}
+      onChange={setValue}
     />
   )
 }
@@ -62,7 +88,7 @@ import { CurrencyInput } from '@rxova/react-intl-currency-input'
 function AfterMigration() {
   const [value, setValue] = useState<number | null>(null)
 
-  return <CurrencyInput locale="bg-BG" currency="EUR" value={value} onValueChange={setValue} />
+  return <CurrencyInput locale="bg-BG" currency="EUR" value={value} onChange={setValue} />
 }
 ```
 
@@ -84,7 +110,7 @@ function AfterMigration() {
 
 ### What to double-check
 
-- Your `onValueChange` handler now receives a `number | null`, not a string. Update anything that
+- Your `onChange` handler now receives a `number | null`, not a string. Update anything that
   did string work on it.
 - If you relied on a custom separator that did not match the locale, switch to the correct `locale`
   instead.

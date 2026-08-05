@@ -20,7 +20,7 @@ function Demo() {
         locale="bg-BG"
         currency="EUR"
         value={value}
-        onValueChange={setValue}
+        onChange={setValue}
         aria-label="Amount"
       />
       <p>Numeric value: {value === null ? 'empty' : value}</p>
@@ -100,7 +100,7 @@ function Demo() {
           locale="de-DE"
           currency="EUR"
           value={live}
-          onValueChange={setLive}
+          onChange={setLive}
           aria-label="live"
         />
       </p>
@@ -111,7 +111,7 @@ function Demo() {
           currency="EUR"
           formatMode="blur"
           value={blur}
-          onValueChange={setBlur}
+          onChange={setBlur}
           aria-label="blur"
         />
       </p>
@@ -138,7 +138,7 @@ function Demo() {
           locale="en-US"
           currency="USD"
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
           aria-label="a"
         />
       </p>
@@ -149,7 +149,7 @@ function Demo() {
           currency="USD"
           minimumFractionDigits={2}
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
           aria-label="b"
         />
       </p>
@@ -215,20 +215,20 @@ not for recreating locale rules:
 ### Empty vs. zero
 
 `value` is `number | null`. `null` (or `undefined`) renders an **empty** field, never `"0"`.
-`onValueChange` emits `null` when the user clears the field, so you can tell "nothing entered" from
+`onChange` emits `null` when the user clears the field, so you can tell "nothing entered" from
 "entered zero".
 
 ### A note on precision
 
 The emitted value is a JavaScript `number`, which is what form libraries and validation schemas
 expect. For everyday amounts this is exact. If you need lossless decimals for very large sums, keep
-the `raw` string handed to `onValueChange`:
+the `raw` string handed to `onChange`:
 
 ```tsx
 <CurrencyInput
   locale="en-US"
   currency="USD"
-  onValueChange={(value, meta) => {
+  onChange={(value, meta) => {
     // meta.value    -> number | null
     // meta.formatted -> the localized string
     // meta.raw       -> the clean editable string

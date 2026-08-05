@@ -13,7 +13,7 @@ import type { CurrencyInputProps } from '../types'
  */
 
 function Controlled(
-  props: Omit<CurrencyInputProps, 'value' | 'onValueChange'> & { initial?: number | null },
+  props: Omit<CurrencyInputProps, 'value' | 'onChange'> & { initial?: number | null },
 ) {
   const { initial = null, ...rest } = props
   const [value, setValue] = useState<number | null>(initial)
@@ -23,7 +23,7 @@ function Controlled(
         formatMode="blur"
         {...rest}
         value={value}
-        onValueChange={setValue}
+        onChange={setValue}
         aria-label="amount"
       />
       <button type="button">blur target</button>
@@ -61,20 +61,20 @@ describe('typing', () => {
   })
 
   it('emits the parsed number on each keystroke', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
         defaultValue={null}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.type(page.getByRole('textbox', { name: 'amount' }), '50000')
-    expect(onValueChange).toHaveBeenLastCalledWith(50000, expect.objectContaining({ value: 50000 }))
+    expect(onChange).toHaveBeenLastCalledWith(50000, expect.objectContaining({ value: 50000 }))
   })
 
   it('formats a freshly typed value on blur', async () => {
@@ -86,20 +86,20 @@ describe('typing', () => {
   })
 
   it('rejects letters, keeping only the numeric input', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.type(page.getByRole('textbox', { name: 'amount' }), '12abc34')
     await expect.poll(() => inputEl().value).toBe('1234')
-    expect(onValueChange).toHaveBeenLastCalledWith(1234, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(1234, expect.anything())
   })
 
   it('drops the decimal for a zero-fraction currency (JPY)', async () => {
@@ -113,19 +113,19 @@ describe('typing', () => {
   })
 
   it('uses the locale decimal separator (de-DE)', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="de-DE"
         currency="EUR"
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.type(page.getByRole('textbox', { name: 'amount' }), '1234,56')
-    expect(onValueChange).toHaveBeenLastCalledWith(1234.56, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(1234.56, expect.anything())
   })
 
   it('preserves a trailing locale decimal when a controlled parent echoes the value', async () => {
@@ -146,7 +146,7 @@ describe('typing', () => {
             locale="en-US"
             currency="USD"
             value={value}
-            onValueChange={setValue}
+            onChange={setValue}
             aria-label="amount"
           />
           <button
@@ -186,7 +186,7 @@ describe('typing', () => {
 
 describe('arrow stepping', () => {
   it('increments and decrements using the configured step', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
@@ -194,7 +194,7 @@ describe('arrow stepping', () => {
         currency="USD"
         defaultValue={1.2}
         step={0.1}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
@@ -202,49 +202,49 @@ describe('arrow stepping', () => {
     await userEvent.click(box)
     await userEvent.keyboard('{ArrowUp}')
     await expect.poll(() => inputEl().value).toBe('1.3')
-    expect(onValueChange).toHaveBeenLastCalledWith(1.3, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(1.3, expect.anything())
     await userEvent.keyboard('{ArrowDown}')
     await expect.poll(() => inputEl().value).toBe('1.2')
   })
 
   it('leaves arrow keys alone when no step is configured', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
         defaultValue={1}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.keyboard('{ArrowUp}')
-    expect(onValueChange).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
   })
 
   it('steps upward from an empty field and ignores modified arrows', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
         step={0.25}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.keyboard('{Control>}{ArrowUp}{/Control}')
-    expect(onValueChange).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
     await userEvent.keyboard('{ArrowUp}')
-    expect(onValueChange).toHaveBeenLastCalledWith(0.25, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(0.25, expect.anything())
   })
 
   it('clamps ArrowDown at zero when negative values are disabled', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
@@ -252,18 +252,18 @@ describe('arrow stepping', () => {
         currency="USD"
         defaultValue={0}
         step={0.25}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.keyboard('{ArrowDown}')
     await expect.poll(() => inputEl().value).toBe('0')
-    expect(onValueChange).toHaveBeenLastCalledWith(0, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(0, expect.anything())
   })
 
   it('steps below zero when negative values are enabled', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
@@ -272,43 +272,43 @@ describe('arrow stepping', () => {
         defaultValue={0}
         step={0.25}
         allowNegative
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.keyboard('{ArrowDown}')
     await expect.poll(() => inputEl().value).toBe('-0.25')
-    expect(onValueChange).toHaveBeenLastCalledWith(-0.25, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(-0.25, expect.anything())
   })
 
   it('ignores a non-positive step', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
         step={0}
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.keyboard('{ArrowUp}')
-    expect(onValueChange).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
   })
 })
 
 describe('paste', () => {
   it('parses a fully formatted amount pasted in', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="fr-FR"
         currency="EUR"
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
@@ -322,7 +322,7 @@ describe('paste', () => {
       minimumFractionDigits: 0,
     }).format(1234567.89)
     await userEvent.fill(box, formatted)
-    expect(onValueChange).toHaveBeenLastCalledWith(1234567.89, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(1234567.89, expect.anything())
   })
 })
 
@@ -353,20 +353,20 @@ describe('negatives', () => {
   })
 
   it('keeps the minus sign when allowNegative is set', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
       <CurrencyInput
         formatMode="blur"
         locale="en-US"
         currency="USD"
         allowNegative
-        onValueChange={onValueChange}
+        onChange={onChange}
         aria-label="amount"
       />,
     )
     await userEvent.click(page.getByRole('textbox', { name: 'amount' }))
     await userEvent.type(page.getByRole('textbox', { name: 'amount' }), '-5')
-    expect(onValueChange).toHaveBeenLastCalledWith(-5, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(-5, expect.anything())
   })
 })
 
@@ -402,3 +402,48 @@ describe('accessibility hooks', () => {
     await expect.poll(() => node?.tagName).toBe('INPUT')
   })
 })
+
+/* eslint-disable @typescript-eslint/no-deprecated -- the deprecated prop is the subject here. */
+describe('the 1.0 onChange rename', () => {
+  it('still fires the deprecated onValueChange, so a migration can be gradual', async () => {
+    // Kept working rather than removed: this package was the one input in the
+    // suite where `onChange` meant the DOM event, and breaking every call site
+    // at once to fix that would cost more than the inconsistency did.
+    const onValueChange = vi.fn()
+    const { container } = await render(
+      <CurrencyInput locale="en-US" currency="USD" onValueChange={onValueChange} />,
+    )
+    await userEvent.fill(container.querySelector('input')!, '12')
+
+    expect(onValueChange).toHaveBeenCalledWith(12, expect.objectContaining({ value: 12 }))
+  })
+
+  it('fires both when both are given, one call site at a time', async () => {
+    const onChange = vi.fn()
+    const onValueChange = vi.fn()
+    const { container } = await render(
+      <CurrencyInput
+        locale="en-US"
+        currency="USD"
+        onChange={onChange}
+        onValueChange={onValueChange}
+      />,
+    )
+    await userEvent.fill(container.querySelector('input')!, '5')
+
+    expect(onChange).toHaveBeenCalledWith(5, expect.objectContaining({ value: 5 }))
+    expect(onValueChange).toHaveBeenCalledWith(5, expect.objectContaining({ value: 5 }))
+  })
+
+  it('hands the raw DOM event to onNativeChange, which is where it moved', async () => {
+    const onNativeChange = vi.fn()
+    const { container } = await render(
+      <CurrencyInput locale="en-US" currency="USD" onNativeChange={onNativeChange} />,
+    )
+    await userEvent.fill(container.querySelector('input')!, '7')
+
+    expect(onNativeChange).toHaveBeenCalled()
+    expect(onNativeChange.mock.calls[0]?.[0]).toHaveProperty('target')
+  })
+})
+/* eslint-enable @typescript-eslint/no-deprecated */

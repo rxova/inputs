@@ -59,8 +59,8 @@ export const Playground: Story = {
     return (
       <CurrencyInput
         {...args}
-        onValueChange={(value, change) => {
-          args.onValueChange?.(value, change)
+        onChange={(value, change) => {
+          args.onChange?.(value, change)
           updateArgs({ value })
         }}
       />
@@ -152,7 +152,7 @@ export const HeadlessHook: Story = {
       locale: 'de-DE',
       currency: 'EUR',
       value,
-      onValueChange: setValue,
+      onChange: setValue,
     })
     return (
       <div className="story">

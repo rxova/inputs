@@ -84,13 +84,7 @@ import { CurrencyInput } from '@rxova/react-inputs'
 export function Price({ value, onChange }) {
   // `name` is all it takes to post with the form.
   return (
-    <CurrencyInput
-      name="price"
-      locale="de-DE"
-      currency="EUR"
-      value={value}
-      onValueChange={onChange}
-    />
+    <CurrencyInput name="price" locale="de-DE" currency="EUR" value={value} onChange={onChange} />
   )
 }
 ```

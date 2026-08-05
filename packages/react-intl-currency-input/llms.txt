@@ -22,12 +22,12 @@ export function PriceField() {
   const [price, setPrice] = useState<number | null>(null)
 
   return (
-    <CurrencyInput locale="de-DE" currency="EUR" value={price} onValueChange={setPrice} />
+    <CurrencyInput locale="de-DE" currency="EUR" value={price} onChange={setPrice} />
   )
 }
 ```
 
-`onValueChange` receives the parsed **number** (or `null` when empty), plus a
+`onChange` receives the parsed **number** (or `null` when empty), plus a
 `meta` object with the formatted and raw strings. `currency` is required.
 
 ## Props
@@ -44,8 +44,8 @@ every native `<input>` attribute except `value`, `defaultValue`, `onChange` and
 | `country` | `string` | — | Combined into `${language}-${country}` when `locale` is absent. |
 | `value` | `number \| null` | — | Controlled amount. `null`/`undefined` render an empty field, not `"0"`. |
 | `defaultValue` | `number \| null` | — | Uncontrolled initial amount. |
-| `onValueChange` | `(value: number \| null, meta: CurrencyInputChange) => void` | — | Fires on every accepted keystroke. |
-| `onChange` | `ChangeEventHandler<HTMLInputElement>` | — | Forwarded native handler; runs after the internal one. |
+| `onChange` | `(value: number \| null, meta: CurrencyInputChange) => void` | — | Fires on every accepted keystroke. |
+| `onNativeChange` | `ChangeEventHandler<HTMLInputElement>` | — | Forwarded raw DOM event; runs after the internal handler. Rarely needed. |
 | `formatMode` | `'live' \| 'blur'` | `'live'` | `'live'` formats as you type with a stable caret; `'blur'` shows a plain number while focused. |
 | `maximumFractionDigits` | `number` | the currency's own default | JPY → 0, EUR → 2, KWD → 3. |
 | `minimumFractionDigits` | `number` | `0` | Floor on fraction digits in the formatted value. |
@@ -73,7 +73,7 @@ import. `data-invalid` is public API, covered by semver.
 
 1. **Reading the amount off `event.target.value`.** That string is localized —
    `"1.234,56 €"` in de-DE — so parsing it yourself reintroduces exactly the bug
-   this component exists to remove. Use `onValueChange`, which hands you the
+   this component exists to remove. Use `onChange`, which hands you the
    parsed number.
 2. **Sending `0` for an empty field.** Empty is `null`, deliberately: a price of
    zero and no price entered are different facts, and collapsing them is how a

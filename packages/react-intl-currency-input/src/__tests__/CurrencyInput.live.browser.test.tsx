@@ -13,11 +13,11 @@ import type { CurrencyInputProps } from '../types'
  */
 
 function Controlled(
-  props: Omit<CurrencyInputProps, 'value' | 'onValueChange'> & { initial?: number | null },
+  props: Omit<CurrencyInputProps, 'value' | 'onChange'> & { initial?: number | null },
 ) {
   const { initial = null, ...rest } = props
   const [value, setValue] = useState<number | null>(initial)
-  return <CurrencyInput {...rest} value={value} onValueChange={setValue} aria-label="amount" />
+  return <CurrencyInput {...rest} value={value} onChange={setValue} aria-label="amount" />
 }
 
 const box = () => page.getByRole('textbox', { name: 'amount' })
@@ -56,34 +56,24 @@ describe('formats as you type', () => {
   })
 
   it('keeps a trailing decimal while typing', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
-      <CurrencyInput
-        locale="en-US"
-        currency="USD"
-        onValueChange={onValueChange}
-        aria-label="amount"
-      />,
+      <CurrencyInput locale="en-US" currency="USD" onChange={onChange} aria-label="amount" />,
     )
     await userEvent.click(box())
     await userEvent.type(box(), '12.')
     await expect.poll(() => inputEl().value).toBe('$12.')
-    expect(onValueChange).toHaveBeenLastCalledWith(12, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(12, expect.anything())
   })
 
   it('emits the parsed number on each keystroke', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
-      <CurrencyInput
-        locale="en-US"
-        currency="USD"
-        onValueChange={onValueChange}
-        aria-label="amount"
-      />,
+      <CurrencyInput locale="en-US" currency="USD" onChange={onChange} aria-label="amount" />,
     )
     await userEvent.click(box())
     await userEvent.type(box(), '50000')
-    expect(onValueChange).toHaveBeenLastCalledWith(50000, expect.objectContaining({ value: 50000 }))
+    expect(onChange).toHaveBeenLastCalledWith(50000, expect.objectContaining({ value: 50000 }))
   })
 
   it('drops the decimal key for a zero-fraction currency (JPY)', async () => {
@@ -198,7 +188,7 @@ describe('caret preservation', () => {
   })
 
   it('keystrokes survive a controlled host that echoes the value asynchronously', async () => {
-    // A host that round-trips onValueChange through a later task (async store,
+    // A host that round-trips onChange through a later task (async store,
     // Storybook args) leaves the value prop one keystroke behind. The stale
     // echo used to rewrite the field mid-typing — dropping digits and throwing
     // the caret to the end.
@@ -209,7 +199,7 @@ describe('caret preservation', () => {
           locale="en-US"
           currency="USD"
           value={value}
-          onValueChange={(next) => {
+          onChange={(next) => {
             setTimeout(() => {
               setValue(next)
             }, 40)
@@ -243,7 +233,7 @@ describe('caret preservation', () => {
           locale="en-US"
           currency="USD"
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
           onFocus={() => {
             // An external set landing mid-edit (server push, another widget)
             // must reformat the field rather than being ignored.
@@ -285,7 +275,7 @@ describe('ref forwarding', () => {
             locale="en-US"
             currency="USD"
             value={value}
-            onValueChange={setValue}
+            onChange={setValue}
             aria-label="amount"
           />
           <button type="button" onClick={() => (ref.current!.value = ref.current?.value ?? '')}>
@@ -303,14 +293,9 @@ describe('ref forwarding', () => {
 
 describe('paste', () => {
   it('reformats a fully formatted amount pasted in', async () => {
-    const onValueChange = vi.fn()
+    const onChange = vi.fn()
     await render(
-      <CurrencyInput
-        locale="fr-FR"
-        currency="EUR"
-        onValueChange={onValueChange}
-        aria-label="amount"
-      />,
+      <CurrencyInput locale="fr-FR" currency="EUR" onChange={onChange} aria-label="amount" />,
     )
     await userEvent.click(box())
     const formatted = new Intl.NumberFormat('fr-FR', {
@@ -319,7 +304,7 @@ describe('paste', () => {
       minimumFractionDigits: 0,
     }).format(1234567.89)
     await userEvent.fill(box(), formatted)
-    expect(onValueChange).toHaveBeenLastCalledWith(1234567.89, expect.anything())
+    expect(onChange).toHaveBeenLastCalledWith(1234567.89, expect.anything())
     await expect.poll(() => inputEl().value).toMatch(/1.234.567,89/)
   })
 })
