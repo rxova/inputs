@@ -11,9 +11,8 @@ for a DOM event most consumers never touched. That is now inverted: `onChange` g
 
 No deprecation window — pre-1.0, the old name is removed outright rather than carried along.
 TypeScript catches both halves: `onValueChange` no longer exists, and a `ChangeEventHandler` no
-longer fits `onChange`. Plain-JS consumers should run the codemod:
+longer fits `onChange`. Plain-JS consumers should search their source for `onValueChange`.
 
-    npx @rxova/codemod currency-onvaluechange-to-onchange ./src
-
-It rewrites both props in one pass, on `<CurrencyInput>` elements and `useCurrencyInput` options,
-imported from either `@rxova/react-intl-currency-input` or `@rxova/react-inputs`.
+Rename both props in one pass, on `<CurrencyInput>` elements and `useCurrencyInput` options,
+imported from either `@rxova/react-intl-currency-input` or `@rxova/react-inputs` — renaming them
+sequentially would collapse `onValueChange` onto `onNativeChange` and lose the value handler.

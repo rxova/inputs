@@ -14,22 +14,19 @@ other input in the suite:
 | `onValueChange(value, meta)` | `onChange(value, meta)` |
 | `onChange(event)` (DOM)      | `onNativeChange(event)` |
 
-```bash
-npx @rxova/codemod currency-onvaluechange-to-onchange ./src
-```
-
-The codemod renames both at once, on `<CurrencyInput>` elements and on `useCurrencyInput` options,
-imported from either `@rxova/react-intl-currency-input` or `@rxova/react-inputs`.
+Rename both at once, on `<CurrencyInput>` elements and on `useCurrencyInput` options, imported from
+either `@rxova/react-intl-currency-input` or `@rxova/react-inputs`. Renaming them one after the
+other would walk `onValueChange` → `onChange` → `onNativeChange` and lose the value handler.
 
 :::caution[This is a clean break — there is no deprecation window]
 `onValueChange` is gone, not deprecated. We are pre-1.0, so the old name is removed outright rather
 than carried along. TypeScript catches both halves: `onValueChange` no longer exists, and a
-`ChangeEventHandler` no longer fits `onChange`. If you write plain JavaScript, run the codemod —
-nothing else will tell you.
+`ChangeEventHandler` no longer fits `onChange`. If you write plain JavaScript, search your source
+for `onValueChange` — nothing else will tell you.
 :::
 
-If you never touched the DOM event — most consumers didn't — the codemod's only edit is
-`onValueChange` → `onChange`, and nothing about your behavior changes.
+If you never touched the DOM event — most consumers didn't — the only edit is `onValueChange` →
+`onChange`, and nothing about your behavior changes.
 
 ## Migrating from react-currency-input-field
 

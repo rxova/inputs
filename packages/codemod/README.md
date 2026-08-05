@@ -61,30 +61,6 @@ Migrates [`input-otp`](https://github.com/guilhermerodz/input-otp) usage to
   transform, so it stays a manual step — the codemod adds a one-line banner pointing at the
   [migration guide](https://rxova.org/packages/react-inputs/components/otp/migrating/).
 
-### `currency-onvaluechange-to-onchange`
-
-Migrates [`@rxova/react-intl-currency-input`](https://www.npmjs.com/package/@rxova/react-intl-currency-input)
-0.1.x to 0.2.0, where the value handler took over the `onChange` name.
-
-| Before (0.1.x)                             | After (0.2.0)                                  |
-| ------------------------------------------ | ---------------------------------------------- |
-| `<CurrencyInput onValueChange={setPrice}>` | `<CurrencyInput onChange={setPrice}>`          |
-| `<CurrencyInput onChange={handleEvent}>`   | `<CurrencyInput onNativeChange={handleEvent}>` |
-| `useCurrencyInput({ onValueChange })`      | `useCurrencyInput({ onChange })`               |
-
-- **Both props are renamed simultaneously**, computed from the original attribute list before
-  anything is assigned. A sequential rename would walk `onValueChange` → `onChange` →
-  `onNativeChange` and lose the value handler.
-- **Scoped to real imports.** Only files importing `CurrencyInput` / `useCurrencyInput` from
-  `@rxova/react-intl-currency-input` or the `@rxova/react-inputs` meta-package are touched, so an
-  `onChange` on a plain `<input>` or `<select>` in the same file is left alone. Aliases are followed.
-- **The hook keeps any existing `onChange`.** It has no native passthrough option, so that key is
-  already the value handler.
-- **Spread props are flagged, not guessed.** `<CurrencyInput {...props} />` gets a `TODO` banner
-  pointing at the [migration guide](https://rxova.org/packages/react-inputs/components/currency/migrating/),
-  because an AST transform can't know what the spread carries. Handlers held in a variable or an
-  object outside a JSX attribute or the hook's inline options are likewise left for you.
-
 Always review the diff (`--dry` first) and re-run your formatter afterwards.
 
 ## Programmatic use
