@@ -17,7 +17,7 @@ const meta = {
     disabled: false,
     placeholder: 'Amount',
     'aria-label': 'Amount',
-    onValueChange: fn(),
+    onChange: fn(),
   },
   argTypes: {
     currency: { control: 'select', options: ['EUR', 'USD', 'BGN', 'JPY', 'KWD', 'CHF'] },
@@ -35,6 +35,7 @@ const meta = {
     // Functions have no useful control representation.
     transformRawValue: { control: false },
     onChange: { control: false },
+    onNativeChange: { control: false },
     style: { control: false },
   },
   decorators: [
@@ -59,8 +60,8 @@ export const Playground: Story = {
     return (
       <CurrencyInput
         {...args}
-        onValueChange={(value, change) => {
-          args.onValueChange?.(value, change)
+        onChange={(value, change) => {
+          args.onChange?.(value, change)
           updateArgs({ value })
         }}
       />
@@ -152,7 +153,7 @@ export const HeadlessHook: Story = {
       locale: 'de-DE',
       currency: 'EUR',
       value,
-      onValueChange: setValue,
+      onChange: setValue,
     })
     return (
       <div className="story">

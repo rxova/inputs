@@ -33,7 +33,7 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
     currency,
     value: controlledValue,
     defaultValue = null,
-    onValueChange,
+    onChange,
     maximumFractionDigits,
     minimumFractionDigits,
     currencyDisplay,
@@ -106,13 +106,13 @@ export function useCurrencyInput(options: UseCurrencyInputOptions): UseCurrencyI
 
   const emit = useCallback(
     (next: number | null, raw: string) => {
-      onValueChange?.(next, {
+      onChange?.(next, {
         value: next,
         formatted: formatter.format(next),
         raw,
       })
     },
-    [formatter, onValueChange],
+    [formatter, onChange],
   )
 
   // ---- Caret math (live mode) ----------------------------------------------

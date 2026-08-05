@@ -24,7 +24,7 @@ export type CurrencyDisplay = 'symbol' | 'narrowSymbol' | 'code' | 'name'
 
 /**
  * The parsed value plus the two strings that produced it, handed to
- * `onValueChange` so a consumer never has to re-derive them.
+ * `onChange` so a consumer never has to re-derive them.
  */
 export interface CurrencyInputChange {
   /** The parsed number, or `null` when the field is empty. */
@@ -34,6 +34,9 @@ export interface CurrencyInputChange {
   /** The clean, separator-free editable string shown while focused. */
   raw: string
 }
+
+/** Handler for the parsed value. Shared by the hook option and the component prop. */
+export type CurrencyValueChangeHandler = (value: number | null, meta: CurrencyInputChange) => void
 
 /** Configuration shared by the hook and the component. */
 export interface CurrencyInputBaseOptions {
@@ -83,7 +86,7 @@ export interface UseCurrencyInputOptions extends CurrencyInputBaseOptions {
   /** Uncontrolled initial amount. Ignored once `value` is provided. */
   defaultValue?: number | null
   /** Fires on every accepted keystroke with the parsed number (or `null`). */
-  onValueChange?: (value: number | null, meta: CurrencyInputChange) => void
+  onChange?: CurrencyValueChangeHandler
 }
 
 /** Props to spread onto a native `<input>`. */
@@ -101,7 +104,14 @@ export interface CurrencyInputElementProps {
 
 /** Return value of {@link useCurrencyInput}. */
 export interface UseCurrencyInputResult {
-  /** Spread these onto an `<input>`; the hook owns its value and events. */
+  /**
+   * Spread these onto an `<input>`; the hook owns its value and events.
+   *
+   * Note the deliberate asymmetry with the options object: the *option*
+   * `onChange` is the value handler, while `inputProps.onChange` here is the
+   * native DOM handler you hand to the element. Different objects, different
+   * jobs.
+   */
   inputProps: CurrencyInputElementProps
   /**
    * Attach to the underlying `<input>`. Required in `'live'` mode so the hook
@@ -143,11 +153,11 @@ export interface CurrencyInputProps
   /** Uncontrolled initial amount. */
   defaultValue?: number | null
   /** Fires on every accepted keystroke with the parsed number (or `null`). */
-  onValueChange?: (value: number | null, meta: CurrencyInputChange) => void
+  onChange?: CurrencyValueChangeHandler
   /** Marks the field invalid: sets `aria-invalid` and `data-invalid`. */
   invalid?: boolean
   /** Forwarded native change handler; runs after the internal one. */
-  onChange?: ChangeEventHandler<HTMLInputElement>
+  onNativeChange?: ChangeEventHandler<HTMLInputElement>
   className?: string
   style?: CSSProperties
 }

@@ -75,7 +75,7 @@ import { CurrencyInput } from '@rxova/react-intl-currency-input'
 
 function Price() {
   const [value, setValue] = useState<number | null>(50000)
-  return <CurrencyInput locale="bg-BG" currency="EUR" value={value} onValueChange={setValue} />
+  return <CurrencyInput locale="bg-BG" currency="EUR" value={value} onChange={setValue} />
 }
 ```
 
@@ -110,7 +110,8 @@ only on blur, with no caret management at all.
 | `currency`              | `string` (required)                              | —                | ISO-4217, e.g. `'EUR'`.                                  |
 | `value`                 | `number \| null`                                 | —                | Controlled. `null` renders an empty field.               |
 | `defaultValue`          | `number \| null`                                 | `null`           | Uncontrolled initial value.                              |
-| `onValueChange`         | `(value, meta) => void`                          | —                | `value` is a `number \| null`.                           |
+| `onChange`              | `(value, meta) => void`                          | —                | `value` is a `number \| null`, not a DOM event.          |
+| `onNativeChange`        | `ChangeEventHandler<HTMLInputElement>`           | —                | Forwarded DOM handler; runs after the internal one.      |
 | `maximumFractionDigits` | `number`                                         | currency default | JPY 0, EUR 2, KWD 3.                                     |
 | `minimumFractionDigits` | `number`                                         | `0`              | Set to `2` to force trailing zeros.                      |
 | `currencyDisplay`       | `'symbol' \| 'narrowSymbol' \| 'code' \| 'name'` | `'symbol'`       | Passed to `Intl`.                                        |
@@ -175,7 +176,7 @@ function MuiPrice() {
     locale: 'de-DE',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
   const { inputMode, ...textFieldProps } = currency.inputProps
 
@@ -192,7 +193,7 @@ Best-effort ISO-3166 → ISO-4217 lookup for convenience. Prefer passing `curren
 
 ## Forms
 
-`onValueChange` emits a `number`, so use a controlled adapter (RHF `Controller`, Formik `useField`,
+`onChange` emits a `number`, so use a controlled adapter (RHF `Controller`, Formik `useField`,
 etc.). See the
 [form-library guide](https://rxova.org/packages/react-inputs/components/currency/about/#form-libraries)
 for React Hook Form, Formik, React Final Form and TanStack Form.

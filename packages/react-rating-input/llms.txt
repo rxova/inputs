@@ -62,6 +62,22 @@ a read-only score, and that is the intended way to show one.
 
 Also exported: the `useRating` hook, for building your own markup.
 
+## Warnings
+
+An out-of-range prop never throws. The component coerces it into something it
+can paint and reports what it did through `onWarn`, which receives a
+`RatingWarning`: `{ code, prop, received, used, message }` — the value as
+received, the value actually used after coercion, and a message safe to log.
+
+`RatingWarningCode` is one of `value-non-finite`, `value-negative`,
+`value-above-max`, `max-non-finite`, `max-too-small`, `max-non-integer`.
+
+    <Rating value={7} max={5} onWarn={(w) => log(w.message)} />
+    // { code: 'value-above-max', prop: 'value', received: 7, used: 5, … }
+
+This is a development signal — usually a value arriving from an API in an
+unexpected range — and is stripped from production builds.
+
 ## Styling
 
 There is no stylesheet. Set CSS custom properties on any ancestor:

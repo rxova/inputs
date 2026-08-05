@@ -7,7 +7,7 @@ import type { CurrencyInputProps } from './types'
  * A localized currency `<input>`. By default it formats as you type
  * (`formatMode="live"`) with a stable caret; `formatMode="blur"` shows a plain
  * number while focused instead. Emits a `number` (or `null`) through
- * `onValueChange`.
+ * `onChange`; the raw DOM event is available on `onNativeChange`.
  *
  * `ref` forwards to the underlying `<input>`. React 19 passes `ref` as a normal
  * prop; `forwardRef` keeps the React 18 peer working.
@@ -22,7 +22,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
       currency,
       value,
       defaultValue,
-      onValueChange,
+      onChange,
       maximumFractionDigits,
       minimumFractionDigits,
       currencyDisplay,
@@ -35,7 +35,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
       invalid,
       onFocus,
       onBlur,
-      onChange,
+      onNativeChange,
       onKeyDown,
       onBeforeInput,
       className,
@@ -50,7 +50,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
       currency,
       value,
       defaultValue,
-      onValueChange,
+      onChange,
       maximumFractionDigits,
       minimumFractionDigits,
       currencyDisplay,
@@ -86,7 +86,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
         value={inputProps.value}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
           inputProps.onChange(event)
-          onChange?.(event)
+          onNativeChange?.(event)
         }}
         onFocus={(event: FocusEvent<HTMLInputElement>) => {
           inputProps.onFocus(event)

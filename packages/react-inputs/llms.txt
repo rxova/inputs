@@ -11,6 +11,14 @@
 
 `react >= 18` and `react-dom >= 18` are the peer dependencies.
 
+This meta-package re-exports all three components, so **one install and one
+import path gives you everything** — that is the form every example here uses.
+The individual packages (`@rxova/react-intl-currency-input`,
+`@rxova/react-rating-input`, `@rxova/react-otp-input`) are published too and are
+equivalent; pick one form and import consistently from it. Installing the
+meta-package and importing from an individual package name will not resolve
+unless you install that package as well.
+
 ## Minimal working example
 
 ```tsx
@@ -24,7 +32,7 @@ export function Checkout() {
 
   return (
     <>
-      <CurrencyInput locale="en-US" currency="USD" value={price} onValueChange={setPrice} />
+      <CurrencyInput locale="en-US" currency="USD" value={price} onChange={setPrice} />
       <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
       <OtpInput length={6} value={code} onChange={setCode} label="One-time code" />
     </>
@@ -55,11 +63,11 @@ Every type is re-exported too — `CurrencyInputProps`, `RatingProps`,
    bundle either way. Install whichever suits the project; they are equivalent.
 2. **Importing a stylesheet.** There is none in any of these packages. Everything
    visual is a CSS custom property or a `data-*` hook.
-3. **Assuming the three components share a value convention.** They do not, on
-   purpose, because their values are different things: `CurrencyInput` emits
-   `number | null` via `onValueChange`, `Rating` emits `number` via `onChange`,
-   and `OtpInput` emits `string` via `onChange`. Check the component's own
-   `llms.txt` before wiring a form.
+3. **Expecting a DOM event from `onChange`.** All three emit their *value*, not
+   an event: `CurrencyInput` gives you `number | null` (plus a `meta` object),
+   `Rating` gives you `number`, `OtpInput` gives you `string`. That is what makes
+   them drop straight into a form library's controlled adapter. If you genuinely
+   need the raw `ChangeEvent` from the currency field, it is on `onNativeChange`.
 
 ## Docs
 

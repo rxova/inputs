@@ -5,14 +5,13 @@ sidebar:
 ---
 
 Every rxova input is a **controlled component**: give it a `value` and an
-`onChange` (or the component's equivalent) and it behaves like any other form
-field. Here's one of each.
+`onChange` and it behaves like any other form field. `onChange` always hands you
+the _value_ — never a DOM event — so these drop straight into a form library's
+controlled adapter. Here's one of each.
 
 ```tsx
 import { useState } from 'react'
-import { CurrencyInput } from '@rxova/react-intl-currency-input'
-import { Rating } from '@rxova/react-rating-input'
-import { OtpInput } from '@rxova/react-otp-input'
+import { CurrencyInput, Rating, OtpInput } from '@rxova/react-inputs'
 
 function Example() {
   const [price, setPrice] = useState<number | null>(null)
@@ -21,13 +20,20 @@ function Example() {
 
   return (
     <>
-      <CurrencyInput locale="en-US" currency="USD" value={price} onValueChange={setPrice} />
+      <CurrencyInput locale="en-US" currency="USD" value={price} onChange={setPrice} />
       <Rating value={score} onChange={setScore} precision={0.5} label="Rate your meal" />
       <OtpInput length={6} value={code} onChange={setCode} />
     </>
   )
 }
 ```
+
+That single install covers all three. If you'd rather depend on just one, the
+individual packages (`@rxova/react-intl-currency-input`,
+`@rxova/react-rating-input`, `@rxova/react-otp-input`) are equivalent — install
+the one you want and import from its own name instead. See
+[Installation](/getting-started/installation) for the trade-off, which is
+smaller than you'd think.
 
 Each component's own page has live, editable examples and its full prop reference:
 

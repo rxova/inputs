@@ -329,3 +329,30 @@ Set `allowClear={false}` to make a rating mandatory once set.
 
 If you want to render the whole thing yourself, `useRating` exposes the state machine — value, hover
 preview, focus, group blur, fills, and steps — in ~900 B. See the [API reference](/components/rating/api).
+
+### Warnings
+
+An out-of-range prop never throws and never renders nothing. The component coerces the value into
+something it can paint — clamping a `value` above `max`, flooring a negative one, falling back to a
+sane `max` — and tells you it did so through `onWarn`:
+
+```tsx
+<Rating value={7} max={5} onWarn={(w) => console.warn(w.message)} />
+// { code: 'value-above-max', prop: 'value', received: 7, used: 5, message: '…' }
+```
+
+Every warning carries the offending `prop`, the value as `received`, the value actually `used` after
+coercion, and a `message` safe to log as-is. The codes are:
+
+| Code               | Meaning                         |
+| ------------------ | ------------------------------- |
+| `value-non-finite` | `value` was `NaN` or `Infinity` |
+| `value-negative`   | `value` was below `0`           |
+| `value-above-max`  | `value` exceeded `max`          |
+| `max-non-finite`   | `max` was `NaN` or `Infinity`   |
+| `max-too-small`    | `max` was below `1`             |
+| `max-non-integer`  | `max` was fractional            |
+
+This is a development-time signal, not an error channel — it usually means a value arrived from an
+API in a range you did not expect. Wiring `onWarn` to your logger in development is the cheapest way
+to find that out; in production you can leave it off entirely.

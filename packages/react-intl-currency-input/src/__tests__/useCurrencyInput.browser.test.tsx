@@ -19,7 +19,7 @@ function Harness({
   const [v, setV] = useState<number | null>(null)
   const cur = useCurrencyInput(
     controlled
-      ? { locale: 'en-US', currency: 'USD', value: v, onValueChange: setV, formatMode }
+      ? { locale: 'en-US', currency: 'USD', value: v, onChange: setV, formatMode }
       : { locale: 'en-US', currency: 'USD', defaultValue: null, formatMode },
   )
   return (
@@ -72,7 +72,7 @@ describe('setValue (imperative)', () => {
   it('is a no-op on the value in controlled mode', async () => {
     await render(<Harness controlled />)
     await userEvent.click(page.getByRole('button', { name: 'set 500' }))
-    // Controlled: setValue does not call onValueChange, so the parent value
+    // Controlled: setValue does not call onChange, so the parent value
     // stays null and the field stays empty.
     await expect.poll(() => page.getByTestId('value').element().textContent).toBe('null')
   })
@@ -86,7 +86,7 @@ describe('headless live typing without the ref attached', () => {
       locale: 'en-US',
       currency: 'USD',
       value: v,
-      onValueChange: setV,
+      onChange: setV,
     })
     return (
       <>

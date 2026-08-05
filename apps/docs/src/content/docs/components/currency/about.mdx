@@ -41,7 +41,7 @@ function Demo() {
           locale={locale}
           currency={currency}
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
           aria-label="Amount"
         />
       </p>
@@ -177,7 +177,7 @@ function HeadlessExample() {
     locale: 'bg-BG',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return <input {...currency.inputProps} aria-label="Amount" />
@@ -205,7 +205,7 @@ export function ShadcnPrice() {
     locale: 'bg-BG',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return (
@@ -248,7 +248,7 @@ export function RadixPrice() {
     locale: 'de-DE',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return (
@@ -292,7 +292,7 @@ export function MuiPrice() {
     locale: 'de-DE',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
   const { inputMode, ...textFieldProps } = inputProps
 
@@ -330,7 +330,7 @@ export function ChakraPrice() {
     locale: 'fr-FR',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return (
@@ -361,7 +361,7 @@ export function MantinePrice() {
     locale: 'fr-FR',
     currency: 'EUR',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return (
@@ -395,7 +395,7 @@ export function AntPrice() {
     locale: 'en-US',
     currency: 'USD',
     value,
-    onValueChange: setValue,
+    onChange: setValue,
   })
 
   return (
@@ -538,7 +538,7 @@ function StylingPlayground() {
           locale={locale}
           currency={locale === 'ar-EG' ? 'EGP' : locale === 'hi-IN' ? 'INR' : 'EUR'}
           value={value}
-          onValueChange={setValue}
+          onChange={setValue}
           style={style}
         />
         <span style={{ color: '#475569', fontSize: '0.875rem' }}>
@@ -642,7 +642,7 @@ export function PriceField() {
         locale="bg-BG"
         currency="EUR"
         value={value}
-        onValueChange={setValue}
+        onChange={setValue}
         placeholder="0,00"
         invalid={invalid}
         aria-describedby={`${hintId}${invalid ? ` ${errorId}` : ''}`}
@@ -776,7 +776,7 @@ function PriceField() {
       locale="de-DE"
       currency="EUR"
       value={value}
-      onValueChange={setValue}
+      onChange={setValue}
       aria-label="Price"
     />
   )
@@ -937,7 +937,7 @@ function PriceForm() {
 :::note[The value a native form submits]
 Because the visible field carries the `name` (so it is identifiable to form libraries and to
 `<label htmlFor>`), a plain form submits the **formatted display string** under that name, not the
-raw number. If you need the raw number server-side, read it from `onValueChange` and post it
+raw number. If you need the raw number server-side, read it from `onChange` and post it
 yourself, or use one of the [form-library recipes](/components/currency/about), which manage the number in
 JavaScript.
 :::
@@ -947,7 +947,7 @@ For most apps the recommended path is a form library — the recipes in this sec
 
 ### React Hook Form
 
-`onValueChange` emits a `number`, not an event, so the `{...register()}` spread does not apply — use
+`onChange` emits a `number`, not an event, so the `{...register()}` spread does not apply — use
 a `Controller`, the one documented path. `field.onChange` accepts the value directly.
 
 ```tsx
@@ -973,7 +973,7 @@ function PriceForm() {
               locale="de-DE"
               currency="EUR"
               value={field.value ?? null}
-              onValueChange={field.onChange}
+              onChange={field.onChange}
               onBlur={field.onBlur}
               name={field.name}
               ref={field.ref}
@@ -995,7 +995,7 @@ side.
 
 ### Formik
 
-Wire `value` and `onValueChange` to the field; pass Formik's `field.onBlur` through so touched state
+Wire `value` and `onChange` to the field; pass Formik's `field.onBlur` through so touched state
 works — it reads `event.target.name`, which the underlying input carries.
 
 ```tsx
@@ -1013,7 +1013,7 @@ function PriceField() {
         locale="de-DE"
         currency="EUR"
         value={field.value ?? null}
-        onValueChange={(value) => helpers.setValue(value)}
+        onChange={(value) => helpers.setValue(value)}
         onBlur={field.onBlur}
         invalid={meta.touched && !!meta.error}
       />
@@ -1063,7 +1063,7 @@ function PriceForm() {
                   locale="de-DE"
                   currency="EUR"
                   value={typeof input.value === 'number' ? input.value : null}
-                  onValueChange={input.onChange}
+                  onChange={input.onChange}
                   onBlur={input.onBlur}
                   name={input.name}
                   invalid={meta.touched && !!meta.error}
@@ -1110,7 +1110,7 @@ function PriceForm() {
               locale="ja-JP"
               currency="JPY"
               value={field.state.value}
-              onValueChange={(value) => field.handleChange(value ?? 0)}
+              onChange={(value) => field.handleChange(value ?? 0)}
               onBlur={field.handleBlur}
               name={field.name}
             />
