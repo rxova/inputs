@@ -13,6 +13,7 @@ No deprecation window — pre-1.0, the old name is removed outright rather than 
 TypeScript catches both halves: `onValueChange` no longer exists, and a `ChangeEventHandler` no
 longer fits `onChange`. Plain-JS consumers should search their source for `onValueChange`.
 
-Rename both props in one pass, on `<CurrencyInput>` elements and `useCurrencyInput` options,
-imported from either `@rxova/react-intl-currency-input` or `@rxova/react-inputs` — renaming them
-sequentially would collapse `onValueChange` onto `onNativeChange` and lose the value handler.
+There is no codemod for this rename — it is a manual edit. Rename both props in one pass, on
+`<CurrencyInput>` elements and `useCurrencyInput` options, imported from either
+`@rxova/react-intl-currency-input` or `@rxova/react-inputs`; renaming them sequentially would
+collapse `onValueChange` onto `onNativeChange` and lose the value handler.
