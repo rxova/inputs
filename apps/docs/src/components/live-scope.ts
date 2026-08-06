@@ -5,6 +5,7 @@ import * as rating from '@rxova/react-rating-input'
 import * as otp from '@rxova/react-otp-input'
 import * as password from '@rxova/react-password-input'
 import * as phone from '@rxova/react-phone-input'
+import * as tags from '@rxova/react-tags-input'
 import * as time from '@rxova/react-time-input'
 
 /**
@@ -31,6 +32,7 @@ const liveScope = {
   ...otp,
   ...password,
   ...phone,
+  ...tags,
   ...time,
 }
 

@@ -61,3 +61,23 @@ export type {
   UseTimeInputOptions,
   UseTimeInputResult,
 } from '@rxova/react-time-input'
+
+export {
+  TagsInput,
+  useTagsInput,
+  comparable,
+  contains,
+  sanitize,
+  splitPasted,
+} from '@rxova/react-tags-input'
+export type {
+  TagAttempt,
+  TagRejection,
+  TagRules,
+  TagState,
+  TagsInputProps,
+  TagsWarning,
+  TagsWarningCode,
+  UseTagsInputOptions,
+  UseTagsInputResult,
+} from '@rxova/react-tags-input'
