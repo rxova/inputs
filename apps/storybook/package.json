@@ -15,6 +15,7 @@
     "@rxova/react-intl-currency-input": "workspace:*",
     "@rxova/react-otp-input": "workspace:*",
     "@rxova/react-password-input": "workspace:*",
+    "@rxova/react-phone-input": "workspace:*",
     "@rxova/react-rating-input": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
