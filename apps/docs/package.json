@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@rxova/react-date-input": "workspace:*",
     "@rxova/react-intl-currency-input": "workspace:*",
     "@rxova/react-otp-input": "workspace:*",
     "@rxova/react-password-input": "workspace:*",

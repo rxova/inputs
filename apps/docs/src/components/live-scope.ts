@@ -1,4 +1,5 @@
 import React from 'react'
+import * as date from '@rxova/react-date-input'
 import * as currency from '@rxova/react-intl-currency-input'
 import * as rating from '@rxova/react-rating-input'
 import * as otp from '@rxova/react-otp-input'
@@ -23,6 +24,7 @@ import * as phone from '@rxova/react-phone-input'
 const liveScope = {
   React,
   ...React,
+  ...date,
   ...currency,
   ...rating,
   ...otp,

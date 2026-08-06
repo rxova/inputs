@@ -42,6 +42,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@rxova/react-date-input": "workspace:^",
     "@rxova/react-intl-currency-input": "workspace:^",
     "@rxova/react-otp-input": "workspace:^",
     "@rxova/react-password-input": "workspace:^",
