@@ -5,6 +5,7 @@ import * as rating from '@rxova/react-rating-input'
 import * as otp from '@rxova/react-otp-input'
 import * as password from '@rxova/react-password-input'
 import * as phone from '@rxova/react-phone-input'
+import * as time from '@rxova/react-time-input'
 
 /**
  * Everything available inside a ```tsx live code block. Spreading React exposes
@@ -30,6 +31,7 @@ const liveScope = {
   ...otp,
   ...password,
   ...phone,
+  ...time,
 }
 
 export default liveScope

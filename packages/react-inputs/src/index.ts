@@ -35,3 +35,29 @@ export type {
   UseDateInputOptions,
   UseDateInputResult,
 } from '@rxova/react-date-input'
+
+export {
+  TimeInput,
+  useTimeInput,
+  AM,
+  PM,
+  dayPeriodNames,
+  fromDisplayHour,
+  timePieces,
+  toDayPeriod,
+  toDisplayHour,
+  usesHour12,
+} from '@rxova/react-time-input'
+export type {
+  TimeInputProps,
+  TimeParts,
+  TimePiece,
+  TimePlaceholders,
+  TimeSegment,
+  TimeSegmentLabels,
+  TimeSegmentState,
+  TimeWarning,
+  TimeWarningCode,
+  UseTimeInputOptions,
+  UseTimeInputResult,
+} from '@rxova/react-time-input'

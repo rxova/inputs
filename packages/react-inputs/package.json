@@ -47,7 +47,8 @@
     "@rxova/react-otp-input": "workspace:^",
     "@rxova/react-password-input": "workspace:^",
     "@rxova/react-phone-input": "workspace:^",
-    "@rxova/react-rating-input": "workspace:^"
+    "@rxova/react-rating-input": "workspace:^",
+    "@rxova/react-time-input": "workspace:^"
   },
   "engines": {
     "node": ">=20.19.0"

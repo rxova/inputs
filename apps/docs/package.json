@@ -34,6 +34,7 @@
     "@rxova/react-password-input": "workspace:*",
     "@rxova/react-phone-input": "workspace:*",
     "@rxova/react-rating-input": "workspace:*",
+    "@rxova/react-time-input": "workspace:*",
     "@types/react": "^19.2.18",
     "lucide-static": "^1.28.0",
     "typescript": "^6.0.3",
