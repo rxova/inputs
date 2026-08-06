@@ -1,0 +1,297 @@
+---
+title: 'About'
+sidebar:
+  order: 3
+---
+
+## The object-URL lifecycle
+
+This is the part that is usually left to the caller, and the reason the package exists.
+
+`URL.createObjectURL(file)` hands back a string that keeps the **entire file** resident in memory
+until `URL.revokeObjectURL` is called or the document is discarded. A gallery where the user adds
+and removes ten 5 MB photos while deciding which to keep has leaked 50 MB by the time they submit.
+
+`previews` owns that lifecycle:
+
+- URLs are minted **lazily**, only for files whose type starts with `image/`.
+- They are **revoked the instant a file leaves the list**, not deferred to unmount — which is what
+  makes add-then-remove cycles safe.
+- They are revoked **again on unmount**, for whatever is still selected.
+- They are **never minted on the server**: there is no unmount during server rendering, so such a
+  URL could never be revoked.
+
+The URL map is _mutated_, never replaced. Swapping in a fresh map was a real bug caught by the
+adversarial suite — the unmount cleanup captures the map once, so reassigning it left that cleanup
+holding an empty one and every URL alive for the lifetime of the document, the exact leak the code
+exists to prevent. A test now asserts `revokeObjectURL` was called exactly as many times as
+`createObjectURL`, and an end-to-end test proves a revoked URL no longer resolves.
+
+Previews are off by default for the same reason: opting into a lifecycle should be deliberate.
+
+## Accessibility
+
+**The drop zone is a real `<button type="button">`.** Dragging has no keyboard equivalent, so the
+click path is the _only_ accessible path — and a button supplies Enter, Space, focus and a role for
+free. It also carries an explicit `tabIndex={0}`, because WebKit omits buttons from sequential
+navigation unless Full Keyboard Access is enabled.
+
+**The real `<input type="file">` stays in the accessibility tree.** It is hidden by clipping, never
+`display: none` or the `hidden` attribute, both of which remove it from the tree entirely and, in
+some browsers, stop programmatic `.click()` from opening the picker.
+
+**Focus never lands on `<body>`.** The button you just clicked is about to leave the DOM. After a
+removal, focus goes to the next file's button, or the previous one if that was the last, or back to
+the drop zone if the list is now empty.
+
+**Remove buttons are named after their file** — `Remove invoice.pdf`, not `Remove`. A screen
+reader's element list shows buttons stripped of their surrounding row, so five identical "Remove"
+entries are unusable. Override with `removeLabel`.
+
+**The list is a `<ul>`**, so a screen reader announces "list, 3 items" before reading them.
+
+**Preview images are `alt=""`.** The filename sits right beside them; alt text would be read twice.
+
+**One polite announcement per batch.** Attaching four files says so once, not four times, and
+`aria-live="polite"` never interrupts what the user is already hearing — attaching a file is not an
+emergency.
+
+Verified with `axe-core` at the component level (empty, populated, with previews, invalid, disabled,
+read-only, right-to-left) and with `@axe-core/playwright` over the whole demo page on Chromium,
+Firefox and WebKit.
+
+## Identity and dedupe
+
+Two files are the same when their **name, size and last-modified timestamp** match — the same test
+the native control applies. Content hashing would be strictly more correct and would also mean
+reading every byte of every file the user hovers over.
+
+That definition has one consequence worth knowing: a file the user edits between two picks is a
+different file, which is almost always what you want.
+
+## Rejections
+
+Every refusal produces one `onReject` call with the file and a reason:
+
+| Reason      | Cause                                              |
+| ----------- | -------------------------------------------------- |
+| `type`      | Failed the `accept` string                         |
+| `too-large` | Above `maxSize`                                    |
+| `too-small` | Below `minSize`                                    |
+| `duplicate` | Already in the list, under the identity rule above |
+| `max-files` | The count cap is reached                           |
+| `invalid`   | `validate` returned `false` or a string            |
+
+A batch is evaluated file by file, so five picked with two refused adds the other three. A throwing
+`validate` refuses that one file and warns — it never unmounts the form.
+
+Unusable bounds are **dropped rather than enforced**: `maxFiles: 0`, a negative `minSize`, a
+`minSize` above `maxSize`. A field that can never accept anything is a bug in the calling code, not
+a state worth rendering, and `onWarn` says so.
+
+## Drag behaviour
+
+`dragleave` fires every time the pointer crosses into a _child_ of the drop zone, so the naive
+`onDragLeave → setDragging(false)` flickers the highlight off and on as the user moves over the hint
+text or an existing file row. A depth counter is the only thing that survives nesting.
+
+Only `dragenter` and `dragleave` move that counter. `dragover` repeats for as long as the pointer
+hovers — every few hundred milliseconds and on every pointer move — so counting it too makes the
+depth climb without bound, and the one matching `dragleave` can never bring it back to zero: the
+zone stays lit for the life of the page after a drag that leaves without dropping. `dragover` still
+has to be prevented on every tick, because that is what makes the browser fire `drop` at all, and it
+still lights the zone, since dragging in from outside the viewport does not always produce a
+`dragenter` the zone sees.
+
+Binding your own zone therefore means binding `onDragEnter={field.handleDragEnter}` **and**
+`onDragOver={field.handleDragOver}` — they are different handlers on purpose.
+
+A drag carrying only text never lights the zone up at all — the handlers check that `Files` is among
+the transfer's types before reacting, and a drop with no files is left to the browser rather than
+consumed.
+
+## Native forms
+
+The underlying input keeps its value, so a plain `<form>` submit posts the file with no JavaScript
+involved. The value is cleared on **removal** and on `clear()` — not after every pick, which is the
+usual trick for "let the user re-pick the same file" but also empties the control a submit would
+post, leaving the field rendering a file the server never receives.
+
+In `multiple` mode the native control can only carry the last selection. Read `value`/`onChange` if
+you accumulate across several picks.
+
+## Testing
+
+- 138 unit and browser tests, coverage enforced **per file** at 95% (99.7% statements, 99.3%
+  branches, 100% functions and lines).
+- An adversarial suite that drives the failure modes on purpose: throwing callbacks, unmounting
+  mid-drag, duplicate picks, the URL leak, two fields on one page, a `dragleave` from a child.
+- 28 end-to-end specs on Chromium, Firefox and WebKit against a **production** demo build — one of
+  which asserts the diagnostics path is absent from that bundle.
+- Where an engine cannot express something (synthesising a file `DataTransfer`), the test skips
+  **visibly** rather than passing quietly.
+
+## Diagnostics
+
+`onWarn` reports a prop the component could not use as given — a `maxFiles` below one, a `minSize`
+above `maxSize`, an `accept` string that will match nothing. The coerced result is what renders, so
+this is never an error, and the whole path is stripped from production builds.
+
+```tsx
+<FileInput
+  label="Documents"
+  accept="png"
+  onWarn={(warning) => {
+    // { code: 'accept-suspicious', prop: 'accept', received: 'png', message: '…' }
+    console.warn(warning.code, warning.received)
+  }}
+/>
+```
+
+Codes: `max-files-invalid`, `size-range-invalid`, `negative-size`, `accept-suspicious`,
+`single-with-max`. The `accept` one is worth knowing about — `png` without its dot, or a wildcard
+like `image/*.png`, silently matches no file at all, which reads as a broken field rather than a
+typo in a prop.
+
+Warnings are deduplicated per instance on `code:received`, so a re-rendering parent reports once
+per distinct mistake rather than once per render.
+
+## Styling
+
+There is no stylesheet to import.
+
+### Custom properties
+
+Set them on `[data-rx-file-root]` or any ancestor:
+
+```css
+[data-rx-file-root] {
+  --rx-file-gap: 0.5rem;
+  --rx-file-zone-gap: 0.5rem;
+  --rx-file-zone-padding: 1rem;
+  --rx-file-zone-border: 1px dashed currentColor;
+  --rx-file-zone-radius: 0.375rem;
+  --rx-file-zone-background: transparent;
+  --rx-file-list-gap: 0.25rem;
+  --rx-file-row-gap: 0.5rem;
+  --rx-file-preview-size: 2.5rem;
+  --rx-file-preview-radius: 0.25rem;
+  --rx-file-remove-size: 1.5rem;
+}
+```
+
+`--rx-file-list-gap` is the space _between_ files and `--rx-file-row-gap` the space _inside_ one
+row. Keep `--rx-file-remove-size` at `1.5rem` or above for WCAG 2.5.8 Target Size (Minimum).
+
+### Stable `data-*` hooks
+
+These are public API, covered by semver.
+
+| Attribute                                          | On                    | Meaning                           |
+| -------------------------------------------------- | --------------------- | --------------------------------- |
+| `data-rx-file-root`                                | wrapper               | Always present                    |
+| `data-dragging`                                    | wrapper               | A drag is over the zone           |
+| `data-count`                                       | wrapper               | Number of files                   |
+| `data-full`                                        | wrapper               | `maxFiles` reached                |
+| `data-invalid` / `data-disabled` / `data-readonly` | wrapper               | Mirrors the props                 |
+| `data-rx-file-input`                               | `<input type="file">` | The real control, visually hidden |
+| `data-rx-file-zone`                                | `<button>`            | The drop zone                     |
+| `data-rx-file-list`                                | `<ul>`                | The selection                     |
+| `data-rx-file-file`                                | `<li>`                | One file row                      |
+| `data-rx-file-name` / `data-rx-file-size`          | row                   | Name and human-readable size      |
+| `data-rx-file-preview`                             | `<img>`               | Only when `previews` is on        |
+| `data-rx-file-remove`                              | `<button>`            | The remove button                 |
+| `data-rx-file-announcement`                        | live region           | Off-screen, `aria-live="polite"`  |
+
+## Form libraries
+
+Every recipe below is transcribed from `src/__tests__/form.browser.test.tsx`, so it is code that
+runs on every commit. The value is a `File[]`. Nothing here uploads: you get the `File` objects and the transport stays yours.
+
+### Native forms
+
+With a `name`, the real `<input type="file">` posts itself — which is why it is visually hidden
+rather than absent:
+
+```tsx
+<form action="/upload" method="post" encType="multipart/form-data">
+  <FileInput name="docs" label="Documents" multiple />
+  <button type="submit">Upload</button>
+</form>
+```
+
+`formData.getAll('docs')` returns the real `File` objects.
+
+### React Hook Form
+
+`onChange` emits the whole array, so `field.onChange` binds directly:
+
+```tsx
+<Controller
+  name="docs"
+  control={control}
+  render={({ field }) => (
+    <FileInput
+      label="File"
+      value={field.value}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      name={field.name}
+    />
+  )}
+/>
+```
+
+### Formik
+
+```tsx
+function Field() {
+  const [field, , helpers] = useField<File[]>('docs')
+  return (
+    <FileInput
+      label="File"
+      name="docs"
+      value={field.value}
+      onChange={(files) => helpers.setValue(files)}
+      onBlur={() => helpers.setTouched(true)}
+    />
+  )
+}
+```
+
+`onBlur` fires when focus leaves the **whole field**, not when it moves to the drop zone or a remove button — so curating the selection does not mark the field touched.
+
+### React Final Form
+
+```tsx
+<Field name="docs">
+  {({ input }) => (
+    <FileInput
+      label="File"
+      name={input.name}
+      value={Array.isArray(input.value) ? input.value : []}
+      onChange={input.onChange}
+      onBlur={input.onBlur}
+    />
+  )}
+</Field>
+```
+
+### TanStack Form
+
+```tsx
+<form.Field name="docs">
+  {(field) => (
+    <FileInput
+      label="File"
+      name="docs"
+      value={field.state.value}
+      onChange={(value) => field.handleChange(value)}
+      onBlur={field.handleBlur}
+    />
+  )}
+</form.Field>
+```
+
+React Final Form starts a field as `''`, which is not an array. The guard above is the binding's
+job, not the component's.

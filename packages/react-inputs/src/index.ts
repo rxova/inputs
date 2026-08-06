@@ -81,3 +81,26 @@ export type {
   UseTagsInputOptions,
   UseTagsInputResult,
 } from '@rxova/react-tags-input'
+
+export {
+  FileInput,
+  useFileInput,
+  describeRejection,
+  extensionOf,
+  fileKey,
+  formatBytes,
+  isPreviewable,
+  matchesAccept,
+} from '@rxova/react-file-input'
+export type {
+  FileAttempt,
+  FileEntry,
+  FileEntryState,
+  FileInputProps,
+  FileRejection,
+  FileRules,
+  FileWarning,
+  FileWarningCode,
+  UseFileInputOptions,
+  UseFileInputResult,
+} from '@rxova/react-file-input'
