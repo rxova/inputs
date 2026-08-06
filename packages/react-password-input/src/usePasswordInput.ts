@@ -22,6 +22,21 @@ const DEFAULT_MIN_LENGTH = 8
 const DEFAULT_CHECK_DELAY = 400
 
 /**
+ * The cap applied when the consumer names none.
+ *
+ * An unbounded password field is a denial-of-service surface: every keystroke
+ * runs the estimator over the whole value, and whatever the form posts to runs
+ * a deliberately slow KDF over it. Neither cost is bounded by anything but the
+ * size of a paste. NIST SP 800-63B requires *accepting* at least 64 characters
+ * and says nothing about accepting unlimited ones, and OWASP ASVS asks for a
+ * documented maximum for this reason — so 128 is double the floor the standard
+ * sets and roughly twice the longest passphrase anyone types (ten diceware
+ * words is ~60 characters). Long passphrases stay uncut; pastes of a megabyte
+ * do not.
+ */
+const DEFAULT_MAX_LENGTH = 128
+
+/**
  * The caret range, as a plain pair.
  *
  * `selectionStart`/`selectionEnd` are typed `number | null` because they *are*
@@ -85,8 +100,8 @@ export interface UsePasswordInputResult {
   valid: boolean
   /** `minLength` after coercion — also what the default length rule uses. */
   minLength: number
-  /** `maxLength` after coercion, or `undefined` when unset or unusable. */
-  maxLength: number | undefined
+  /** `maxLength` after coercion. Always set — an unusable value falls back to the default. */
+  maxLength: number
   disabled: boolean
   /** Stable ids for the input and each piece of describing text. */
   ids: {
@@ -194,10 +209,18 @@ export function usePasswordInput(options: UsePasswordInputOptions): UsePasswordI
     Number.isFinite(minLengthProp) && minLengthProp >= 0
       ? Math.floor(minLengthProp)
       : DEFAULT_MIN_LENGTH
-  // A maxLength under the minimum is unsatisfiable, so it is dropped rather
-  // than enforced — a field nobody can fill is worse than a missing cap.
+  // There is always a cap; the prop only moves it. An unsatisfiable or
+  // unusable value falls back to the default rather than removing the bound —
+  // a field nobody can fill is worse than a loose cap, but so is no cap at all.
+  // The floor keeps the fallback satisfiable when `minLength` is itself above
+  // the default.
   const maxLength =
-    maxLengthProp !== undefined && maxLengthProp >= minLength ? maxLengthProp : undefined
+    maxLengthProp !== undefined &&
+    Number.isFinite(maxLengthProp) &&
+    maxLengthProp >= minLength &&
+    maxLengthProp >= 1
+      ? Math.floor(maxLengthProp)
+      : Math.max(DEFAULT_MAX_LENGTH, minLength)
 
   const rules = useMemo(() => rulesProp ?? defaultRules(minLength), [rulesProp, minLength])
 
@@ -329,11 +352,20 @@ export function usePasswordInput(options: UsePasswordInputOptions): UsePasswordI
       else console.warn(`[react-password-input] ${warning.message}`)
     }
     emit(inspectMinLength(minLengthProp, minLength))
-    emit(inspectMaxLength(maxLengthProp, minLength))
+    emit(inspectMaxLength(maxLengthProp, minLength, maxLength))
     emit(inspectRuleIds(rules))
     emit(inspectAutoComplete(autoComplete))
     emit(inspectEstimate(estimateThrew))
-  }, [minLengthProp, minLength, maxLengthProp, rules, autoComplete, estimateThrew, onWarn])
+  }, [
+    minLengthProp,
+    minLength,
+    maxLengthProp,
+    maxLength,
+    rules,
+    autoComplete,
+    estimateThrew,
+    onWarn,
+  ])
 
   const setValue = useCallback(
     (next: string) => {

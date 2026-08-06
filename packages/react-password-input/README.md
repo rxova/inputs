@@ -32,8 +32,8 @@ npm install @rxova/react-password-input
   still caught
 - **Breach checks without a network call** — you supply the lookup, the plaintext never leaves
   the page on its own
-- **NIST SP 800-63B by default** — length first, no composition rules, long passphrases never
-  truncated
+- **NIST SP 800-63B by default** — length first, no composition rules, and a 128-character cap
+  that clears the standard's 64-character floor twice over
 - **Zero runtime dependencies**, 4.8 kB brotli for the whole component, no stylesheet to import
 
 ## Sign in

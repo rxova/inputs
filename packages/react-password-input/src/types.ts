@@ -152,8 +152,12 @@ export interface PasswordInputProps {
   /** Minimum length for the default rule and the native `minlength`. @default 8 */
   minLength?: number
   /**
-   * Native `maxlength`. NIST requires accepting at least 64 characters; the
-   * default leaves it unset so long passphrases are never silently truncated.
+   * Native `maxlength`. There is always a cap — an unbounded field lets a
+   * single paste drive unbounded estimator and KDF work — and this prop only
+   * moves it. NIST SP 800-63B requires accepting at least 64 characters, so
+   * the default sits at double that; a value below `minLength` is
+   * unsatisfiable and falls back to the default rather than removing the cap.
+   * @default 128
    */
   maxLength?: number
   /** Fires whenever overall validity changes — all required rules met and `minScore` reached. */

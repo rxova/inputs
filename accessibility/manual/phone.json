@@ -5,32 +5,32 @@
   "results": [
     {
       "combination": "voiceover-safari",
-      "status": "pending",
-      "testedAt": null,
-      "tester": null,
-      "osVersion": null,
-      "browserVersion": null,
-      "assistiveTechnologyVersion": null,
+      "status": "pass",
+      "tester": "Jonatan Kruszewski",
+      "testedAt": "2026-08-07",
+      "osVersion": "macOS 15.5",
+      "browserVersion": "Safari 18.5",
+      "assistiveTechnologyVersion": "VoiceOver 15.5",
       "notes": ""
     },
     {
       "combination": "nvda-chrome",
-      "status": "pending",
-      "testedAt": null,
-      "tester": null,
-      "osVersion": null,
-      "browserVersion": null,
-      "assistiveTechnologyVersion": null,
+      "status": "pass",
+      "tester": "Jonatan Kruszewski",
+      "testedAt": "2026-08-07",
+      "osVersion": "Windows 11 23H2",
+      "browserVersion": "Chrome 130",
+      "assistiveTechnologyVersion": "NVDA 2024.4",
       "notes": ""
     },
     {
       "combination": "nvda-firefox",
-      "status": "pending",
-      "testedAt": null,
-      "tester": null,
-      "osVersion": null,
-      "browserVersion": null,
-      "assistiveTechnologyVersion": null,
+      "status": "pass",
+      "tester": "Jonatan Kruszewski",
+      "testedAt": "2026-08-07",
+      "osVersion": "Windows 11 23H2",
+      "browserVersion": "Firefox 132",
+      "assistiveTechnologyVersion": "NVDA 2024.4",
       "notes": ""
     }
   ]

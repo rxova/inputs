@@ -34,13 +34,14 @@ export function inspectMinLength(raw: number, used: number): PasswordWarning | n
 export function inspectMaxLength(
   maxLength: number | undefined,
   minLength: number,
+  used: number,
 ): PasswordWarning | null {
-  if (maxLength === undefined || maxLength >= minLength) return null
+  if (maxLength === undefined || (Number.isFinite(maxLength) && maxLength >= minLength)) return null
   return {
     code: 'max-length-below-min',
     prop: 'maxLength',
     received: String(maxLength),
-    message: `\`maxLength\` (${String(maxLength)}) is below \`minLength\` (${String(minLength)}); no password can satisfy both. Ignoring \`maxLength\`.`,
+    message: `\`maxLength\` (${String(maxLength)}) is below \`minLength\` (${String(minLength)}); no password can satisfy both. Using ${String(used)}.`,
   }
 }
 

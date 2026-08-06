@@ -140,44 +140,43 @@ describe('security properties the README claims', () => {
 
 describe('hostile input', () => {
   it('handles a very long password without blocking the main thread', async () => {
-    // Someone pastes a 100k-character file into the field. Every estimator
+    // Someone pastes a 400k-character file into the field. Every estimator
     // stage has to stay linear; a quadratic one freezes the tab.
     //
-    // Measured as a ratio, not against a millisecond budget: this suite runs
-    // beside every other package's browser tests, and a loaded machine misses
-    // a fixed target while the code under test is perfectly linear. The shape
-    // of the curve is the actual claim — quadratic work grows ~16x for a 4x
-    // input, linear stays near 4x. The bar sits at 10 rather than at 5: under a
-    // loaded machine the ratio of two short measurements drifts well past the
-    // ideal 4, and the claim worth defending is "not quadratic", which would
-    // land near 16x.
+    // This was a ratio test — time 400k, time 100k, assert the growth stayed
+    // near the linear 4x rather than the quadratic 16x. That measurement does
+    // not survive this suite, which runs beside eleven other packages' browser
+    // tests. Wall-clock ratios do not isolate algorithmic complexity on a
+    // loaded machine: GC and preemption scale with the *size* of a measurement,
+    // not with its complexity class, so the 400k reading absorbs load the 100k
+    // reading escapes and the quotient inflates on its own. Measured across
+    // five full `turbo run test` runs, growth came out 4.67 / 7.29 / 8.83 /
+    // 12.24 / 12.29 against a bar of 10 — a 2.6x swing that failed roughly two
+    // runs in five while the estimator was provably linear the whole time.
+    // Interleaving the two sizes and taking a median of per-pair ratios fixes
+    // it under Node but not under Chromium, where the GC term dominates.
     //
-    // Fastest of several runs, because scheduler noise only ever adds time.
-    // The estimator is quick enough that a single pass over 100k characters is
-    // ~1ms — short enough for one preemption to dominate the reading — so the
-    // sizes below are deliberately large and sampled more often.
-    const fastest = (run: () => void, repeats = 9): number => {
-      let best = Infinity
-      for (let index = 0; index < repeats; index += 1) {
-        const started = performance.now()
-        run()
-        best = Math.min(best, performance.now() - started)
-      }
-      return best
-    }
-
+    // So: an absolute ceiling, which is the stable measurement. The same five
+    // runs put a single 400k pass at 122-152ms under full load and ~50ms idle —
+    // a ±12% spread against the ratio's 2.6x. 2s leaves ~13x headroom over the
+    // worst loaded reading, so ordinary contention cannot reach it, while a
+    // genuinely quadratic estimator over 400k characters is ~10^4 times slower
+    // than a linear one and would blow the vitest timeout, never mind this bar.
+    // A loose ceiling on a stable number beats a tight one on a noisy ratio.
+    //
+    // Fastest of three, because scheduler noise only ever adds time — the claim
+    // is about the floor, and no amount of load can push the floor down.
     const huge = 'aB3$'.repeat(100_000)
-    const quarter = 'aB3$'.repeat(25_000)
 
-    const growth =
-      fastest(() => {
+    const elapsed = Math.min(
+      ...Array.from({ length: 3 }, () => {
+        const started = performance.now()
         estimateStrength(huge)
-      }) /
-      fastest(() => {
-        estimateStrength(quarter)
-      })
+        return performance.now() - started
+      }),
+    )
 
-    expect(growth).toBeLessThan(10)
+    expect(elapsed).toBeLessThan(2_000)
     expect(estimateStrength(huge).score).toBe(4)
   })
 
@@ -214,11 +213,18 @@ describe('hostile input', () => {
     expect(estimateStrength('🔐🔑🗝🛡', { minLength: 8 }).penalties).toContain('too-short')
   })
 
-  it('does not let a native maxLength silently truncate a passphrase', async () => {
-    // NIST requires accepting at least 64 characters. The default leaves
-    // maxLength unset precisely so a long passphrase is never cut in half.
+  it('caps the field without truncating a real passphrase', async () => {
+    // The cap is mandatory, so the property worth asserting is no longer its
+    // absence but its generosity: it has to clear NIST's 64-character floor and
+    // stay well clear of the longest thing a person actually types. Asserted
+    // against a real passphrase rather than against the number, so tightening
+    // the default to something that would cut one in half fails here.
     const { container } = await render(<PasswordInput label="Password" />)
-    expect(container.querySelector('[data-rx-password-input]')).not.toHaveAttribute('maxlength')
+    const cap = Number(
+      container.querySelector('[data-rx-password-input]')!.getAttribute('maxlength'),
+    )
+    expect(cap).toBeGreaterThanOrEqual(64)
+    expect('correct horse battery staple correct horse battery staple'.length).toBeLessThan(cap)
   })
 })
 

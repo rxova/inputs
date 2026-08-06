@@ -36,16 +36,26 @@ describe('inspectMinLength', () => {
 
 describe('inspectMaxLength', () => {
   it('passes an absent or sufficient maximum', () => {
-    expect(inspectMaxLength(undefined, 8)).toBeNull()
-    expect(inspectMaxLength(64, 8)).toBeNull()
-    expect(inspectMaxLength(8, 8)).toBeNull()
+    expect(inspectMaxLength(undefined, 8, 128)).toBeNull()
+    expect(inspectMaxLength(64, 8, 64)).toBeNull()
+    expect(inspectMaxLength(8, 8, 8)).toBeNull()
   })
 
   it('reports a maximum below the minimum as unsatisfiable', () => {
-    const warning = inspectMaxLength(4, 8)
+    const warning = inspectMaxLength(4, 8, 128)
     expect(warning?.code).toBe('max-length-below-min')
     expect(warning?.message).toContain('4')
     expect(warning?.message).toContain('8')
+    // The cap is not dropped, so the message has to name the one actually used
+    // rather than tell the developer their value was ignored outright.
+    expect(warning?.message).toContain('128')
+  })
+
+  it('reports a non-finite maximum rather than letting it through', () => {
+    // `Infinity >= minLength` is true, so a bare comparison would treat
+    // "no cap at all" as a satisfiable maximum and silently honour it.
+    expect(inspectMaxLength(Number.POSITIVE_INFINITY, 8, 128)?.code).toBe('max-length-below-min')
+    expect(inspectMaxLength(Number.NaN, 8, 128)?.code).toBe('max-length-below-min')
   })
 })
 
@@ -91,7 +101,7 @@ describe('received', () => {
     // that prop into a single report.
     expect(inspectMinLength(-3, 8)?.received).toBe('-3')
     expect(inspectMinLength(8.5, 8)?.received).toBe('8.5')
-    expect(inspectMaxLength(4, 8)?.received).toBe('4')
+    expect(inspectMaxLength(4, 8, 128)?.received).toBe('4')
     expect(inspectAutoComplete('off')?.received).toBe('off')
     expect(inspectRuleIds([commonRules.digit, commonRules.digit])?.received).toBe(
       commonRules.digit.id,

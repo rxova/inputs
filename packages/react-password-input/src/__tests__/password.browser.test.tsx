@@ -189,12 +189,27 @@ describe('value', () => {
     expect(input.value).toBe('fixed')
   })
 
-  it('drops an unsatisfiable maxLength rather than enforcing it', async () => {
+  it('falls back to the default for an unsatisfiable maxLength', async () => {
     const { container } = await render(
       <PasswordInput label="Password" minLength={8} maxLength={4} onWarn={() => undefined} />,
     )
-    // A field nobody can fill is worse than a missing cap.
-    expect(container.querySelector('[data-rx-password-input]')).not.toHaveAttribute('maxlength')
+    // A field nobody can fill is worse than a loose cap — but dropping the cap
+    // entirely would restore the unbounded field the default exists to prevent.
+    expect(container.querySelector('[data-rx-password-input]')).toHaveAttribute('maxlength', '128')
+  })
+
+  it('keeps the fallback satisfiable when minLength exceeds the default cap', async () => {
+    // The fallback is a floor, not a constant: capping at 128 under a 200
+    // minimum would just be the unsatisfiable case again, self-inflicted.
+    const { container } = await render(
+      <PasswordInput label="Password" minLength={200} maxLength={4} onWarn={() => undefined} />,
+    )
+    expect(container.querySelector('[data-rx-password-input]')).toHaveAttribute('maxlength', '200')
+  })
+
+  it('caps the field even when no maxLength is given', async () => {
+    const { container } = await render(<PasswordInput label="Password" />)
+    expect(container.querySelector('[data-rx-password-input]')).toHaveAttribute('maxlength', '128')
   })
 
   it('applies a usable maxLength', async () => {
