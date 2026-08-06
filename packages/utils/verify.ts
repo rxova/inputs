@@ -72,7 +72,15 @@ export const steps: readonly VerifyStep[] = [
   // that ships in the tarball, and both are sub-second parse passes worth doing
   // before anything expensive runs.
   { name: 'Check agent llms.txt files', script: 'check:llms' },
+  // Same neighbourhood, same reason: a styling hook outside its component's
+  // namespace is a compatibility break that nothing else in the gate would
+  // notice, and the scan is a sub-second read of the component sources.
+  { name: 'Check styling token namespaces', script: 'check:tokens' },
   { name: 'Check e2e browser list', script: 'check:browsers' },
+  // Axe cannot tell us what a real screen reader announced. Version-controlled
+  // human evidence is invalidated by any shippable source edit, so it belongs
+  // beside the other fast release-contract checks.
+  { name: 'Check manual accessibility evidence', script: 'check:a11y-manual' },
   { name: 'Lint', script: 'lint' },
   // One Turbo invocation instead of four sequential `pnpm run`s. Turbo already
   // knows build must precede size and ^build must precede typecheck/test, so

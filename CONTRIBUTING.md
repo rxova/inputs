@@ -12,6 +12,12 @@ docs site.
 | `packages/react-intl-currency-input/` | `@rxova/react-intl-currency-input` — locale-aware currency input.                    |
 | `packages/react-rating-input/`        | `@rxova/react-rating-input` — rating input (stars / any icon).                       |
 | `packages/react-otp-input/`           | `@rxova/react-otp-input` — OTP / one-time-code input.                                |
+| `packages/react-phone-input/`         | `@rxova/react-phone-input` — international phone input.                              |
+| `packages/react-password-input/`      | `@rxova/react-password-input` — password input, strength meter, reveal toggle.       |
+| `packages/react-date-input/`          | `@rxova/react-date-input` — segmented date field, no calendar.                       |
+| `packages/react-time-input/`          | `@rxova/react-time-input` — segmented time field, no popup.                          |
+| `packages/react-tags-input/`          | `@rxova/react-tags-input` — tag / token input.                                       |
+| `packages/react-file-input/`          | `@rxova/react-file-input` — file picker and drop zone (no uploading).                |
 | `packages/react-inputs/`              | `@rxova/react-inputs` — meta-package that re-exports the whole suite.                |
 | `packages/codemod/`                   | `@rxova/codemod` — jscodeshift codemods (one transform per migration) for the suite. |
 | `packages/utils/`                     | `@rxova/utils` — private tooling (release gate, doc-snippet checks, capture, etc.).  |
@@ -49,7 +55,8 @@ Orchestrated by Turborepo, so tasks run in dependency order and cache across pac
 pnpm build             # turbo run build — every package, ^build ordered
 pnpm test              # unit + browser suites across packages
 pnpm test:coverage     # enforces 95% per file
-pnpm e2e               # Playwright per package, against the built playground
+pnpm e2e               # Playwright per package, max three suites at once
+pnpm e2e:serial        # Same suites, one package at a time for constrained machines
 pnpm lint / typecheck / format
 pnpm size              # bundle-size budgets
 pnpm check:exports     # publint + attw
@@ -86,6 +93,8 @@ Also:
 - **If you changed behaviour, change the prose in the same PR.** Grep the package README and the
   docs for the prop you touched. A fix that ships with docs still teaching the old behaviour ships
   invisible.
+- **Run both gates before handoff.** `pnpm verify` is the local pre-push/release gate; whole-page
+  Playwright suites are intentionally separate, so follow it with `pnpm e2e`.
 
 ## Rules
 
@@ -97,6 +106,12 @@ Also:
   `radiogroup` of real radios, real `<input>`s) so the browser provides keyboard, focus, and form
   behaviour. Reimplementing one of those in JavaScript is a signal the markup is wrong.
 - The `data-*` attributes in each README are **public API** and covered by semver.
+- **Namespace the styling hooks.** A component's custom properties and structural attributes are
+  `--rx-<slug>-*` and `data-rx-<slug>-*`, where `<slug>` is the `rxova.slug` in its own
+  package.json. State hooks that mean the same thing everywhere — `data-invalid`, `data-disabled`,
+  `data-readonly`, `data-focused` — stay unprefixed, so one selector reaches every input in the
+  suite. `pnpm check:tokens` enforces it; before it existed the suite drifted into `--rpi-` for
+  password and `--rphi-` for phone, one character apart on two fields that share a sign-up form.
 - Conventional Commits, enforced by `commitlint` locally and on PRs.
 
 ## Release

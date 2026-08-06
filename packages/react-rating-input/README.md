@@ -28,7 +28,7 @@ form recipes, theming, and migration from `react-rating` / `react-stars`.
 - **Any precision** — continuous `4.3`, halves, tenths, or whole stars, with the rounding
   direction you choose
 - **Accessible** — native radios in a radiogroup when interactive, `role="img"` when not
-- **Zero runtime dependencies**, ~2.3 kB brotli, no stylesheet to import
+- **Zero runtime dependencies**, ~2.8 kB brotli, no stylesheet to import
 - **Form-ready** — first-class React Hook Form / Formik / React Final Form / TanStack Form integration
 
 ## Display
@@ -193,31 +193,54 @@ With a plain `<form>`, just pass `name` and the value posts natively.
 
 ## Styling
 
-No stylesheet to import. Only layout-critical CSS is inlined; everything visual is a custom
-property.
+No stylesheet to import. Only layout-critical CSS is inlined; everything visual is a custom property
+or a `data-*` hook.
 
-```css
-[data-rfs-root] {
-  --rfs-size: 1.25rem;
-  --rfs-gap: 0.125rem;
-  --rfs-color-filled: #f5a623;
-  --rfs-color-empty: #d8d8d8;
-  --rfs-color-hover: var(--rfs-color-filled);
-  --rfs-empty-filter: grayscale(1) opacity(0.35);
-  --rfs-transition: 120ms;
-  --rfs-focus-ring: 2px solid Highlight;
-}
-```
+| Property                        | Default                         | Applies to                       |
+| ------------------------------- | ------------------------------- | -------------------------------- |
+| `--rx-rating-size`              | `1.25rem`                       | Icon size                        |
+| `--rx-rating-gap`               | `0.125rem`                      | Space between icons              |
+| `--rx-rating-color-filled`      | `#f5a623`                       | Filled portion                   |
+| `--rx-rating-color-empty`       | `#d8d8d8`                       | Track                            |
+| `--rx-rating-color-hover`       | `var(--rx-rating-color-filled)` | Hover/keyboard preview           |
+| `--rx-rating-empty-filter`      | `grayscale(1) opacity(0.35)`    | Dims the empty layer — see Emoji |
+| `--rx-rating-transition`        | `120ms`                         | Fill transitions                 |
+| `--rx-rating-focus-ring`        | `2px solid Highlight`           | Ring on the focused icon         |
+| `--rx-rating-focus-ring-offset` | `2px`                           | Its offset                       |
+| `--rx-rating-focus-ring-radius` | `2px`                           | Its corner radius                |
 
-Stable selector hooks, covered by semver: `[data-rfs-root]`, `[data-rfs-item]`,
-`[data-rfs-layer="fill"|"empty"]`, `[data-state="full"|"partial"|"empty"]`, `[data-active]`,
-`[data-readonly]`, `[data-disabled]`, `[data-invalid]`.
+### `data-*` attributes
+
+These are **public API**, covered by semver.
+
+| Attribute                                          | On      | Meaning                        |
+| -------------------------------------------------- | ------- | ------------------------------ |
+| `data-rx-rating-root`                              | wrapper | Always present                 |
+| `data-rx-rating-item`                              | icon    | The icon's index               |
+| `data-rx-rating-layer`                             | layer   | `fill` or `empty`              |
+| `data-state`                                       | icon    | `full`, `partial` or `empty`   |
+| `data-fill`                                        | icon    | Fraction filled, `0`–`1`       |
+| `data-active`                                      | icon    | Under the pointer or keyboard  |
+| `data-idx`                                         | icon    | Index, for nth-style selectors |
+| `data-invalid` / `data-disabled` / `data-readonly` | wrapper | Mirrors the props              |
+
+## Keyboard
+
+Interactive ratings are a real `radiogroup` of real radios, so this comes from the browser rather
+than from JavaScript:
+
+| Key                  | Effect                                            |
+| -------------------- | ------------------------------------------------- |
+| `←` / `→`, `↑` / `↓` | Move between values, wrapping at the ends         |
+| `Home` / `End`       | First or last value                               |
+| `Space`              | Select the focused value                          |
+| `Tab`                | Leave the group — one tab stop, whatever `max` is |
 
 ### Emoji
 
 Emoji work anywhere an icon does, with one caveat worth knowing: they render from a colour font,
-so `--rfs-color-filled` has **no effect** on them. That is why the implicit empty layer is dimmed
-with `--rfs-empty-filter` (a `grayscale`/`opacity` filter) rather than with colour — filters work
+so `--rx-rating-color-filled` has **no effect** on them. That is why the implicit empty layer is dimmed
+with `--rx-rating-empty-filter` (a `grayscale`/`opacity` filter) rather than with colour — filters work
 on emoji and SVG alike. Pass an explicit `emptyIcon` and no filter is applied.
 
 ## Props
@@ -261,7 +284,7 @@ stable and safe to `switch` on: see `RatingWarning` / `RatingWarningCode` in
 ## Headless
 
 `useRating` exposes the state machine — value, hover preview, focus, group blur, fills and steps
-— if you want to render the whole thing yourself. ~864 B on its own.
+— if you want to render the whole thing yourself. ~1.2 kB on its own.
 
 ## Accessibility
 
@@ -276,7 +299,18 @@ Also handled: visible focus ring that the fill layer's `overflow: hidden` cannot
 
 **Known limitation:** at `precision={0.5}` each half-star target is narrower than the WCAG 2.2
 §2.5.8 24×24 px minimum. That is inherent to half-star input. Use `precision={1}` or a larger
-`--rfs-size` where that matters.
+`--rx-rating-size` where that matters.
+
+## UI-library recipes
+
+The docs contain maintained examples for shadcn/ui, Radix Themes, Material UI, Chakra UI, Mantine
+and Ant Design. Copy a ready-labelled wrapper with:
+
+```bash
+npx shadcn@latest add https://rxova.org/packages/react-inputs/r/rating-field.json
+```
+
+[Open the recipes](https://rxova.org/packages/react-inputs/components/rating/about/#ui-library-recipes).
 
 ## Part of rxova
 

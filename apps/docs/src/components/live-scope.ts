@@ -1,13 +1,13 @@
 import React from 'react'
-import * as date from '@rxova/react-date-input'
-import * as file from '@rxova/react-file-input'
 import * as currency from '@rxova/react-intl-currency-input'
 import * as rating from '@rxova/react-rating-input'
 import * as otp from '@rxova/react-otp-input'
-import * as password from '@rxova/react-password-input'
 import * as phone from '@rxova/react-phone-input'
-import * as tags from '@rxova/react-tags-input'
+import * as password from '@rxova/react-password-input'
+import * as date from '@rxova/react-date-input'
 import * as time from '@rxova/react-time-input'
+import * as tags from '@rxova/react-tags-input'
+import * as file from '@rxova/react-file-input'
 
 /**
  * Everything available inside a ```tsx live code block. Spreading React exposes
@@ -27,15 +27,15 @@ import * as time from '@rxova/react-time-input'
 const liveScope = {
   React,
   ...React,
-  ...date,
-  ...file,
   ...currency,
   ...rating,
   ...otp,
-  ...password,
   ...phone,
-  ...tags,
+  ...password,
+  ...date,
   ...time,
+  ...tags,
+  ...file,
 }
 
 export default liveScope

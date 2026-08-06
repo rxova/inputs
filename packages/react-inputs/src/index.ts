@@ -5,12 +5,29 @@
 export * from '@rxova/react-intl-currency-input'
 export * from '@rxova/react-rating-input'
 export * from '@rxova/react-otp-input'
-export * from '@rxova/react-password-input'
 export * from '@rxova/react-phone-input'
+export * from '@rxova/react-password-input'
 
-// Date and time intentionally keep their shared ISO helpers in their own
-// packages; those names cannot identify which value shape they operate on once
-// both packages are merged into this namespace.
+/*
+ * The remaining four export by name rather than with a star, because exactly six
+ * of their *pure helpers* collide across packages:
+ *
+ *   date + time  ->  toISO, fromISO, compareISO, withinRange
+ *   tags + file  ->  attempt, attemptAll
+ *
+ * Those names are correct in their own package and meaningless once merged into
+ * one namespace — `toISO` would have to mean both a date and a time. A star
+ * export makes them ambiguous (silently absent at runtime under ESM, an error
+ * under some bundlers), so those six stay where they are: import them from
+ * `@rxova/react-date-input` and friends directly.
+ *
+ * Everything else comes through, including every type. The list below used to be
+ * hand-picked, which made it wrong in a way nothing reported: `onPartsChange` is
+ * typed `(parts: DateParts) => void` and was re-exported, while `DateParts`
+ * itself was not — so a consumer of this package could see the prop and had no
+ * way to name its argument. `meta-package.test.ts` now fails on any export that
+ * is not either re-exported here or one of the six collisions.
+ */
 export {
   DateInput,
   useDateInput,
