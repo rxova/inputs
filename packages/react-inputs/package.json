@@ -44,6 +44,7 @@
   "dependencies": {
     "@rxova/react-intl-currency-input": "workspace:^",
     "@rxova/react-otp-input": "workspace:^",
+    "@rxova/react-password-input": "workspace:^",
     "@rxova/react-rating-input": "workspace:^"
   },
   "engines": {

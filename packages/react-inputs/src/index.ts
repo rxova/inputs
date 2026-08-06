@@ -5,3 +5,4 @@
 export * from '@rxova/react-intl-currency-input'
 export * from '@rxova/react-rating-input'
 export * from '@rxova/react-otp-input'
+export * from '@rxova/react-password-input'
