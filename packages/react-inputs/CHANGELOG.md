@@ -1,5 +1,63 @@
 # @rxova/react-inputs
 
+## 1.0.0
+
+### Major Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - **Breaking:** the styling hooks of every component in the suite are namespaced `--rx-<name>-*` /
+  `data-rx-<name>-*` — `--rx-otp-slot-size`, `--rx-rating-size`, `--rx-password-gap`,
+  `--rx-date-segment-radius`, and so on. This package adds no styling of its own, but it is the
+  install a stylesheet is most likely written against, so the break lands here too.
+
+  The two components whose published names changed are `@rxova/react-otp-input` (`--otp-*`) and
+  `@rxova/react-rating-input` (`--rfs-*`); see their changelogs and
+  `npx @rxova/codemod rx-token-prefixes`.
+
+  The date and time fields also now paint a focus ring on the segment that has focus. A
+  `<span role="spinbutton">` gets none from the browser, and the packages previously shipped
+  `outline: none` with nothing in its place, so a keyboard user could not see which segment they were
+  on. Restyle it with `--rx-date-focus-ring` / `--rx-time-focus-ring` rather than removing it.
+
+### Minor Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Export the new date input from the all-in-one package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Export the new file input from the all-in-one package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Re-export `@rxova/react-password-input` from the suite meta-package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Export the new phone input from the all-in-one package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Export the new tags input from the all-in-one package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Export the new time input from the all-in-one package.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Re-export everything the component packages export, not a hand-picked subset.
+
+  The four packages that export by name rather than with a star were missing 37 names between them,
+  and the omission had teeth: `DateInputProps.onPartsChange` is typed `(parts: DateParts) => void` and
+  was re-exported while `DateParts` itself was not, so a consumer of this package could see the prop
+  and had no way to name its argument. Same for `TimeParts`, `TagState`, `TagRules`, `FileRules` and
+  every pure helper in those four packages.
+
+  Exactly six names stay out, because they genuinely collide: `toISO`, `fromISO`, `compareISO` and
+  `withinRange` mean different things in the date and time packages, and `attempt` / `attemptAll` in
+  tags and file. `meta-package.test.ts` now fails on any export that is neither re-exported here nor
+  one of those six, so the list cannot silently fall behind again.
+
+### Patch Changes
+
+- Updated dependencies [[`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49), [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49)]:
+  - @rxova/react-phone-input@0.1.0
+  - @rxova/react-intl-currency-input@0.3.0
+  - @rxova/react-date-input@0.1.0
+  - @rxova/react-file-input@0.1.0
+  - @rxova/react-time-input@0.1.0
+  - @rxova/react-otp-input@1.0.0
+  - @rxova/react-password-input@0.1.0
+  - @rxova/react-tags-input@0.1.0
+  - @rxova/react-rating-input@1.0.0
+
 ## 0.1.5
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @rxova/codemod
 
+## 0.2.0
+
+### Minor Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Add `currency-on-change` for the 1.0 handler swap in `@rxova/react-intl-currency-input`:
+  `onValueChange` becomes `onChange`, and any native `onChange` becomes `onNativeChange`.
+
+  Both renames are applied in a single pass over each element, which is the reason this is a codemod
+  and not a documented find-and-replace — done sequentially, the value handler walks through both
+  steps and silently ends up on the native prop. The component is resolved through its import, so an
+  alias is followed and a same-named component from another library is left alone. `useCurrencyInput`
+  options objects take the same rename.
+
 ## 0.1.3
 
 ### Patch Changes
