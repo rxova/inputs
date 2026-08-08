@@ -14,7 +14,7 @@
 // ## The rule that matters
 //
 // Almost every `import` line in this content sits INSIDE a code fence — they are
-// the illustrative snippets the docs are made of. Only seven are real MDX imports.
+// the illustrative snippets the docs are made of. Only a handful are real MDX imports.
 // So no rule may be applied blindly across the document: everything runs through
 // `mapUnfenced`, and a fence's contents are never touched. Getting this wrong
 // silently guts the examples, which is exactly the failure an agent would not
@@ -151,10 +151,6 @@ export function expandIntegrationRecipes(text, loadRecipes = () => []) {
   )
 }
 
-export function expandManualAccessibilityMatrix(text, matrix = '') {
-  return text.replace(/^[ \t]*<ManualAccessibilityMatrix\s*\/>[ \t]*$/gm, matrix)
-}
-
 export function expandFrameworkCompatibilityMatrix(text, matrix = '') {
   return text.replace(/^[ \t]*<FrameworkCompatibilityMatrix\s*\/>[ \t]*$/gm, matrix)
 }
@@ -193,19 +189,10 @@ export function absolutizeUrls(text, { origin, base }) {
  */
 export function mdxToMarkdown(
   source,
-  {
-    origin,
-    base = '/',
-    recipesFor = () => [],
-    manualA11yMatrix = '',
-    frameworkCompatibilityMatrix = '',
-  },
+  { origin, base = '/', recipesFor = () => [], frameworkCompatibilityMatrix = '' },
 ) {
   const withRecipes = mapUnfenced(source, (chunk) => expandIntegrationRecipes(chunk, recipesFor))
-  const withA11y = mapUnfenced(withRecipes, (chunk) =>
-    expandManualAccessibilityMatrix(chunk, manualA11yMatrix),
-  )
-  const withFrameworks = mapUnfenced(withA11y, (chunk) =>
+  const withFrameworks = mapUnfenced(withRecipes, (chunk) =>
     expandFrameworkCompatibilityMatrix(chunk, frameworkCompatibilityMatrix),
   )
   const expanded = mapUnfenced(withFrameworks, expandLiveExamples)

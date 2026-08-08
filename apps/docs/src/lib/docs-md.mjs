@@ -15,7 +15,6 @@ import { withBase } from './base-url.mjs'
 import { mdxToMarkdown } from './mdx-to-markdown.mjs'
 import { HOME, sectionOf, mdRoute, htmlRoute, firstSentence } from './docs-pages.mjs'
 import { recipesFor } from './recipe-sources.mjs'
-import { manualA11yMarkdown } from './manual-a11y-proof.mjs'
 import { frameworkCompatibilityMarkdown } from './framework-proof.mjs'
 
 /**
@@ -73,7 +72,6 @@ export async function docsPages({ origin, base = '/' }) {
           origin,
           base,
           recipesFor,
-          manualA11yMatrix: manualA11yMarkdown(),
           frameworkCompatibilityMatrix: frameworkCompatibilityMarkdown(),
         }),
       }

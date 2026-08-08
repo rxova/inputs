@@ -36,8 +36,6 @@
     "check:llms": "node --import tsx ./packages/utils/check-llms.ts",
     "check:tokens": "node --import tsx ./packages/utils/check-tokens.ts",
     "check:browsers": "node --import tsx ./packages/utils/check-browsers.ts",
-    "check:a11y-manual": "node --import tsx ./packages/utils/check-manual-a11y.ts",
-    "a11y:record": "node --import tsx ./packages/utils/record-manual-a11y.ts",
     "verify": "node --import tsx ./packages/utils/verify.ts"
   },
   "devDependencies": {

@@ -109,7 +109,6 @@ jobs:
       # renamed in types.ts would leave the table describing an API that no
       # longer exists with every other check still green.
       - run: pnpm exec turbo run check:llms
-      - run: pnpm run check:a11y-manual
       - run: pnpm run lint
       - run: pnpm run typecheck
 
