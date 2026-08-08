@@ -37,7 +37,7 @@ change in the browser: locales, currencies, precision, digits, negatives and key
 - **Useful input controls** — opt-in ArrowUp/ArrowDown stepping and raw-input transformation
 - **Correct where others break** — bg-BG's "space only above 9999", fr-FR's narrow no-break space,
   ja-JP's zero decimals, KWD's three, ar-EG's native digits, hi-IN's lakh grouping, de-CH's apostrophe
-- **Zero runtime dependencies**, ~2.9 kB brotli, no stylesheet to import
+- **Zero runtime dependencies**, ~3.2 kB brotli, no stylesheet to import
 - **Form-ready** — first-class React Hook Form / Formik / React Final Form / TanStack Form recipes
 
 ## One value, eight languages
@@ -111,6 +111,7 @@ only on blur, with no caret management at all.
 | `value`                 | `number \| null`                                 | —                | Controlled. `null` renders an empty field.               |
 | `defaultValue`          | `number \| null`                                 | `null`           | Uncontrolled initial value.                              |
 | `onChange`              | `(value, meta) => void`                          | —                | `value` is a `number \| null`, not a DOM event.          |
+| `onValueChange`         | `(value, meta) => void`                          | —                | Deprecated alias for `onChange`.                         |
 | `onNativeChange`        | `ChangeEventHandler<HTMLInputElement>`           | —                | Forwarded DOM handler; runs after the internal one.      |
 | `maximumFractionDigits` | `number`                                         | currency default | JPY 0, EUR 2, KWD 3.                                     |
 | `minimumFractionDigits` | `number`                                         | `0`              | Set to `2` to force trailing zeros.                      |
@@ -156,6 +157,19 @@ CSS Modules, CSS-in-JS, or utility classes. The `invalid` prop supplies both the
 }
 ```
 
+### `data-*` attributes
+
+These are **public API**, covered by semver. This component renders a single element, so the root
+_is_ the input — hence one selector hook where the composite inputs in the suite carry several.
+
+| Attribute               | On        | Meaning                    |
+| ----------------------- | --------- | -------------------------- |
+| `data-rx-currency-root` | `<input>` | Always present             |
+| `data-invalid`          | `<input>` | Mirrors the `invalid` prop |
+
+It defines no CSS custom properties: there is nothing painted on top of the input to configure, so
+`className` and ordinary CSS reach everything.
+
 See the **[complete styling guide](https://rxova.org/packages/react-inputs/components/currency/about/#styling)**
 for labeled fields, CSS Modules, Tailwind, wrapper adornments, design-system variants, and RTL-safe
 layout.
@@ -197,6 +211,17 @@ Best-effort ISO-3166 → ISO-4217 lookup for convenience. Prefer passing `curren
 etc.). See the
 [form-library guide](https://rxova.org/packages/react-inputs/components/currency/about/#form-libraries)
 for React Hook Form, Formik, React Final Form and TanStack Form.
+
+## UI-library recipes
+
+The docs contain maintained examples for shadcn/ui, Radix Themes, Material UI, Chakra UI, Mantine
+and Ant Design. Copy a ready-labelled wrapper with:
+
+```bash
+npx shadcn@latest add https://rxova.org/packages/react-inputs/r/currency-field.json
+```
+
+[Open the recipes](https://rxova.org/packages/react-inputs/components/currency/about/#ui-library-recipes).
 
 ## Part of rxova
 

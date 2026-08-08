@@ -47,6 +47,12 @@ and gives you more time to focus on the experience you want to build.
 | [**`@rxova/react-intl-currency-input`**](packages/react-intl-currency-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-intl-currency-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-intl-currency-input) | Locale-aware money entry with correct grouping, symbols and no cursor bugs      | ≤ 3.25 kB |
 | [**`@rxova/react-rating-input`**](packages/react-rating-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-rating-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-rating-input)                             | Any icon, any precision, with `radiogroup` semantics and a read-only image mode | ≤ 3 kB    |
 | [**`@rxova/react-otp-input`**](packages/react-otp-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-otp-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-otp-input)                                         | One-time-code entry with spatial slots, paste handling and WebOTP autofill      | ≤ 4.5 kB  |
+| [**`@rxova/react-password-input`**](packages/react-password-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-password-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-password-input)                     | Reveal toggle, Caps Lock warning and a strength meter that costs 1 kB, not 400  | ≤ 5 kB    |
+| [**`@rxova/react-phone-input`**](packages/react-phone-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-phone-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-phone-input)                                 | International numbers with no metadata blob — E.164 in and out                  | ≤ 4.25 kB |
+| [**`@rxova/react-date-input`**](packages/react-date-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-date-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-date-input)                                     | Segmented, locale-ordered date entry with no calendar and no date library       | ≤ 4 kB    |
+| [**`@rxova/react-time-input`**](packages/react-time-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-time-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-time-input)                                     | Segmented time entry, 12/24-hour by locale, canonical 24-hour value             | ≤ 4 kB    |
+| [**`@rxova/react-tags-input`**](packages/react-tags-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-tags-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-tags-input)                                     | Tags and tokens with a real roving tab order and announced add/remove           | ≤ 4 kB    |
+| [**`@rxova/react-file-input`**](packages/react-file-input)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-file-input?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-file-input)                                     | Picker and drop zone with accept/size rules, dedupe and managed previews        | ≤ 4 kB    |
 | [**`@rxova/react-inputs`**](packages/react-inputs)<br />[![npm](https://img.shields.io/npm/v/@rxova/react-inputs?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/react-inputs)                                                     | Meta-package — the whole suite from one install, tree-shaken to what you import | ≤ 10 kB   |
 | [**`@rxova/codemod`**](packages/codemod)<br />[![npm](https://img.shields.io/npm/v/@rxova/codemod?color=cb3837&label=)](https://www.npmjs.com/package/@rxova/codemod)                                                                         | `jscodeshift` helpers for supported migration paths                             | —         |
 
@@ -133,6 +139,12 @@ Full guides, live editable examples and the generated API reference for Rxova Re
 | Currency  | [Getting started](https://rxova.org/packages/react-inputs/components/currency/introduction/) | [API](https://rxova.org/packages/react-inputs/components/currency/api) |
 | Rating    | [Getting started](https://rxova.org/packages/react-inputs/components/rating/introduction/)   | [API](https://rxova.org/packages/react-inputs/components/rating/api)   |
 | OTP       | [Getting started](https://rxova.org/packages/react-inputs/components/otp/introduction/)      | [API](https://rxova.org/packages/react-inputs/components/otp/api)      |
+| Password  | [Getting started](https://rxova.org/packages/react-inputs/components/password/introduction/) | [API](https://rxova.org/packages/react-inputs/components/password/api) |
+| Phone     | [Getting started](https://rxova.org/packages/react-inputs/components/phone/introduction/)    | [API](https://rxova.org/packages/react-inputs/components/phone/api)    |
+| Date      | [Getting started](https://rxova.org/packages/react-inputs/components/date/introduction/)     | [API](https://rxova.org/packages/react-inputs/components/date/api)     |
+| Time      | [Getting started](https://rxova.org/packages/react-inputs/components/time/introduction/)     | [API](https://rxova.org/packages/react-inputs/components/time/api)     |
+| Tags      | [Getting started](https://rxova.org/packages/react-inputs/components/tags/introduction/)     | [API](https://rxova.org/packages/react-inputs/components/tags/api)     |
+| File      | [Getting started](https://rxova.org/packages/react-inputs/components/file/introduction/)     | [API](https://rxova.org/packages/react-inputs/components/file/api)     |
 
 Accessibility, styling and form-library guidance lives on each component's About page — for example
 [Currency › About](https://rxova.org/packages/react-inputs/components/currency/about/).
@@ -167,6 +179,12 @@ packages/
   react-intl-currency-input   currency input
   react-rating-input          rating input
   react-otp-input             OTP input
+  react-password-input        password input
+  react-phone-input           international phone input
+  react-date-input            segmented date input
+  react-time-input            segmented time input
+  react-tags-input            tags / token input
+  react-file-input            file picker and drop zone
   react-inputs                meta-package, re-exports the suite
   codemod                     jscodeshift migration transforms
   demo-kit                    shared demo primitives (private, dev-only)
@@ -183,8 +201,9 @@ apps/
 - **Vitest** (unit + browser), **Playwright** e2e, **`@axe-core/playwright`** a11y,
   **size-limit** budgets, **publint** / **attw** export checks
 - **ESLint** flat config (type-checked), **Prettier**, **commitlint** + **husky** + **lint-staged**
-- `pnpm verify` runs the full release gate. `pnpm check:docs` type-checks every snippet in this
-  README and in each package README, so the examples above cannot rot.
+- `pnpm verify` runs the local release gate; `pnpm e2e` runs the whole-page suites with bounded
+  concurrency. `pnpm check:docs` type-checks every snippet in this README and in each package
+  README, so the examples above cannot rot.
 
 </details>
 

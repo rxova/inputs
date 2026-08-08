@@ -1,0 +1,159 @@
+# @rxova/react-password-input
+
+> A headless, accessible password input for React: a reveal toggle that keeps the
+> caret, a Caps Lock warning read off the real modifier, a requirements checklist,
+> and a strength meter that costs about 1 kB instead of the ~400 kB a wordlist
+> estimator costs. Zero runtime dependencies. No stylesheet to import.
+
+## Install
+
+    npm install @rxova/react-password-input
+
+`react >= 18` is the only peer dependency.
+
+## Minimal working example
+
+```tsx
+import { PasswordInput } from '@rxova/react-password-input'
+
+export function SignIn() {
+  return <PasswordInput label="Password" name="password" autoComplete="current-password" />
+}
+```
+
+On a sign-up or change-password form, set `autoComplete="new-password"` and opt
+into the meter:
+
+```tsx
+import { useState } from 'react'
+import { PasswordInput, commonRules } from '@rxova/react-password-input'
+
+export function SignUp({ email }: { email: string }) {
+  const [valid, setValid] = useState(false)
+
+  return (
+    <>
+      <PasswordInput
+        label="Choose a password"
+        name="password"
+        autoComplete="new-password"
+        showStrength
+        minScore={3}
+        minLength={10}
+        userInputs={[email]}
+        rules={[commonRules.digit, { ...commonRules.symbol, optional: true }]}
+        onValidityChange={setValid}
+      />
+      <button type="submit" disabled={!valid}>
+        Create account
+      </button>
+    </>
+  )
+}
+```
+
+`onChange` receives the **string**, not an event.
+
+## Props
+
+`<PasswordInput>` — the full surface is `PasswordInputProps` in the published types.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `value` | `string` | — | Controlled password. |
+| `defaultValue` | `string` | — | Uncontrolled initial password. Ignored when `value` is set. |
+| `onChange` | `(value: string) => void` | — | Emits the string, not an event. |
+| `revealed` | `boolean` | — | Controlled reveal state. Omit to let the component own it. |
+| `defaultRevealed` | `boolean` | `false` | Initial reveal state when uncontrolled. |
+| `onRevealChange` | `(revealed: boolean) => void` | — | |
+| `hideRevealToggle` | `boolean` | `false` | Drops the reveal button entirely. |
+| `hideOnBlur` | `boolean` | `true` | Re-masks when focus leaves the field. |
+| `revealLabel` | `string \| ((state: PasswordRevealState) => string)` | `'Show password'` / `'Hide password'` | Accessible name for the toggle. |
+| `revealIcon` | `ReactNode \| ((state: PasswordRevealState) => ReactNode)` | a built-in eye glyph | |
+| `showStrength` | `boolean` | `false` | Renders the strength meter. |
+| `estimate` | `(password: string) => PasswordStrength` | the built-in `estimateStrength` | Swap in a zxcvbn adapter if you want wordlists. |
+| `blocklist` | `string[]` | — | Extra low-entropy strings to penalise, e.g. your product name. |
+| `userInputs` | `string[]` | — | Email/username/name the user typed elsewhere. Nothing leaves the browser. |
+| `strengthLabel` | `(strength: PasswordStrength) => ReactNode` | `'Very weak'` … `'Strong'` | Caption under the meter. |
+| `minScore` | `PasswordScore \| null` | `null` | Minimum 0–4 score to count as valid. `null` disables the gate. |
+| `rules` | `PasswordRule[]` | one length rule | NIST SP 800-63B leads with length and advises against composition rules. |
+| `showRules` | `boolean` | `true` when `rules` was provided | Renders the requirement checklist. |
+| `minLength` | `number` | `8` | Drives the default rule and the native `minlength`. |
+| `maxLength` | `number` | `128` | Native `maxlength`. Always applied; the prop only moves the cap. Double NIST's 64-character floor, so passphrases are not truncated. A value below `minLength` or non-finite falls back to the default. |
+| `onValidityChange` | `(valid: boolean) => void` | — | Fires when "all required rules met and `minScore` reached" flips. |
+| `capsLockWarning` | `boolean` | `true` | |
+| `capsLockLabel` | `ReactNode` | `'Caps Lock is on'` | |
+| `checkCompromised` | `(password: string, signal: AbortSignal) => Promise<boolean>` | — | Your breach lookup. The library never makes a request itself. |
+| `checkCompromisedDelay` | `number` | `400` | Debounce before `checkCompromised` runs, in ms. |
+| `compromisedLabel` | `ReactNode` | a stock sentence | Shown when `checkCompromised` resolves true. |
+| `name` | `string` | — | Posts natively in a `<form>`; the name RHF/Formik bind to. |
+| `required` | `boolean` | `false` | |
+| `disabled` | `boolean` | `false` | |
+| `readOnly` | `boolean` | `false` | |
+| `autoComplete` | `string` | `'current-password'` | Set `'new-password'` on sign-up and change-password forms. |
+| `placeholder` | `string` | — | |
+| `onBlur` | `(event: FocusEvent<HTMLElement>) => void` | — | Fires when focus leaves the whole control, not the input alone. |
+| `onFocus` | `(event: FocusEvent<HTMLElement>) => void` | — | |
+| `autoFocus` | `boolean` | `false` | Focuses the field on mount. |
+| `aria-label` | `string` | — | Accessible name when there is no `label`. Wins over `label`. |
+| `invalid` | `boolean` | `false` | Sets `aria-invalid` and `data-invalid`. |
+| `aria-describedby` | `string` | — | ids of external error/help text; merged with the ids this component owns. |
+| `label` | `ReactNode` | — | Accessible name for the field. **Not rendered** — supply your own `<label htmlFor={id}>` for a visible one. |
+| `id` | `string` | — | Base id; input, meter, checklist and warnings derive theirs from it. |
+| `className` | `string` | — | |
+| `style` | `CSSProperties` | — | |
+| `onWarn` | `(warning: PasswordWarning) => void` | `console.warn` | Development-only notice that a prop was coerced. Stripped from production builds. |
+
+Also exported: `usePasswordInput` for your own markup — its result carries
+`clear()` alongside `setValue`, matching every other hook in the suite — `estimateStrength` and
+`STRENGTH_LABELS`, and the rule helpers `commonRules`, `defaultRules`,
+`evaluateRules`, `rulesSatisfied`.
+
+## Styling
+
+There is no stylesheet. Set CSS custom properties on any ancestor:
+
+`--rx-password-gap`, `--rx-password-field-gap`, `--rx-password-toggle-size`,
+`--rx-password-meter-height`, `--rx-password-meter-gap`,
+`--rx-password-meter-radius`, `--rx-password-meter-track`,
+`--rx-password-meter-fill`, `--rx-password-meter-fill-1` …
+`--rx-password-meter-fill-4`, `--rx-password-rules-indent`.
+
+Keep `--rx-password-toggle-size` at `1.5rem` or above: at the default font size that is
+the 24×24 CSS pixels WCAG 2.5.8 Target Size (Minimum) requires.
+
+Or target the `data-*` attributes, which are public API covered by semver:
+`data-rx-password-root`, `data-rx-password-field`, `data-rx-password-input`,
+`data-rx-password-toggle`, `data-rx-password-caps-lock`, `data-rx-password-meter`,
+`data-rx-password-segment`, `data-rx-password-strength`,
+`data-rx-password-strength-label`, `data-rx-password-rules`,
+`data-rx-password-rule-marker`, `data-rx-password-compromised`,
+`data-rx-password-announcement`, plus the state hooks `data-revealed`,
+`data-valid`, `data-score`, `data-filled`, `data-met`, `data-rule`,
+`data-disabled`, `data-invalid`.
+
+## Three mistakes to avoid
+
+1. **Treating the score as a security guarantee.** `estimateStrength` returns a
+   0–4 bucket and an entropy estimate *after* penalties — a comparator for
+   nudging a user, not a measurement of offline-attack cost. Server-side policy
+   still belongs on the server.
+2. **Leaving `autoComplete` at its default on a sign-up form.** The default is
+   `'current-password'`, which is right for sign-in and wrong everywhere else:
+   password managers offer to fill instead of offering to generate.
+3. **Expecting `checkCompromised` to make a request.** It never does. You supply
+   the lookup — wire it to a k-anonymity endpoint so the plaintext stays local —
+   and it is called debounced with an `AbortSignal` that fires when the password
+   changes again or the component unmounts.
+
+## Docs
+
+- Copyable labelled field: https://rxova.org/packages/react-inputs/r/password-field.json
+- Six maintained UI-library recipes: https://rxova.org/packages/react-inputs/components/password/about/#ui-library-recipes
+
+- Introduction: https://rxova.org/packages/react-inputs/components/password/introduction/
+- Usage: https://rxova.org/packages/react-inputs/components/password/usage/
+- Everything else (forms, theming, breach checks, SSR): https://rxova.org/packages/react-inputs/components/password/about/
+- Migrating from another password field: https://rxova.org/packages/react-inputs/components/password/migrating/
+- Generated API reference: https://rxova.org/packages/react-inputs/components/password/api/
+- Index of the whole suite for agents: https://rxova.org/packages/react-inputs/llms.txt

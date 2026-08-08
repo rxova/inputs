@@ -26,6 +26,14 @@ overrides:
   # that these dependents do not declare support for.
   js-yaml@3: '>=3.15.1 <4'
   js-yaml@4: '>=4.3.1 <5'
+  # GHSA-2v37-7h3g-55p8: a custom alphabet with size zero loops forever (DoS).
+  # Only the 3.x line is affected — 5.1.16 and 6.0.0 also resolve here and both
+  # sit outside the advisory's `<3.3.17` range — so one scoped entry covers it
+  # and a future 4.x arrival is re-audited rather than silently allowed. Every
+  # path runs through postcss (eslint-plugin-astro, next, vite), so it is build
+  # tooling, never shipped, and nothing here calls nanoid with a custom
+  # generator at all. Upper bound load-bearing as above.
+  nanoid@3: '>=3.3.17 <4'
 #
 # No `auditConfig.ignoreGhsas`. The single entry that lived here suppressed
 # GHSA-mh99-v99m-4gvg for one unfixable copy reached through
@@ -48,3 +56,10 @@ minimumReleaseAgeExclude:
   - tsdown@0.22.14
   - verkit@0.3.0
   - '@rxova/brand'
+  - '@mui/core-downloads-tracker@9.3.0'
+  - '@mui/material@9.3.0'
+  - '@mui/private-theming@9.3.0'
+  - '@mui/styled-engine@9.3.0'
+  - '@mui/system@9.3.0'
+  - '@mui/types@9.3.0'
+  - '@mui/utils@9.3.0'

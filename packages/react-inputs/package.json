@@ -2,7 +2,7 @@
   "name": "@rxova/react-inputs",
   "version": "0.1.5",
   "type": "module",
-  "description": "The complete rxova suite: currency, rating, and OTP inputs for React from a single install.",
+  "description": "The complete rxova suite: currency, rating, OTP, password, phone, date, time, tags and file inputs for React from a single install.",
   "keywords": [
     "react",
     "input",
@@ -42,9 +42,15 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@rxova/react-date-input": "workspace:^",
+    "@rxova/react-file-input": "workspace:^",
     "@rxova/react-intl-currency-input": "workspace:^",
     "@rxova/react-otp-input": "workspace:^",
-    "@rxova/react-rating-input": "workspace:^"
+    "@rxova/react-password-input": "workspace:^",
+    "@rxova/react-phone-input": "workspace:^",
+    "@rxova/react-rating-input": "workspace:^",
+    "@rxova/react-tags-input": "workspace:^",
+    "@rxova/react-time-input": "workspace:^"
   },
   "engines": {
     "node": ">=20.19.0"

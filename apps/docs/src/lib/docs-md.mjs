@@ -14,6 +14,8 @@ import { getCollection } from 'astro:content'
 import { withBase } from './base-url.mjs'
 import { mdxToMarkdown } from './mdx-to-markdown.mjs'
 import { HOME, sectionOf, mdRoute, htmlRoute, firstSentence } from './docs-pages.mjs'
+import { recipesFor } from './recipe-sources.mjs'
+import { frameworkCompatibilityMarkdown } from './framework-proof.mjs'
 
 /**
  * The component list, injected by astro.config.mjs from `componentPackages()`.
@@ -66,7 +68,12 @@ export async function docsPages({ origin, base = '/' }) {
         mdRoute: mdRoute(entry.id),
         htmlUrl: toUrl(htmlRoute(entry.id)),
         mdUrl: toUrl(mdRoute(entry.id)),
-        body: mdxToMarkdown(body, { origin, base }),
+        body: mdxToMarkdown(body, {
+          origin,
+          base,
+          recipesFor,
+          frameworkCompatibilityMatrix: frameworkCompatibilityMarkdown(),
+        }),
       }
     })
     .sort((a, b) => a.id.localeCompare(b.id, 'en'))

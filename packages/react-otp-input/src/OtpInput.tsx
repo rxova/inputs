@@ -21,7 +21,7 @@ import { OtpGroup } from './OtpGroup'
 const rootStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 'var(--otp-gap, 0.5rem)',
+  gap: 'var(--rx-otp-gap, 0.5rem)',
   lineHeight: 1,
 }
 
@@ -38,14 +38,14 @@ const inputOverlayStyle: CSSProperties = {
   margin: 0,
   padding: 0,
   border: 0,
-  fontFamily: 'var(--otp-font, ui-monospace, SFMono-Regular, Menlo, monospace)',
-  fontSize: 'var(--otp-font-size, 1.125rem)',
+  fontFamily: 'var(--rx-otp-font, ui-monospace, SFMono-Regular, Menlo, monospace)',
+  fontSize: 'var(--rx-otp-font-size, 1.125rem)',
   textAlign: 'left',
   cursor: 'text',
 }
 
-const CARET_KEYFRAMES = 'otp-slots-blink'
-const CARET_STYLE_ID = 'otp-slots-caret-style'
+const CARET_KEYFRAMES = 'rx-otp-blink'
+const CARET_STYLE_ID = 'rx-otp-caret-style'
 
 /**
  * Inject the caret blink keyframes once per document (CSP-noncable). Reduced
@@ -66,7 +66,7 @@ function injectCaretStyles(nonce: string | undefined): void {
     `@keyframes ${CARET_KEYFRAMES}{0%,49%{opacity:1}50%,100%{opacity:0}}` +
     `.${CARET_CLASS}{animation:${CARET_KEYFRAMES} 1s steps(1) infinite}` +
     `@media (prefers-reduced-motion:reduce){.${CARET_CLASS}{animation:none}}` +
-    `[data-otp-input]::selection{background:transparent;color:transparent}`
+    `[data-rx-otp-input]::selection{background:transparent;color:transparent}`
   document.head.appendChild(el)
 }
 
@@ -132,14 +132,14 @@ function runDevChecks(children: ReactNode, length: number, labelled: boolean): v
     if (bad) {
       // eslint-disable-next-line no-console
       console.warn(
-        `react-otp-slots: <OtpSlot> indices must tile [0, ${String(length)}) exactly once. Rendering what was given.`,
+        `[react-otp-input] <OtpSlot> indices must tile [0, ${String(length)}) exactly once. Rendering what was given.`,
       )
     }
   }
   if (!labelled) {
     // eslint-disable-next-line no-console
     console.warn(
-      'react-otp-slots: <OtpInput> has no accessible name. Pass `label` or `aria-label`.',
+      '[react-otp-input] <OtpInput> has no accessible name. Pass `label` or `aria-label`.',
     )
   }
 }
@@ -205,7 +205,7 @@ export const OtpInput = /* @__PURE__ */ forwardRef<HTMLInputElement, OtpInputPro
     // DOM styling that depends on measured geometry.
     useIsomorphicLayoutEffect(() => {
       const root = rootRef.current
-      const input = root?.querySelector<HTMLInputElement>('[data-otp-input]')
+      const input = root?.querySelector<HTMLInputElement>('[data-rx-otp-input]')
       /* v8 ignore next -- input is always rendered; defensive guard */
       if (!input) return
       if (resolvedInteraction === 'crush') {
@@ -214,7 +214,7 @@ export const OtpInput = /* @__PURE__ */ forwardRef<HTMLInputElement, OtpInputPro
         input.style.textAlign = 'center'
         return
       }
-      const firstSlot = root?.querySelector<HTMLElement>('[data-otp-slot]')
+      const firstSlot = root?.querySelector<HTMLElement>('[data-rx-otp-slot]')
       /* v8 ignore next -- a slot is always rendered; defensive guard */
       if (!firstSlot) return
       const slotWidth = firstSlot.getBoundingClientRect().width

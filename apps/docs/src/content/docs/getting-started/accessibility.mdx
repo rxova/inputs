@@ -1,0 +1,27 @@
+---
+title: 'Accessibility evidence'
+description: The automated WCAG checks every Rxova input is held to, and what they do and do not prove.
+sidebar:
+  order: 4
+---
+
+Automated browser checks run axe against every component in Chromium, Firefox, and WebKit, on the
+component in isolation and on a whole demo page. They catch invalid semantics and broken ARIA
+relationships on every commit.
+
+## What automation proves
+
+- Per-file unit and browser coverage protects the state machines and rendering branches.
+- Whole-page Playwright suites cover native form submission, focus order, RTL, and axe scans.
+- Framework fixtures exercise production SSR/RSC and hydration rather than a synthetic DOM.
+- Native controls provide keyboard semantics; the components do not reimplement platform behavior
+  with speculative key handlers. That last point is the load-bearing one — reaching for a keydown
+  handler to do what a real `<input>` or `radiogroup` already does means the markup is wrong.
+
+## What it does not prove
+
+Axe cannot report what a screen reader actually announced. No automated check can. If a component
+misbehaves under VoiceOver, NVDA, JAWS, TalkBack or any other assistive technology, that is a bug
+worth reporting — please
+[open an issue](https://github.com/rxova/react-inputs/issues/new/choose) with the browser, the
+assistive technology and its version.

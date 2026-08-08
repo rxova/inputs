@@ -14,7 +14,7 @@
 // ## The rule that matters
 //
 // Almost every `import` line in this content sits INSIDE a code fence — they are
-// the illustrative snippets the docs are made of. Only seven are real MDX imports.
+// the illustrative snippets the docs are made of. Only a handful are real MDX imports.
 // So no rule may be applied blindly across the document: everything runs through
 // `mapUnfenced`, and a fence's contents are never touched. Getting this wrong
 // silently guts the examples, which is exactly the failure an agent would not
@@ -139,6 +139,22 @@ export function expandLiveExamples(text) {
   )
 }
 
+/** `<IntegrationRecipes slug="otp" />` into the exact compiled recipe sources. */
+export function expandIntegrationRecipes(text, loadRecipes = () => []) {
+  return text.replace(/^[ \t]*<IntegrationRecipes\s+slug="([^"]+)"\s*\/>[ \t]*$/gm, (_, slug) =>
+    loadRecipes(slug)
+      .map(
+        ({ label, href, source }) =>
+          `### [${label}](${href})\n\n\`\`\`tsx\n${source.trim()}\n\`\`\``,
+      )
+      .join('\n\n'),
+  )
+}
+
+export function expandFrameworkCompatibilityMatrix(text, matrix = '') {
+  return text.replace(/^[ \t]*<FrameworkCompatibilityMatrix\s*\/>[ \t]*$/gm, matrix)
+}
+
 /**
  * Site-root URLs into absolute ones.
  *
@@ -171,8 +187,15 @@ export function absolutizeUrls(text, { origin, base }) {
  * and `BASE_URL`), so a build for the aggregator and a build for a preview each
  * emit links to themselves.
  */
-export function mdxToMarkdown(source, { origin, base = '/' }) {
-  const expanded = mapUnfenced(source, expandLiveExamples)
+export function mdxToMarkdown(
+  source,
+  { origin, base = '/', recipesFor = () => [], frameworkCompatibilityMatrix = '' },
+) {
+  const withRecipes = mapUnfenced(source, (chunk) => expandIntegrationRecipes(chunk, recipesFor))
+  const withFrameworks = mapUnfenced(withRecipes, (chunk) =>
+    expandFrameworkCompatibilityMatrix(chunk, frameworkCompatibilityMatrix),
+  )
+  const expanded = mapUnfenced(withFrameworks, expandLiveExamples)
 
   return (
     mapUnfenced(

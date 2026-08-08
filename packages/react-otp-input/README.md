@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.svg" width="112" alt="@rxova/react-otp-input logo" />
+  <img src="./assets/logo.svg" width="180" alt="@rxova/react-otp-input logo" />
 </p>
 
 <h1 align="center">@rxova/react-otp-input</h1>
@@ -29,8 +29,10 @@ recipes, theming, WebOTP, and migration guides from other OTP libraries.
   semantics all come from the platform, not from hand-rolled JavaScript
 - **Tap any slot to edit it** — the input's characters sit at their true slot pitch, so a click or tap
   lands the caret where you touched, which a collapsed single-input field physically can't do
+- **Rapid typing stays ordered** — if keyboard input begins before a click's caret placement has
+  settled, the keyboard wins; a delayed pointer frame never moves the caret midway through the code
 - **WebOTP** — programmatic SMS retrieval (`useWebOTP`) that no other OTP library ships
-- **Headless** — zero runtime dependencies, no stylesheet to import, ~3.6 kB brotli
+- **Headless** — zero runtime dependencies, no stylesheet to import, ~4.3 kB brotli
 - **Form-ready** — string `onChange`, native `name`, and first-class React Hook Form / Formik / React
   Final Form / TanStack Form recipes
 - **Correct on the seams** — formatted paste, Chrome auto-translate, IME, RTL, alphanumeric, SSR/RSC
@@ -146,22 +148,49 @@ the [form-library guide](https://rxova.org/packages/react-inputs/components/otp/
 
 ## Styling
 
-No stylesheet to import. Layout-critical CSS is inlined; everything visual is a token or a `data-*` hook.
+No stylesheet to import. Layout-critical CSS is inlined; everything visual is a custom property or a
+`data-*` hook.
 
-```css
-[data-otp-root] {
-  --otp-slot-size: 2.5rem;
-  --otp-gap: 0.5rem;
-  --otp-radius: 0.5rem;
-  --otp-border: 1px solid #d4d4d8;
-  --otp-active-ring: 2px solid Highlight;
-  --otp-caret-color: currentColor;
-}
-```
+| Property                                | Default                   | Applies to                     |
+| --------------------------------------- | ------------------------- | ------------------------------ |
+| `--rx-otp-slot-size`                    | `2.5rem`                  | Slot width and height          |
+| `--rx-otp-gap`                          | `0.5rem`                  | Space between slots            |
+| `--rx-otp-font` / `-font-size`          | inherited / `1.125rem`    | Slot typography                |
+| `--rx-otp-color` / `-bg`                | inherited / `transparent` | Slot foreground and background |
+| `--rx-otp-border`                       | `1px solid #d4d4d8`       | Slot border                    |
+| `--rx-otp-radius`                       | `0.5rem`                  | Slot corners                   |
+| `--rx-otp-active-ring`                  | `2px solid Highlight`     | Ring on the active slot        |
+| `--rx-otp-caret-color` / `-caret-width` | `currentColor` / `2px`    | The painted caret              |
+| `--rx-otp-placeholder-color`            | inherited, dimmed         | Per-slot placeholder           |
+| `--rx-otp-separator-color`              | inherited                 | `<OtpSeparator>`               |
+| `--rx-otp-transition`                   | a short ease              | Slot state changes             |
 
-Stable selector hooks (semver-covered): `[data-otp-root]`, `[data-otp-input]`, `[data-otp-slot]`,
-`[data-otp-group]`, `[data-otp-separator]`, `[data-otp-caret]`, plus per-slot
-`[data-state="filled|active|empty"]`, `[data-active]`, `[data-filled]`, `[data-invalid]`.
+### `data-*` attributes
+
+These are **public API**, covered by semver.
+
+| Attribute                                          | On        | Meaning                         |
+| -------------------------------------------------- | --------- | ------------------------------- |
+| `data-rx-otp-root`                                 | wrapper   | Always present                  |
+| `data-rx-otp-input`                                | `<input>` | The single real control         |
+| `data-rx-otp-group`                                | group     | `<OtpGroup>`                    |
+| `data-rx-otp-slot`                                 | slot      | One painted slot                |
+| `data-rx-otp-separator`                            | separator | `<OtpSeparator>`                |
+| `data-rx-otp-caret`                                | caret     | The painted caret               |
+| `data-state`                                       | slot      | `filled`, `active` or `empty`   |
+| `data-filled` / `data-active`                      | slot      | Convenience flags for the above |
+| `data-disabled` / `data-readonly` / `data-invalid` | wrapper   | Mirrors the props               |
+
+## Keyboard
+
+| Key                   | Effect                                                  |
+| --------------------- | ------------------------------------------------------- |
+| any allowed character | Fills the active slot and advances                      |
+| `Backspace`           | Clears the slot, or steps back when it is already empty |
+| `←` / `→`             | Move between slots                                      |
+| `Home` / `End`        | Jump to the first or last slot                          |
+| `Ctrl`/`Cmd` + `V`    | Paste and distribute, after `pasteTransform`            |
+| `Tab`                 | Leave the field — it is one tab stop, not one per slot  |
 
 ## Accessibility
 
@@ -172,6 +201,17 @@ repeated. Slots are `aria-hidden` decoration. `label` / `aria-label` name the fi
 > **iOS note:** the default `slotInteraction="spatial"` auto-degrades to `"crush"` on iOS, which cannot
 > fully hide the native `::selection`. Tap-to-edit stays keyboard-plus-caret there; it is full spatial
 > everywhere else. Force either mode explicitly with the `slotInteraction` prop.
+
+## UI-library recipes
+
+The docs contain maintained examples for shadcn/ui, Radix Themes, Material UI, Chakra UI, Mantine
+and Ant Design. Copy a ready-labelled wrapper with:
+
+```bash
+npx shadcn@latest add https://rxova.org/packages/react-inputs/r/otp-field.json
+```
+
+[Open the recipes](https://rxova.org/packages/react-inputs/components/otp/about/#ui-library-recipes).
 
 ## Part of rxova
 
