@@ -9,6 +9,7 @@ export type PhoneWarningCode =
   | 'value-country-unknown'
   | 'empty-country-list'
   | 'locale-invalid'
+  | 'max-length-too-small'
 
 /**
  * Emitted when the component keeps itself functional despite a prop it cannot
@@ -88,6 +89,24 @@ export interface PhoneInputProps {
    * BCP 47 tag for country names. @default the runtime's locale
    */
   locale?: string
+
+  // ---- Limits ---------------------------------------------------------------
+  /**
+   * Longest text the field accepts, in characters.
+   *
+   * **The cap is always applied; this prop only moves it.** An unbounded phone
+   * field is a denial-of-service surface — every keystroke re-parses and
+   * re-groups the whole contents, and a paste decides how much that is. E.164
+   * caps a number at 15 digits, so the longest text this field can itself
+   * produce is 21 characters (`+`, the calling code, and the grouped digits);
+   * `32` leaves half again as much room for the brackets, dashes and spaces
+   * people paste, and no number written the way people write them comes close.
+   *
+   * Values below `21`, or non-finite ones, cannot bound a real number and fall
+   * back to the default with a `max-length-too-small` warning.
+   * @default 32
+   */
+  maxLength?: number
 
   // ---- Presentation ---------------------------------------------------------
   /**

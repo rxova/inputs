@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@rxova/react-phone-input"><img src="https://img.shields.io/npm/v/@rxova/react-phone-input?color=cb3837&logo=npm&logoColor=white" alt="npm version" /></a>
   <a href="https://github.com/rxova/react-inputs/actions/workflows/ci.yml"><img src="https://github.com/rxova/react-inputs/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
-  <img src="https://img.shields.io/badge/brotli-%E2%89%A4%204.25%20kB-f5a623" alt="Brotli size at most 4.25 kB" />
+  <img src="https://img.shields.io/badge/brotli-%E2%89%A4%204.55%20kB-f5a623" alt="Brotli size at most 4.55 kB" />
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="100% coverage" />
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white" alt="TypeScript strict mode" />
   <img src="https://img.shields.io/badge/dependencies-0-44cc11" alt="Zero runtime dependencies" />
@@ -24,7 +24,7 @@ npm install @rxova/react-phone-input
 
 📖 **[Documentation & live examples →](https://rxova.org/packages/react-inputs/components/phone/introduction/)** — guides, form recipes, theming, the possible-versus-valid distinction, and migration from another phone library.
 
-- **10x smaller than the default choice.** 4.1 kB brotli against `react-phone-number-input`'s
+- **10x smaller than the default choice.** 4.5 kB brotli against `react-phone-number-input`'s
   41.1 kB: names come from `Intl.DisplayNames`, flags are two regional-indicator letters, and all
   that is left to ship is the dial-code table.
 - **No flag sprite sheet, no icon font.** A flag emoji is six bytes of arithmetic.
@@ -32,7 +32,7 @@ npm install @rxova/react-phone-input
 - **As-you-type formatting that keeps your caret** where you left it, mid-string.
 - **Native `<select>` and native `<input type="tel">`** — the platform's own picker on mobile,
   autofill, and keyboard type-ahead for free.
-- **Zero runtime dependencies**, 4.1 kB brotli, no stylesheet to import.
+- **Zero runtime dependencies**, 4.5 kB brotli, no stylesheet to import.
 
 ## Basic use
 
@@ -124,6 +124,36 @@ _only_ there, because `011x` is a legitimate UK area code.
 
 Non-Latin digits are normalised: Arabic-Indic, extended Arabic-Indic and full-width numerals all
 work, so a user typing on their own keyboard layout is not silently ignored.
+
+## The length cap
+
+**The field accepts at most 32 characters, and the cap cannot be removed — only moved, with
+`maxLength`.**
+
+An unbounded phone field is a denial-of-service surface: every keystroke re-parses, re-groups and
+re-formats the whole contents, and nothing bounds that except the size of what was pasted. So there
+is always a cap, exactly as there always is in
+[`@rxova/react-password-input`](https://www.npmjs.com/package/@rxova/react-password-input).
+
+`32` is not arbitrary. E.164 caps a number at 15 digits, so the longest text this field can ever
+_produce_ is 21 characters — a `+`, the calling code and the grouped digits — which the adversarial
+suite asserts against the country table itself. `32` is half again as much, which is the room
+people's own punctuation needs:
+
+| Pasted                 | Characters |
+| ---------------------- | ---------- |
+| `+1 (415) 555-2671`    | 17         |
+| `+44 (0)20 7123 4567`  | 20         |
+| `0044 (0)20 7123 4567` | 20         |
+
+Nothing written the way people write phone numbers comes close to 32, so no real number is ever
+truncated — but a pasted file stops at 32 characters instead of reaching the parser.
+
+The cap applies to the text in the box, after grouping, not to the raw keystrokes: `maxLength` also
+lands on the `<input>`, and `usePhoneInput` enforces it as well, so a programmatic paste and a
+headless renderer are bounded too. A `maxLength` below `21` could truncate a number the component
+had just formatted, so it is refused — the default is used instead and `onWarn` reports
+`max-length-too-small`.
 
 ## Restricting the list
 
@@ -247,7 +277,7 @@ function Field() {
 ```
 
 Codes: `unknown-country`, `unknown-default-country`, `value-not-e164`, `value-country-unknown`,
-`empty-country-list`, `locale-invalid`.
+`empty-country-list`, `locale-invalid`, `max-length-too-small`.
 
 With no handler these go to `console.warn`. **The entire path is stripped from production builds** —
 it sits behind a `process.env.NODE_ENV !== 'production'` branch, so there is no runtime cost and no

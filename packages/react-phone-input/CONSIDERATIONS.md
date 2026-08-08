@@ -76,6 +76,12 @@ review; each entry says what was decided and why.
     because setting a selection on an unfocused input steals focus in some engines.
 21. **Non-Latin numerals are normalised** — Arabic-Indic, extended Arabic-Indic and full-width.
     A user typing on their own keyboard layout should not be silently ignored.
+22. **There is always a length cap; `maxLength` only moves it.** Default `32`. An unbounded field
+    is a denial-of-service surface — every keystroke re-parses and re-groups the whole contents,
+    bounded only by the size of a paste. `32` is derived: E.164 allows 15 digits, so the longest
+    text the field can produce is 21 characters, and half again as much is the room people's own
+    brackets and dashes need. A cap below `21` is refused rather than obeyed, because it would
+    truncate a number the component had just formatted.
 
 ## Accessibility judgement calls
 

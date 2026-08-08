@@ -60,6 +60,7 @@ export function Field() {
 | `countryLabel` | `string` | `'Country'` | Accessible name for the country select. |
 | `renderCountry` | `(state: PhoneCountryState) => ReactNode` | flag, name and calling code | Custom option contents. |
 | `locale` | `string` | the runtime's locale | BCP 47 tag for country names. |
+| `maxLength` | `number` | `32` | Native `maxlength`, and enforced by the hook as well. Always applied; the prop only moves the cap. E.164 caps a number at 15 digits, so the longest text the field can format is 21 characters — `32` leaves room for pasted brackets and dashes without truncating a real number. A value below `21` or non-finite falls back to the default. |
 | `label` | `ReactNode` | — | Accessible name for the number field. **Not rendered** — supply your own `<label htmlFor={`${id}-input`}>` for a visible one. |
 | `placeholder` | `string` | — | |
 | `className` | `string` | — | |
@@ -96,7 +97,7 @@ Or target the `data-*` attributes, which are public API covered by semver:
 `data-rx-phone-validity`, plus the state hooks `data-country`, `data-possible`,
 `data-disabled`, `data-invalid`.
 
-## Three mistakes to avoid
+## Four mistakes to avoid
 
 1. **Reading `possible` as "valid".** It means the national part is a length this
    country actually uses. No client-side check can tell you a number is assigned
@@ -105,7 +106,12 @@ Or target the `data-*` attributes, which are public API covered by semver:
 2. **Storing the formatted text.** The value in and out is E.164. The pretty
    grouping changes with the country and the digit count; persisting it makes the
    stored number a presentation detail.
-3. **Shipping a metadata library alongside it.** The country names come from
+3. **Assuming the field is unbounded.** It accepts at most 32 characters and the
+   cap cannot be removed, only moved with `maxLength` — an unbounded field is a
+   denial-of-service surface, since every keystroke re-parses the whole
+   contents. A `maxLength` under `21` is refused, because that is the longest
+   text a full 15-digit E.164 number formats to.
+4. **Shipping a metadata library alongside it.** The country names come from
    `Intl.DisplayNames` and the flags from regional-indicator codepoints — adding
    `libphonenumber` back for names or flags pays 300 kB for what the platform
    already has.

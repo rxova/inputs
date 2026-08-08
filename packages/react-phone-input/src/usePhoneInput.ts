@@ -13,10 +13,59 @@ import {
 } from './phone'
 import type { ParsedPhone } from './phone'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
-import { inspectCountry, inspectCountryList, inspectLocale, inspectValue } from './warn'
+import {
+  inspectCountry,
+  inspectCountryList,
+  inspectLocale,
+  inspectMaxLength,
+  inspectValue,
+} from './warn'
 import type { PhoneDetails, PhoneWarning } from './types'
 
 const DEFAULT_COUNTRY = 'US'
+
+/**
+ * The floor a supplied `maxLength` cannot go under.
+ *
+ * E.164 caps a number at 15 digits, so the longest text this field can ever
+ * *produce* is `+`, the calling code, and those digits with their grouping
+ * separators — 21 characters for every entry in the country table, which
+ * `adversarial.browser.test.tsx` asserts against the table itself rather than
+ * trusting this number. A cap below that would truncate a number the component
+ * had just formatted, so it is refused rather than obeyed.
+ */
+const MIN_MAX_LENGTH = 21
+
+/**
+ * The cap applied when the consumer names none.
+ *
+ * An unbounded phone field is a denial-of-service surface: every keystroke
+ * re-parses, re-formats and re-groups the entire contents, and nothing about
+ * that is bounded by the number — it is bounded by the size of a paste. So the
+ * cap is always applied and the prop only moves it, exactly as
+ * `@rxova/react-password-input` treats its own.
+ *
+ * `32` is half again the 21-character worst case above, which is the room
+ * people's own punctuation needs: `+44 (0)20 7123 4567` is 20 characters,
+ * `0044 (0)20 7123 4567` is 20, `+1 (415) 555-2671` is 17. No real number
+ * written any of the ways people write them reaches 32, so nothing legitimate
+ * is ever truncated — but a pasted file stops at 32 characters instead of
+ * reaching the parser.
+ */
+const DEFAULT_MAX_LENGTH = 32
+
+/**
+ * Trim formatted text to the cap without leaving a dangling separator.
+ *
+ * Applied *after* formatting as well as before parsing, because grouping
+ * inserts spaces: a raw string already at the cap formats past it. Trimming the
+ * formatted string rather than the digits keeps the box, the caret arithmetic
+ * and the reported value all describing the same string — the text is the
+ * source of truth here, so a shortened one simply re-parses to fewer digits.
+ */
+function capText(text: string, limit: number): string {
+  return text.length <= limit ? text : text.slice(0, limit).trimEnd()
+}
 
 export interface UsePhoneInputOptions {
   value?: string
@@ -27,6 +76,7 @@ export interface UsePhoneInputOptions {
   onCountryChange?: (iso2: string) => void
   countries?: string[]
   locale?: string
+  maxLength?: number
   disabled?: boolean
   readOnly?: boolean
   onBlur?: (event: FocusEvent<HTMLElement>) => void
@@ -48,6 +98,12 @@ export interface UsePhoneInputResult {
   countries: Country[]
   /** True when the user is typing an explicit `+…` number. */
   international: boolean
+  /**
+   * The character cap after coercion. Always set — an unusable value falls back
+   * to the default. Put it on your own `<input>` when rendering headless; the
+   * hook enforces it either way.
+   */
+  maxLength: number
   disabled: boolean
   readOnly: boolean
   ids: {
@@ -99,6 +155,7 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
     onCountryChange,
     countries: countriesProp,
     locale,
+    maxLength: maxLengthProp,
     disabled = false,
     readOnly = false,
     onBlur,
@@ -125,6 +182,14 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
   /* v8 ignore next 2 */
   const fallbackCountry =
     countryByISO2(defaultCountry) ?? countries[0] ?? countryByISO2(DEFAULT_COUNTRY)
+
+  // There is always a cap; the prop only moves it. A value that cannot bound
+  // anything — non-finite, or short enough to cut a number the field itself
+  // formatted — falls back to the default rather than removing the bound.
+  const maxLength =
+    maxLengthProp !== undefined && Number.isFinite(maxLengthProp) && maxLengthProp >= MIN_MAX_LENGTH
+      ? Math.floor(maxLengthProp)
+      : DEFAULT_MAX_LENGTH
 
   const isValueControlled = valueProp !== undefined
   const isCountryControlled = countryProp !== undefined
@@ -226,6 +291,7 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
     }
     emit(inspectCountryList(countriesProp))
     if (locale !== undefined) emit(inspectLocale(locale))
+    emit(inspectMaxLength(maxLengthProp, MIN_MAX_LENGTH, maxLength))
     const raw = isValueControlled ? valueProp : defaultValue
     emit(inspectValue(raw, isValueControlled ? 'value' : 'defaultValue'))
   }, [
@@ -234,6 +300,8 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
     options.defaultCountry,
     countriesProp,
     locale,
+    maxLengthProp,
+    maxLength,
     isValueControlled,
     valueProp,
     defaultValue,
@@ -277,7 +345,12 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (disabled || readOnly) return
-      let raw = event.target.value
+      // Capped before anything reads it, not after. The point of the cap is to
+      // bound the work one paste can cause, and `maxLength` on the rendered
+      // input does not help here: it governs what the *user* can put in the
+      // box, not what a programmatic `.value = …` sets, and a headless consumer
+      // may not have put the attribute on their own input at all.
+      let raw = capText(event.target.value, maxLength)
       // `?? raw.length` is unreachable on a `tel` input, which always reports a
       // selection. Kept for the DOM types.
       /* v8 ignore next */
@@ -300,7 +373,10 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
 
       const next = parsePhone(raw, selectedIso2)
       const wasInternational = raw.trimStart().startsWith('+')
-      const formatted = formatPhone(next, wasInternational)
+      // Grouping inserts separators, so raw text already at the cap formats
+      // past it. Only trailing digits are ever lost, which leaves the calling
+      // code — and so `next.country` below — untouched.
+      const formatted = capText(formatPhone(next, wasInternational), maxLength)
 
       setText(formatted)
       pendingCaret.current = caretForDigitIndex(formatted, digitsBefore)
@@ -314,7 +390,16 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
 
       report(formatted, next.country?.iso2 ?? selectedIso2)
     },
-    [disabled, readOnly, text, selectedIso2, isCountryControlled, onCountryChange, report],
+    [
+      disabled,
+      readOnly,
+      text,
+      selectedIso2,
+      isCountryControlled,
+      onCountryChange,
+      report,
+      maxLength,
+    ],
   )
 
   useIsomorphicLayoutEffect(() => {
@@ -351,14 +436,20 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
       onCountryChange?.(country.iso2)
 
       const keptDigits = parsePhone(text, selectedIso2).national
-      const rebuilt = formatPhone(
-        {
-          country,
-          national: keptDigits,
-          e164: keptDigits === '' ? '' : `+${country.dial}${keptDigits}`,
-          possible: isPossible(country, keptDigits),
-        },
-        international,
+      // Capped like every other write to `text`: a four-digit calling code is
+      // three characters longer than `+1`, so switching country can push a
+      // field that was exactly at the cap over it.
+      const rebuilt = capText(
+        formatPhone(
+          {
+            country,
+            national: keptDigits,
+            e164: keptDigits === '' ? '' : `+${country.dial}${keptDigits}`,
+            possible: isPossible(country, keptDigits),
+          },
+          international,
+        ),
+        maxLength,
       )
       setText(rebuilt)
       report(rebuilt, country.iso2)
@@ -372,6 +463,7 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
       selectedIso2,
       international,
       report,
+      maxLength,
     ],
   )
 
@@ -407,6 +499,7 @@ export function usePhoneInput(options: UsePhoneInputOptions): UsePhoneInputResul
     country: parsed.country ?? countryByISO2(selectedIso2),
     countries,
     international,
+    maxLength,
     disabled,
     readOnly,
     ids: {

@@ -67,6 +67,22 @@ there, because `011x` is a legitimate UK area code.
 Non-Latin digits are normalised, so Arabic-Indic, extended Arabic-Indic and full-width numerals all
 work.
 
+## The length cap
+
+The field accepts at most **32 characters**. The cap is always applied; `maxLength` only moves it.
+
+```tsx
+<PhoneInput label="Phone" maxLength={64} />
+```
+
+E.164 caps a number at 15 digits, so the longest text the field can itself produce is 21 characters
+— `+`, the calling code, and the grouped digits. `32` leaves half again as much room for the
+brackets, dashes and spaces people paste (`+44 (0)20 7123 4567` is 20 characters), so nothing
+legitimate is truncated. A `maxLength` below `21` would cut a number the component had just
+formatted, so it is refused: the default is used and `onWarn` reports `max-length-too-small`.
+
+The reasoning behind having a cap at all is on the About page.
+
 ## Restricting the list
 
 ```tsx live
