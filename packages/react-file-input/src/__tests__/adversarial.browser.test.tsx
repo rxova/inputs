@@ -195,41 +195,52 @@ describe('hostile props', () => {
 
 describe('hostile input', () => {
   /**
-   * Fastest of several runs. Scheduler noise only ever *adds* time, so the
-   * minimum is the robust estimator — an average would drag toward whatever
-   * else the machine was doing.
+   * How many times `attemptAll` reads a candidate's identity, for a selection
+   * of `length` files.
+   *
+   * `fileKey` is `name:size:lastModified`, so counting reads of `name` counts
+   * the key computations — which is the operation that goes quadratic if the
+   * dedupe check ever goes back to rescanning the accumulated list per
+   * candidate instead of consulting a `Set`.
    */
-  const fastest = (run: () => void, repeats = 9): number => {
-    let best = Infinity
-    for (let index = 0; index < repeats; index += 1) {
-      const started = performance.now()
-      run()
-      best = Math.min(best, performance.now() - started)
-    }
-    return best
+  const identityReads = (length: number): number => {
+    let reads = 0
+    const files = Array.from({ length }, (_v, index) => {
+      const file = makeFile(`file-${String(index)}.txt`, { at: index })
+      Object.defineProperty(file, 'name', {
+        get: () => {
+          reads += 1
+          return `file-${String(index)}.txt`
+        },
+      })
+      return file
+    })
+    attemptAll([], files)
+    return reads
   }
-
-  const selection = (length: number) =>
-    Array.from({ length }, (_v, index) => makeFile(`file-${String(index)}.txt`, { at: index }))
 
   it('handles a large multi-file selection in linear time', async () => {
     // Someone selects a whole photo library. Every stage has to stay linear.
     //
-    // Measured as a ratio, not against a millisecond budget: this suite runs
-    // beside every other package's browser tests, and a loaded machine misses
-    // a fixed target while the code under test is perfectly linear. The shape
-    // of the curve is the actual claim — quadratic work grows ~16x for a 4x
-    // input, linear stays near 4x. The bar sits at 10 rather than at 5: under a
-    // loaded machine the ratio of two short measurements drifts well past the
-    // ideal 4, and the claim worth defending is "not quadratic" — the
-    // per-candidate rescan this replaced measured 13x-18x here.
-    const small = selection(500)
-    const large = selection(2000)
-
-    const growth = fastest(() => attemptAll([], large)) / fastest(() => attemptAll([], small))
+    // The shape of the curve is the claim: quadratic work grows ~16x for a 4x
+    // input, linear stays near 4x. This used to measure it with `performance.now()`
+    // and failed on CI anyway — the ratio of two sub-millisecond timings on a
+    // machine running nine other browser suites drifts wherever the scheduler
+    // puts it, and it read 47x on the run that prompted this while the code was
+    // perfectly linear. Counting the operations instead measures the same curve
+    // with no clock in it at all, so the number is the same on an idle laptop
+    // and a saturated runner.
+    const growth = identityReads(2000) / identityReads(500)
 
     expect(growth).toBeLessThan(10)
-    expect(attemptAll([], large).files).toHaveLength(2000)
+    expect(
+      attemptAll(
+        [],
+        Array.from({ length: 2000 }, (_v, index) =>
+          makeFile(`file-${String(index)}.txt`, { at: index }),
+        ),
+      ).files,
+    ).toHaveLength(2000)
   })
 
   it('accepts a zero-byte file unless a minimum says otherwise', async () => {
