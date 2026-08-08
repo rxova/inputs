@@ -80,9 +80,17 @@ NIST SP 800-63B requires a length minimum, requires accepting long passphrases, 
 "SHOULD NOT impose other composition rules". The upper/lower/digit/symbol checklist trains users
 into `Password1!` and measurably _lowers_ real entropy.
 
-So the default is a single length rule, `maxLength` is unset (NIST requires accepting at least 64
-characters, and a silently truncated passphrase is a support ticket nobody can diagnose), and
-`commonRules` is there for products under an older compliance regime.
+So the default is a single length rule, and `commonRules` is there for products under an older
+compliance regime.
+
+`maxLength` defaults to `128` and cannot be removed, only moved. An unbounded field is a
+denial-of-service surface: the estimator runs over the whole value on every keystroke, and whatever
+the form posts to runs a deliberately slow KDF over it, so a single paste sets both costs. NIST
+requires _accepting_ at least 64 characters and says nothing about accepting unlimited ones, and
+OWASP ASVS asks for a documented maximum for exactly this reason. `128` clears the NIST floor twice
+over and sits well past the longest passphrase anyone types — ten diceware words is about 60
+characters — so a silently truncated passphrase, which is a support ticket nobody can diagnose,
+stays out of reach.
 
 ## Breach checks
 
@@ -165,14 +173,14 @@ Chromium, Firefox and WebKit.
 `onWarn` receives `{ code, prop, message }` whenever the component keeps itself working despite a
 prop it cannot use as given.
 
-| Code                     | Meaning                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------- |
-| `min-length-negative`    | `minLength` was negative or non-finite                                          |
-| `min-length-non-integer` | `minLength` was fractional                                                      |
-| `max-length-below-min`   | `maxLength` under `minLength`; no password could satisfy both, so it is dropped |
-| `duplicate-rule-id`      | Two rules share an `id`, which are used as React keys and `data-rule` values    |
-| `autocomplete-missing`   | `autoComplete` is empty or `off`, which breaks password managers                |
-| `estimate-threw`         | A custom `estimate` threw; the built-in estimator was used instead              |
+| Code                     | Meaning                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `min-length-negative`    | `minLength` was negative or non-finite                                       |
+| `min-length-non-integer` | `minLength` was fractional                                                   |
+| `max-length-below-min`   | `maxLength` under `minLength` or non-finite; the default cap is used instead |
+| `duplicate-rule-id`      | Two rules share an `id`, which are used as React keys and `data-rule` values |
+| `autocomplete-missing`   | `autoComplete` is empty or `off`, which breaks password managers             |
+| `estimate-threw`         | A custom `estimate` threw; the built-in estimator was used instead           |
 
 With no handler these go to `console.warn`. **The entire path is stripped from production builds** —
 it sits behind a `process.env.NODE_ENV !== 'production'` branch, so there is no runtime cost and no

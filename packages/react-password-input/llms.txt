@@ -79,7 +79,7 @@ export function SignUp({ email }: { email: string }) {
 | `rules` | `PasswordRule[]` | one length rule | NIST SP 800-63B leads with length and advises against composition rules. |
 | `showRules` | `boolean` | `true` when `rules` was provided | Renders the requirement checklist. |
 | `minLength` | `number` | `8` | Drives the default rule and the native `minlength`. |
-| `maxLength` | `number` | unset | Native `maxlength`. Left unset so passphrases are never truncated. |
+| `maxLength` | `number` | `128` | Native `maxlength`. Always applied; the prop only moves the cap. Double NIST's 64-character floor, so passphrases are not truncated. A value below `minLength` or non-finite falls back to the default. |
 | `onValidityChange` | `(valid: boolean) => void` | — | Fires when "all required rules met and `minScore` reached" flips. |
 | `capsLockWarning` | `boolean` | `true` | |
 | `capsLockLabel` | `ReactNode` | `'Caps Lock is on'` | |
