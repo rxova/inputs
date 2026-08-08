@@ -124,7 +124,11 @@ describe('render props', () => {
     )
     expect(seen[0]?.index).toBe(0)
     expect(seen[0]?.size).toBe('10 B')
-    expect(seen[0]?.preview).toMatch(/^blob:/)
+    // The last call, not the first: object URLs are minted after commit, so the
+    // very first render of a file legitimately has no preview yet. Asserting on
+    // the first call would be asserting that they are minted during render,
+    // which is the thing StrictMode caught this component doing.
+    expect(seen.at(-1)?.preview).toMatch(/^blob:/)
   })
 
   it('renders without a label element when none is given', async () => {

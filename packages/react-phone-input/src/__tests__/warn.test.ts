@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { inspectCountry, inspectCountryList, inspectLocale, inspectValue } from '../warn'
+import {
+  inspectCountry,
+  inspectCountryList,
+  inspectLocale,
+  inspectMaxLength,
+  inspectValue,
+} from '../warn'
 
 /**
  * These inspectors only *describe* a coercion the hook has already applied, so
@@ -83,5 +89,26 @@ describe('inspectLocale', () => {
     const warning = inspectLocale('en_US')
     expect(warning?.code).toBe('locale-invalid')
     expect(warning?.message).toContain('en-US')
+  })
+})
+
+describe('inspectMaxLength', () => {
+  it('passes an unset cap and any cap that can hold a formatted number', () => {
+    expect(inspectMaxLength(undefined, 21, 32)).toBeNull()
+    expect(inspectMaxLength(21, 21, 21)).toBeNull()
+    expect(inspectMaxLength(64, 21, 64)).toBeNull()
+  })
+
+  it('reports a cap under the floor, and says which cap is used instead', () => {
+    const warning = inspectMaxLength(4, 21, 32)
+    expect(warning?.code).toBe('max-length-too-small')
+    expect(warning?.prop).toBe('maxLength')
+    expect(warning?.message).toContain('21')
+    expect(warning?.message).toContain('Using 32')
+  })
+
+  it('reports a non-finite cap, which bounds nothing at all', () => {
+    expect(inspectMaxLength(Number.POSITIVE_INFINITY, 21, 32)?.code).toBe('max-length-too-small')
+    expect(inspectMaxLength(Number.NaN, 21, 32)?.code).toBe('max-length-too-small')
   })
 })

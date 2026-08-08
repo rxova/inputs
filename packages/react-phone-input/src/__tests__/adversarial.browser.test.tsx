@@ -132,37 +132,55 @@ describe('hostile input', () => {
     expect(input(container).value).toBe('')
   })
 
-  it('handles an absurdly long paste in linear time', async () => {
-    // Someone pastes a file. Every stage has to stay linear, or the tab hangs.
+  it('stops an absurdly long paste at the cap instead of parsing it', async () => {
+    // Someone pastes a file into the number box.
     //
-    // Measured as a ratio, not against a millisecond budget: this suite runs
-    // beside every other package's browser tests, and a loaded machine misses
-    // a fixed target while the code under test is perfectly linear. The shape
-    // of the curve is the actual claim — quadratic work grows ~16x for a 4x
-    // input, linear stays near 4x. The bar sits at 10 rather than at 5: under a
-    // loaded machine the ratio of two short measurements drifts well past the
-    // ideal 4, and the claim worth defending is "not quadratic", which would
-    // land near 16x.
-    //
-    // Fastest of several runs, because scheduler noise only ever adds time.
-    const fastest = (run: () => void, repeats = 9): number => {
-      let best = Infinity
-      for (let index = 0; index < repeats; index += 1) {
-        const started = performance.now()
-        run()
-        best = Math.min(best, performance.now() - started)
-      }
-      return best
-    }
+    // This used to assert a *ratio* of two wall-clock measurements — 50k digits
+    // against 12.5k, quadratic work growing ~16x where linear stays near 4x. It
+    // measured the right property and still failed on CI, because the ratio of
+    // two sub-millisecond timings on a machine running nine other browser
+    // suites drifts wherever the scheduler puts it (26x on the run that
+    // prompted this). The cap is the stronger claim anyway, and a deterministic
+    // one: 50k characters never reach the parser at all.
+    const onChange = vi.fn()
+    const { container } = await render(
+      <PhoneInput label="Phone" defaultCountry="US" onChange={onChange} />,
+    )
+    await userEvent.fill(input(container), '9'.repeat(50_000))
 
-    const process = (digits: string) => () => {
-      formatPhone(parsePhone(digits, 'US'), false)
-    }
-    const growth = fastest(process('9'.repeat(50_000))) / fastest(process('9'.repeat(12_500)))
+    expect(input(container).value.length).toBeLessThanOrEqual(32)
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.stringMatching(/^\+\d{1,32}$/),
+      expect.anything(),
+    )
+    // And whatever survived is emphatically not a possible number.
+    expect(onChange.mock.lastCall?.[1].possible).toBe(false)
+  })
 
-    expect(growth).toBeLessThan(10)
-    // And it is emphatically not a possible number.
-    expect(parsePhone('9'.repeat(50_000), 'US').possible).toBe(false)
+  it('caps a paste that only formatting pushes over the limit', async () => {
+    // 32 digits fit under a 32-character cap until grouping puts ten spaces
+    // between them. The formatted text is what the box shows and what the next
+    // keystroke re-parses, so the cap has to hold after formatting, not before.
+    const { container } = await render(<PhoneInput label="Phone" defaultCountry="US" />)
+    await userEvent.fill(input(container), '9'.repeat(32))
+    expect(input(container).value.length).toBeLessThanOrEqual(32)
+    // Not left with a dangling separator, either.
+    expect(input(container).value).not.toMatch(/\s$/)
+  })
+
+  it('refuses a cap too short to hold a number it would itself format', async () => {
+    const onWarn = vi.fn()
+    const { container } = await render(
+      <PhoneInput label="Phone" defaultCountry="US" maxLength={4} onWarn={onWarn} />,
+    )
+    expect(onWarn).toHaveBeenCalledWith(expect.objectContaining({ code: 'max-length-too-small' }))
+    // Fell back to the default rather than leaving the field unbounded.
+    expect(input(container).maxLength).toBe(32)
+  })
+
+  it('keeps a longer cap when one is asked for', async () => {
+    const { container } = await render(<PhoneInput label="Phone" maxLength={64} />)
+    expect(input(container).maxLength).toBe(64)
   })
 
   it('does not let a lone plus produce a bogus value', async () => {
@@ -210,6 +228,21 @@ describe('invariants', () => {
     // 4–15 bounds must not rescue a code nobody uses.
     expect(parsePhone('+99123456789').possible).toBe(false)
     expect(parsePhone('+00000').possible).toBe(false)
+  })
+
+  it('can format every country inside the floor the cap refuses to go under', async () => {
+    // `usePhoneInput` refuses a `maxLength` below 21 because 21 is the longest
+    // text the field can produce. That number is asserted here against the
+    // table itself rather than trusted: a country added with a long calling
+    // code or a one-digit grouping would move it, and the cap would start
+    // truncating numbers the component had just formatted.
+    for (const country of COUNTRIES) {
+      const longest = country.lengths.length === 0 ? 15 : Math.max(...country.lengths)
+      // E.164 allows 15 digits in total, calling code included.
+      const national = '9'.repeat(Math.min(longest, 15 - country.dial.length))
+      const formatted = formatPhone(parsePhone(`+${country.dial}${national}`), true)
+      expect(formatted.length).toBeLessThanOrEqual(21)
+    }
   })
 
   it('round-trips every country through parse and format', async () => {

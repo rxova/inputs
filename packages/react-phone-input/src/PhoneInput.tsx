@@ -69,6 +69,7 @@ export const PhoneInput = /* @__PURE__ */ forwardRef<HTMLInputElement, PhoneInpu
       details,
       country,
       countries,
+      maxLength,
       ids,
       inputRef,
       nameFor,
@@ -183,6 +184,11 @@ export const PhoneInput = /* @__PURE__ */ forwardRef<HTMLInputElement, PhoneInpu
           inputMode="tel"
           autoComplete="tel"
           value={text}
+          // The hook enforces the cap too, since it has to hold for a headless
+          // renderer and for a programmatic paste. This is here so the browser
+          // stops the keystroke at source rather than accepting it and having
+          // the next render take it back, which reads as a dropped character.
+          maxLength={maxLength}
           placeholder={placeholder}
           required={required}
           disabled={disabled}

@@ -114,18 +114,54 @@ controls are the accessible representation of it.
 axe (WCAG 2.1 A/AA) runs over the component in the browser suite and over the whole demo page in
 Chromium, Firefox and WebKit.
 
+## The length cap
+
+`maxLength` defaults to `32` and cannot be removed, only moved.
+
+An unbounded phone field is a denial-of-service surface. Every keystroke re-parses the contents,
+walks the calling-code table, re-groups the digits and re-derives where the caret should land; none
+of that is bounded by the number, only by the size of what was pasted. The same reasoning puts a
+mandatory cap on `@rxova/react-password-input`.
+
+`32` is derived rather than picked. E.164 caps a number at 15 digits including the calling code, so
+the longest text this field can ever _produce_ is 21 characters — a `+`, the calling code, and the
+digits with their grouping separators. That figure is asserted against the country table itself in
+the adversarial suite, so a future entry with a longer calling code or a one-digit grouping fails
+the test rather than silently starting to truncate.
+
+Half again as much room is what people's own punctuation needs, and it is comfortably enough:
+
+| Pasted                 | Characters |
+| ---------------------- | ---------- |
+| `+1 (415) 555-2671`    | 17         |
+| `+44 (0)20 7123 4567`  | 20         |
+| `0044 (0)20 7123 4567` | 20         |
+
+So no number written the way people write phone numbers is ever truncated, while a pasted file
+stops at 32 characters instead of reaching the parser.
+
+The cap is enforced in three places, because one is not enough: `maxLength` lands on the `<input>`
+so the browser stops the keystroke at source; `usePhoneInput` truncates the incoming text, because
+the attribute does not apply to a programmatic `value` assignment and a headless renderer may not
+have the attribute at all; and it truncates again after formatting, because grouping inserts spaces
+and text already at the cap formats past it.
+
+A `maxLength` below `21` cannot hold a number the component itself formats, so it is refused — the
+default is used and `onWarn` reports `max-length-too-small`.
+
 ## Diagnostics
 
 `onWarn` receives `{ code, prop, received, message }` whenever a prop is rejected or coerced.
 
-| Code                      | Meaning                                                   |
-| ------------------------- | --------------------------------------------------------- |
-| `unknown-country`         | An ISO code not in the table, in `country` or `countries` |
-| `unknown-default-country` | Same, in `defaultCountry`                                 |
-| `value-not-e164`          | A national number passed where E.164 belongs              |
-| `value-country-unknown`   | A `+` value whose calling code is not in the table        |
-| `empty-country-list`      | `countries` was empty; the full list is used              |
-| `locale-invalid`          | `Intl` refused the tag; names fall back to ISO codes      |
+| Code                      | Meaning                                                               |
+| ------------------------- | --------------------------------------------------------------------- |
+| `unknown-country`         | An ISO code not in the table, in `country` or `countries`             |
+| `unknown-default-country` | Same, in `defaultCountry`                                             |
+| `value-not-e164`          | A national number passed where E.164 belongs                          |
+| `value-country-unknown`   | A `+` value whose calling code is not in the table                    |
+| `empty-country-list`      | `countries` was empty; the full list is used                          |
+| `locale-invalid`          | `Intl` refused the tag; names fall back to ISO codes                  |
+| `max-length-too-small`    | `maxLength` under `21` or non-finite; the default cap is used instead |
 
 With no handler these go to `console.warn`. **The entire path is stripped from production builds** —
 it sits behind a `process.env.NODE_ENV !== 'production'` branch, so there is no runtime cost and no

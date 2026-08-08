@@ -75,6 +75,27 @@ export function inspectCountryList(countries: string[] | undefined): PhoneWarnin
   }
 }
 
+/**
+ * Describe a `maxLength` too short to hold a number the field itself formats.
+ *
+ * The cap is never removed, only moved, so an unusable value falls back to the
+ * default rather than leaving the field unbounded — the same trade
+ * `@rxova/react-password-input` makes.
+ */
+export function inspectMaxLength(
+  maxLength: number | undefined,
+  floor: number,
+  used: number,
+): PhoneWarning | null {
+  if (maxLength === undefined || (Number.isFinite(maxLength) && maxLength >= floor)) return null
+  return {
+    code: 'max-length-too-small',
+    prop: 'maxLength',
+    received: String(maxLength),
+    message: `\`maxLength\` (${String(maxLength)}) is below ${String(floor)}, the longest text this field can format. Using ${String(used)}.`,
+  }
+}
+
 /** Describe a locale tag `Intl` refused. */
 export function inspectLocale(locale: string): PhoneWarning | null {
   try {
