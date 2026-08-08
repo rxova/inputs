@@ -1,5 +1,17 @@
 # @rxova/react-intl-currency-input
 
+## 0.3.0
+
+### Minor Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Add the `data-rx-currency-root` selector hook, so this component is reachable by the same
+  convention as the other eight. It renders a single element, so the root _is_ the input — hence one
+  attribute here where the composite components carry two. `data-invalid` is unchanged.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Add `onValueChange` as a deprecated compatibility alias for the value-first `onChange` API introduced
+  in 0.2.0. Both handlers fire when supplied, and development builds warn once so consumers can migrate
+  incrementally with `npx @rxova/codemod currency-on-change`.
+
 ## 0.2.0
 
 ### Minor Changes

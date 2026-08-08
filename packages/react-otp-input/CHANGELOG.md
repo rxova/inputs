@@ -1,5 +1,40 @@
 # @rxova/react-otp-input
 
+## 1.0.0
+
+### Major Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - **Breaking:** every CSS custom property and `data-*` hook is now namespaced `--rx-otp-*` /
+  `data-rx-otp-*`. `--otp-slot-size` becomes `--rx-otp-slot-size`, `[data-otp-root]` becomes
+  `[data-rx-otp-root]`, and so on for all fourteen properties and six attributes. The shared state
+  hooks — `data-state`, `data-filled`, `data-active`, `data-disabled`, `data-readonly`,
+  `data-invalid` — are unchanged, because they mean the same thing on every input in the suite and
+  one selector should reach all of them.
+
+  Run `npx @rxova/codemod rx-token-prefixes` over your components, and the `sed` line in the
+  migration guide over your stylesheets.
+
+  The old scheme was each package's initials, which does not survive nine components: password and
+  phone both reduce to `rpi`, rating and file both to `rf?`. Custom properties inherit, so setting
+  the wrong one is silently inert rather than an error — the knob just does nothing, on a component
+  that looks like it should have it. `pnpm check:tokens` now fails a hook that leaves its component's
+  namespace, so this cannot drift back.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Rename the caret class and the injected keyframes/style element from `otp-slots-*` to `rx-otp-*`,
+  and fix the development warnings, which announced themselves as `react-otp-slots:` — a package name
+  this has not had for some time, in a format none of its siblings use. They now read
+  `[react-otp-input]`, like every other package in the suite.
+
+  The class name is undocumented and the style element is an implementation detail, but both land in
+  the DOM, so a stylesheet targeting `.otp-slots-caret` needs updating. Grouped with the 1.0 token
+  rename because it is the same change of identity, landing in the same release.
+
+### Patch Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Keep rapid keyboard input in order when it starts immediately after a pointer click. Deferred
+  spatial caret placement is now cancelled as soon as keyboard, paste, autofill or composition input
+  begins, so a busy browser cannot move the caret midway through a code.
+
 ## 0.1.7
 
 ### Patch Changes

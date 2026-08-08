@@ -1,0 +1,34 @@
+# @rxova/react-tags-input
+
+## 0.1.0
+
+### Minor Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - New package: a tag input where the keyboard actually works.
+
+  Not the smallest option in this category — `react-tagsinput` is 3.1 kB against this package's
+  3.6 kB, and the manifest says so plainly. The case is six accessibility failures that are present
+  in the most-downloaded alternatives and each of which has a test here:
+
+  - focus after a removal never lands on `<body>`; it moves to the next tag, the previous, or the
+    entry box
+  - a roving tabindex gives the whole list one tab stop rather than one per tag
+  - Backspace from an empty box takes two presses, so the user sees what they are about to delete
+  - every remove button is named after its own tag rather than "Remove"
+  - additions and removals are announced politely, with a pasted batch announced once
+  - no `role="combobox"` without a popup to back it up
+
+  Plus configurable delimiters, paste splitting on delimiters and newlines, case-insensitive dedupe,
+  `max`, length bounds in codepoints, contained `transform`/`validate`, one hidden input per tag so a
+  native form posts an array, and `onWarn` with seven codes stripped from production builds.
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Add `dir`, `autoFocus` and `aria-label`, and expose `clear()` from the hook.
+
+  `clear()` empties the tags **and** the entry box. Half-clearing is the bug it exists to avoid: a
+  form reset that leaves a half-typed tag behind still submits it on the next blur, because
+  `addOnBlur` defaults to `true`.
+
+### Patch Changes
+
+- [#60](https://github.com/rxova/react-inputs/pull/60) [`4b038de`](https://github.com/rxova/react-inputs/commit/4b038ded8581e07bdbbb1c4eac116c95c08cfa49) - Preserve existing input text and caret position during multi-value paste, leave composition
+  keystrokes to IMEs, and discard stale focus moves when a controlled parent refuses a removal.
