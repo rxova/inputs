@@ -197,7 +197,8 @@ export function useFileInput(options: UseFileInputOptions): UseFileInputResult {
   )
 
   /**
-   * Object URLs, keyed by file, created lazily and revoked when the file goes.
+   * Object URLs, keyed by file, minted after commit and revoked when the file
+   * goes.
    *
    * This is the part every alternative leaves to the caller — `react-dropzone`'s
    * documentation says in so many words that you must revoke them yourself, and
@@ -206,60 +207,93 @@ export function useFileInput(options: UseFileInputOptions): UseFileInputResult {
    * has leaked 50 MB.
    */
   // Held in state rather than a ref, and never replaced — only mutated. A ref
-  // would be the reflexive choice, but reading `.current` while deriving the
-  // rendered list is exactly what the refs-during-render rule forbids, and a
-  // lazily-initialised state value is stable for the life of the component
-  // without that caveat.
+  // would be the reflexive choice, but a lazily-initialised state value is
+  // stable for the life of the component without the refs rules to reason
+  // about. Only the effects below touch it.
   const [urls] = useState(() => new Map<string, string>())
+  /**
+   * A snapshot of the map above, which is what render reads.
+   *
+   * Two values for one thing, and the split is the point: the map is mutated so
+   * the unmount cleanup can close over one stable object, and a mutated object
+   * can never be the state that triggers a re-render. The snapshot is replaced
+   * on every mint or revoke, so it can.
+   */
+  const [previewUrls, setPreviewUrls] = useState<ReadonlyMap<string, string>>(() => new Map())
 
-  const entries = useMemo<FileEntry[]>(() => {
-    // No previews on the server: an object URL minted during server rendering
-    // could never be revoked (there is no unmount) and would be meaningless in
-    // the HTML anyway. The client mints them on hydration instead.
-    if (!previews || typeof document === 'undefined') {
-      return files.map((file) => ({ file, key: fileKey(file) }))
-    }
-
-    // The map is *mutated*, never replaced. Swapping in a fresh Map here was a
-    // real bug: the unmount cleanup below captures this same object, so
-    // replacing it left that cleanup holding the original empty map and every
-    // URL alive for the lifetime of the document — the exact leak this code
-    // exists to prevent.
-    const map = urls
+  /**
+   * Mint and revoke, in an effect rather than while deriving the rendered list.
+   *
+   * `createObjectURL` allocates, which makes it the textbook thing not to do
+   * during render — and this is not a theoretical objection. React 18's
+   * StrictMode mounts by rendering twice and keeping the *second* pass's hooks,
+   * so the first pass minted URLs into a `Map` that was then thrown away with
+   * nothing left holding it: one leaked URL per previewable file, on every
+   * StrictMode mount, unreachable by any cleanup. An effect only runs for a
+   * pass that committed, so mint and revoke pair up by construction.
+   *
+   * It also settles server rendering for free — no effects run there, so the
+   * markup carries no URL that could never be revoked.
+   */
+  useEffect(() => {
     const live = new Set<string>()
+    let changed = false
 
-    const result = files.map((file) => {
-      const key = fileKey(file)
-      if (!isPreviewable(file)) return { file, key }
-      live.add(key)
-      let url = map.get(key)
-      if (url === undefined) {
-        url = URL.createObjectURL(file)
-        map.set(key, url)
+    if (previews) {
+      for (const file of files) {
+        if (!isPreviewable(file)) continue
+        const key = fileKey(file)
+        live.add(key)
+        // Existing URLs are kept, so a file that survives a change keeps its
+        // `src`. Re-minting on every list change would reload every thumbnail.
+        if (urls.has(key)) continue
+        urls.set(key, URL.createObjectURL(file))
+        changed = true
       }
-      return { file, key, preview: url }
-    })
+    }
 
     // Anything no longer in the list is revoked immediately rather than waiting
     // for unmount, which is what makes add-then-remove cycles safe. Deleting
     // while iterating a Map is well-defined.
-    for (const [key, url] of map) {
-      if (!live.has(key)) {
-        URL.revokeObjectURL(url)
-        map.delete(key)
-      }
+    for (const [key, url] of urls) {
+      if (live.has(key)) continue
+      URL.revokeObjectURL(url)
+      urls.delete(key)
+      changed = true
     }
-    return result
+
+    // The one case the rule is written to allow: an external system — the
+    // document's object-URL registry — has changed, and the handles it gave
+    // back have to reach render somehow. It cannot cascade, because the state
+    // is only set when a URL was actually minted or revoked, and this effect's
+    // own dependencies do not include it.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (changed) setPreviewUrls(new Map(urls))
   }, [files, previews, urls])
 
   useEffect(() => {
-    // Safe to close over because the memo above mutates this same Map rather
+    // Safe to close over because the effect above mutates this same Map rather
     // than replacing it.
+    //
+    // Declared *after* that effect on purpose. React runs every cleanup before
+    // every setup, so on StrictMode's simulated remount this empties the map
+    // first and the effect above re-mints into it — the order the other way
+    // round would revoke what had just been minted.
     return () => {
       for (const url of urls.values()) URL.revokeObjectURL(url)
       urls.clear()
     }
   }, [urls])
+
+  const entries = useMemo<FileEntry[]>(
+    () =>
+      files.map((file) => {
+        const key = fileKey(file)
+        const preview = previewUrls.get(key)
+        return preview === undefined ? { file, key } : { file, key, preview }
+      }),
+    [files, previewUrls],
+  )
 
   // Development-only configuration diagnostics. Guarded so a production bundler
   // drops the branch — and with it `warn.ts` entirely. Deduped per instance so
